@@ -1,0 +1,526 @@
+Introduction to Go
+School of Computing Science, Glasgow University
+13 Oct 2014
+
+Dave Cheney
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* The Go programming language
+
+- Modern
+- Compact, concise, general-purpose
+- Imperative, statically type-checked, dynamically type-safe
+- Garbage-collected
+- Opinionated, no warnings, unused local vars and imports are an error
+- Strong support for concurrency
+- Compiles to native code, statically linked
+- Fast compilation, efficient execution
+
+Designed by programmers for programmers!
+
+* Origins of Go
+
+Go started in 2007 by Rob Pike, Robert Griesemer, Ken Thompson.
+
+Russ Cox and Ian Lance Taylor joined soon after.
+
+There is a story that Go was designed while waiting for a C++ program to compile.
+
+In reality, Go was a response to the many of the frustrations that Rob, Robert and Ken experienced with the languages in use at Google at that time; C++, Java, and Python.
+
+Rob Pike's 2012 paper, [[http://commandcenter.blogspot.com.au/2012/06/less-is-exponentially-more.html][Less is exponentially more]] gives an excellent overview of the environment that gave rise to Go.
+
+* Public announcement
+
+First public announcement November 10th, 2009. [[https://www.youtube.com/watch?v=rKnDgT73v8s][The Go Programming Language, 2009]]
+
+Go is an open source project.
+
+All the commits, code review, design, debate, etc, are all done in the open on a public mailing lists.
+
+* 2009 - 2012
+
+Rapid iteration over the next 2.5 years
+
+[[http://blog.golang.org/go-version-1-is-released][Go 1.0 was released]] on the 28th of March, 2012.
+
+Go 1.0 marked a line in the sand
+
+- API stability. [[http://golang.org/doc/go1compat][The Go 1 compatibility document]]
+- No major language changes (there have been a few minor additions)
+- [[http://blog.golang.org/the-path-to-go-1][The path to Go 1]]
+
+Stability
+
+- Pro: Your code you write today will continue to work with newer versions of Go. We assert this on every commit.
+- Con: The bar for adding a new feature is now insurmountably high.
+
+
+* 2012 - now
+
+3 point releases so far; Go 1.1, 1.2, and 1.3.
+
+The fourth, Go 1.4, is on target to ship in December.
+
+Rough 6 month release cycle; 3 month change window, 3 month stabilisation.
+
+Big ticket features are discussed before the change window opens.
+
+Each release has bought incremental improvements in the compilers, the runtime, the garbage collector.
+
+New platforms and new architectures added.
+
+* Hello, World!
+
+.play taste/hello.go
+
+# Unicode
+# Programs are organized in packages
+# A package is a set of package files
+# A package file expresses its dependencies on other packages via import declarations
+# The remainder of a package file is a list of (constant, variable, type, and function) declarations
+
+
+* Hello, World! Internet-style
+
+.play taste/hellohttp.go
+
+* Program elements
+
+* Constants
+
+- Maintained precisely:
+	const e = 2.71828182845904523536028747135266249775724709369995957496696763
+	const third = 1/3
+- Typed or without type:
+	const M64 int64 = 1<<20
+        const M = 1<<20
+- Evaluated at compile-time:
+	const big = 1<<100 / 1e30  // valid constant expression
+
+Compiler complains if a constant doesn't fit where it is _used_.
+
+
+* Variables
+
+- Statically typed:
+	var x int
+	var s, t string
+- Implicitly or explicitly initialized:
+	var x int
+	var s, t string = "foo", "bar"  // multiple assignment
+
+	var x = 42                      // int
+	var s, b = "foo", true          // string, bool
+- Short variable declaration (inside functions only):
+	x := 42
+	s, b := "foo", true
+- Can safely take address of _any_ variable!
+	return &x
+# compiler will do the right thing
+
+
+* Types
+
+- Predeclared types, the usual suspects:
+	uint8 (byte), uint16, uint32, uint32, uint64,
+	int8, int16, int32, int32 (rune), int64,
+	float32, float64,
+	complex64, complex128,
+	uint, int, uintptr,
+	bool, string,
+	error  // not so usual
+
+- Composite types:
+	array, struct, pointer, function,
+	slice, map, channel
+
+- Abstract type:
+	interface
+
+
+* Type declarations
+
+- Composition from left-to-right (Pascal style):
+	[10]byte  // array of 10 bytes
+
+	struct {
+		name        string
+		left, right *Node
+		action      func(*Node)
+	}
+
+	func(a, b, c int)
+	func(http.ResponseWriter, *http.Request) error
+
+- A type declaration defines a _new_ type:
+	type Weekday int
+
+	type Point struct {
+		x, y int
+	}
+
+
+* Slices
+
+	[]T  // slice of T
+
+- Descriptor for an underlying array segment
+- May grow and shrink
+- Has length and capacity
+- Assigning a slice copies the descriptor, not the underlying array
+
+Common slice operations:
+
+	len(s)
+	s[i]
+	s[i:j]
+	append(s, x)  // append element x to slice s and return new slice
+
+- Slices play the role of dynamically sized arrays
+- Widely used in Go code
+
+* Pointers
+
+- Pointers are values which point to other values
+- For each type, there exists a distinct pointer type, accessible via the address of, `&`, and dereference, `*` operators.
+- No pointer arithmetic
+
+        x := 1000
+        y := &x
+        y += 4          // nope
+
+
+* Maps
+
+	map[K]V  // map K -> V
+
+- Map is a language-supplied hash table
+- Maps values of key type K to values of type V
+- Assigning a map copies the map reference, not the map contents
+
+Common map operations:
+
+	make(map[K]V)
+	len(m)
+	m[k]
+	delete(m, k)
+
+- Map iteration order is not specified:
+
+	for key, value := range m {
+		// order of key sequence different each time
+	}
+
+* Statements
+
+- Curly braces (C style)
+- Multiple assignments and some other new constructs
+- Statements are _not_ Expressions.
+- Many cleanups: mandatory braces, no parentheses for conditionals, implicit break in switches, no semicolons, etc.
+	a, b = b, a                 // swap
+	f, err = os.Open(filename)
+
+	if x < y {
+		return x
+	} else {
+		return y
+	}
+
+	switch day {
+	case Mon:
+		...
+		// break is implicit
+	case Tue, Wed:
+		...
+	}
+
+* Statements, continued
+
+- Unified `for` syntax
+
+	for {
+		// loop forever
+	}
+
+
+
+`range` over arrays, slices, and maps
+
+	for i, num := range numbers { ... }
+	for city, pop := range population { ... }
+
+Not shown: break, goto, continue, fallthrough
+
+* Functions
+
+- Regular functions
+	func Sin(x float64) float64
+	func AddScale(x, y int, f float64) int
+
+- Multiple return values
+	func Write(data []byte) (written int, err error)
+
+- Variadic parameter lists without magic
+	func Printf(format string, args ...interface{})
+
+- Functions are first-class values
+	var delta int
+	return func(x int) int { return x + delta }
+
+* Methods
+
+Methods are functions with a _receiver_ parameter:
+
+.code taste/point.go /String START/,/String END/
+
+The receiver binds the method to its _base_type_ (Point):
+
+.code taste/point.go /Point START/,/Point END/
+
+Methods are invoked via the usual dot notation:
+
+.play taste/point.go /main START/,/main END/
+
+
+* Methods can be defined for any user-defined type!
+
+For the Weekday type:
+
+.code taste/weekday.go /type START/,/type END/
+
+Define String method on Weekday:
+
+.code taste/weekday.go /String START/,/String END/
+
+.play taste/weekday.go /main START/,/main END/
+
+Method calls via non-interface types are statically dispatched.
+
+* Interface types
+
+- Abstract
+- Define (possibly empty) set of method signatures
+- Values of _any_type_ that implement all methods of an interface can be assigned to a variable of that interface.
+
+Examples:
+
+	interface{}  // empty interface
+
+	interface {
+		String() string
+	}
+
+	interface {
+		Len() int
+		Swap(i, j int)
+		Less(i, j int) bool
+	}
+
+
+* Using interfaces
+
+.code taste/stringer.go /Stringer START/,/Stringer END/
+
+Both Weekday and Point define a String method, so values of both can be assigned to
+a variable of Stringer type:
+
+.play taste/stringer.go /main START/,/main END/
+
+Method calls via interface types are dynamically dispatched ("virtual function call").
+
+* Concurrency
+
+* Goroutines
+
+- The _go_ statement launches a function call as a goroutine
+	go f()
+	go f(x, y, ...)
+
+- A goroutine runs concurrently (but not necessarily in parallel)
+- A goroutine is a thread of control within the program, with its own local variables and stack. Much cheaper to create and schedule than operating system threads.
+
+
+* A simple example
+
+.code taste/concurrency1.go /f START/,/f END/
+
+Function f is launched as 3 different goroutines, all running concurrently:
+
+.play taste/concurrency1.go /main START/,/main END/
+
+
+* Communication via channels
+
+A channel type specifies a channel value type (and possibly a communication direction):
+
+	chan int
+	chan<- string  // send-only channel
+	<-chan T       // receive-only channel
+
+A channel is a variable of channel type:
+
+	var ch chan int
+	ch := make(chan int)  // declare and initialize with newly made channel
+
+A channel permits _sending_ and _receiving_ values:
+
+	ch <- 1   // send value 1 on channel ch
+	x = <-ch  // receive a value from channel ch (and assign to x)
+
+Channel operations synchronize the communicating goroutines.
+
+* Communicating goroutines
+
+Each goroutine sends its results via channel ch:
+
+.code taste/concurrency2.go /f START/,/f END/
+
+The main goroutine receives (and prints) all results from the same channel:
+
+.play taste/concurrency2.go /main START/,/main END/
+
+* Packages
+
+Packages define boundaries for compilation and reuse.
+
+The unit of compilation is the package, not the file.
+
+You import a whole package, not a type, or a symbol.
+
+Packages you import are referenced by their package's prefix.
+
+	import "fmt"
+
+	func main() {
+		fmt.Printf("Hello %s\n", "world)
+	}
+
+Circular dependencies are not allowed.
+
+- If you are running into issues of circular imports in your program, you may have overused packages.
+
+* There's a lot more!
+
+- Extensive standard library
+
+- Powerful tools
+
+.link http://play.golang.org/p/Au02fFpYdf
+# playground, gofmt
+
+- Multi-platform support
+
+.link http://build.golang.org/
+
+- Great documentation
+
+.link http://tour.golang.org/#1
+
+* Garbage collected
+
+Eliminates the bookkeeping errors related to ownership of shared values.
+
+Eliminates an entire class of use after free and memory leak bugs.
+
+Enables simpler, cleaner, APIs.
+
+Performance is good and getting better every release, plans are afoot for a new concurrent compacting collector in the next 12 months.
+
+
+* Language implementation
+
+* Small, well polished standard library
+
+.link http://golang.org/pkg/
+
+- The usual libc/libm cast of characters.
+- Support for networking, HTTP, TLS.
+- Support for common encodings, XML, JSON.
+- Support for compression, tar, etc.
+
+To a first order approximation, the std lib provides only the things needed to build Go itself.
+
+* Excellent cross platform support
+
+- Windows, OS X, Linux, {Free,Open,Net,DragonFly}BSD, Solaris
+- NaCl, Google's Native Client runtime
+- Experimental support for writing some class of Android application coming in Go 1.4
+
+Cross platform is defined as the super set of all platforms with some not supporting a particular feature, rather than the lowest common denominator.
+
+Two production compiler implementations
+
+- gc toolchain supports arm (32bit), amd64 and i386. Support for power64 and arm64 in the works.
+
+- gccgo toolchain supports all of the above and more.
+
+Other implementations, llgo, tardis-go, etc, keep us honest by writing to the spec.
+
+* Tools
+
+`/usr/bin/go`
+
+Simple, zero configuration, build tool.
+
+All commands and paths are relative to your [[http://golang.org/doc/code.html#GOPATH][$GOPATH]] workspace.
+
+Supports conditional compilation via suffixes and build tags.
+
+Support for cross compilation.
+
+	GOARCH=386 GOOS=windows go build mycmd
+
+* More tools
+
+Read package documentation
+
+	godoc $PKG
+
+Lint your code
+
+	go vet $PKG
+
+Solve code formatting issues, once and for all
+
+	go fmt $PKG
+
+Built in [[http://golang.org/pkg/testing/][testing framework]], including benchmarking and [[http://blog.golang.org/cover][coverage reports]]
+
+	go test $PKG
+	go test -cover $PKG
+
+Built in [[http://blog.golang.org/race-detector][race detector]] (based on [[https://code.google.com/p/data-race-test/wiki/ThreadSanitizer][ThreadSantizer]])
+
+	go {build,test,install} -race $PKG
+
+* How to get started
+
+Start with the tour, [[https://tour.golang.org][tour.golang.org]]
+
+Read [[http://golang.org/doc/effective_go.html][Effective Go]]
+
+Online communities
+
+- [[http://reddit.com/r/golang][reddit.com/r/golang]]
+
+- [[https://groups.google.com/forum/#!forum/golang-nuts][golang-nuts mailing list]]
+
+- [[https://plus.google.com/communities/114112804251407510571][Go+ on G+]]
+
+* Questions
+
+This talk is online
+
+[[http://talks.godoc.org/github.com/davecheney/presentations/introduction-to-go.slide][talks.godoc.org/github.com/davecheney/presentations/introduction-to-go.slide]]
+
+All the links inside the talk are clickable, I encourage you to follow them.
+
+Also, please take the time to visit
+
+- Rob Pike's [[http://talks.golang.org/2014/hellogophers.slide][Gophercon 2014 Keynote]]
+
+- Francesc Campoy Flores' [[http://talks.golang.org/2013/go4python.slide][Go for Pythonistas]] and [[http://talks.golang.org/2014/go4java.slide][Go for Javaïstes]]
+

@@ -1,0 +1,6 @@
+package main
+
+// START OMIT
+const Ln2 = 0.693147180559945309417232121458176568075500134360255254120680009
+const Log2E = 1 / Ln2 // precise reciprocal
+// END OMIT
