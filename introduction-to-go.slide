@@ -7,6 +7,23 @@ dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
+* Licence and attribution
+
+This talk is an amalgam of a talk I gave to the Canberra Go users group
+
+.link http://go-talks.appspot.com/github.com/davecheney/canberra-gophers/introduction-to-go.slide
+
+and Robert Griesemer's "A Taste of Go"
+
+.link http://go-talks.appspot.com/code.google.com/p/go.talks/2014/taste.slide
+
+From which I borrowed much of the "Program elements" section as Robert's description of the language was much better than my attempt.
+
+As this talk is a derivative, it continues to be licenced under the BSD licence that covers the Go project.
+
+.link http://golang.org/LICENSE
+
+
 * The Go programming language
 
 - Modern
@@ -57,7 +74,6 @@ Stability
 - Pro: Your code you write today will continue to work with newer versions of Go. We assert this on every commit.
 - Con: The bar for adding a new feature is now insurmountably high.
 
-
 * 2012 - now
 
 3 point releases so far; Go 1.1, 1.2, and 1.3.
@@ -74,7 +90,7 @@ New platforms and new architectures added.
 
 * Hello, World!
 
-.play taste/hello.go
+.play introduction-to-go/hello.go
 
 # Unicode
 # Programs are organized in packages
@@ -85,7 +101,7 @@ New platforms and new architectures added.
 
 * Hello, World! Internet-style
 
-.play taste/hellohttp.go
+.play introduction-to-go/hellohttp.go
 
 * Program elements
 
@@ -102,6 +118,7 @@ New platforms and new architectures added.
 
 Compiler complains if a constant doesn't fit where it is _used_.
 
+.link http://blog.golang.org/constants
 
 * Variables
 
@@ -274,28 +291,28 @@ Not shown: break, goto, continue, fallthrough
 
 Methods are functions with a _receiver_ parameter:
 
-.code taste/point.go /String START/,/String END/
+.code introduction-to-go/point.go /String START/,/String END/
 
 The receiver binds the method to its _base_type_ (Point):
 
-.code taste/point.go /Point START/,/Point END/
+.code introduction-to-go/point.go /Point START/,/Point END/
 
 Methods are invoked via the usual dot notation:
 
-.play taste/point.go /main START/,/main END/
+.play introduction-to-go/point.go /main START/,/main END/
 
 
 * Methods can be defined for any user-defined type!
 
 For the Weekday type:
 
-.code taste/weekday.go /type START/,/type END/
+.code introduction-to-go/weekday.go /type START/,/type END/
 
 Define String method on Weekday:
 
-.code taste/weekday.go /String START/,/String END/
+.code introduction-to-go/weekday.go /String START/,/String END/
 
-.play taste/weekday.go /main START/,/main END/
+.play introduction-to-go/weekday.go /main START/,/main END/
 
 Method calls via non-interface types are statically dispatched.
 
@@ -322,12 +339,12 @@ Examples:
 
 * Using interfaces
 
-.code taste/stringer.go /Stringer START/,/Stringer END/
+.code introduction-to-go/stringer.go /Stringer START/,/Stringer END/
 
 Both Weekday and Point define a String method, so values of both can be assigned to
 a variable of Stringer type:
 
-.play taste/stringer.go /main START/,/main END/
+.play introduction-to-go/stringer.go /main START/,/main END/
 
 Method calls via interface types are dynamically dispatched ("virtual function call").
 
@@ -345,11 +362,11 @@ Method calls via interface types are dynamically dispatched ("virtual function c
 
 * A simple example
 
-.code taste/concurrency1.go /f START/,/f END/
+.code introduction-to-go/concurrency1.go /f START/,/f END/
 
 Function f is launched as 3 different goroutines, all running concurrently:
 
-.play taste/concurrency1.go /main START/,/main END/
+.play introduction-to-go/concurrency1.go /main START/,/main END/
 
 
 * Communication via channels
@@ -376,19 +393,18 @@ Channel operations synchronize the communicating goroutines.
 
 Each goroutine sends its results via channel ch:
 
-.code taste/concurrency2.go /f START/,/f END/
+.code introduction-to-go/concurrency2.go /f START/,/f END/
 
 The main goroutine receives (and prints) all results from the same channel:
 
-.play taste/concurrency2.go /main START/,/main END/
+.play introduction-to-go/concurrency2.go /main START/,/main END/
 
 * Packages
 
-Packages define boundaries for compilation and reuse.
-
-The unit of compilation is the package, not the file.
-
-You import a whole package, not a type, or a symbol.
+- Packages define boundaries for compilation and reuse.
+- Packages are directories containing source code.
+- The unit of compilation is the package, not the file.
+- You import a whole package, not a type, or a symbol.
 
 Packages you import are referenced by their package's prefix.
 
@@ -398,48 +414,18 @@ Packages you import are referenced by their package's prefix.
 		fmt.Printf("Hello %s\n", "world)
 	}
 
-Circular dependencies are not allowed.
-
-- If you are running into issues of circular imports in your program, you may have overused packages.
-
-* There's a lot more!
-
-- Extensive standard library
-
-- Powerful tools
-
-.link http://play.golang.org/p/Au02fFpYdf
-# playground, gofmt
-
-- Multi-platform support
-
-.link http://build.golang.org/
-
-- Great documentation
-
-.link http://tour.golang.org/#1
-
-* Garbage collected
-
-Eliminates the bookkeeping errors related to ownership of shared values.
-
-Eliminates an entire class of use after free and memory leak bugs.
-
-Enables simpler, cleaner, APIs.
-
-Performance is good and getting better every release, plans are afoot for a new concurrent compacting collector in the next 12 months.
-
+Import cycles are not permitted.
 
 * Language implementation
 
 * Small, well polished standard library
 
-.link http://golang.org/pkg/
-
 - The usual libc/libm cast of characters.
 - Support for networking, HTTP, TLS.
 - Support for common encodings, XML, JSON.
 - Support for compression, tar, etc.
+
+.link http://golang.org/pkg/
 
 To a first order approximation, the std lib provides only the things needed to build Go itself.
 
