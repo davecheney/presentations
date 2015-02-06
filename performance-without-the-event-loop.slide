@@ -1,0 +1,49 @@
+High performance servers without the event loop
+OSCON, Portland
+21 Jul 2015
+
+Dave Cheney
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* Introduction
+
+I got into Go because it offered performance.
+
+As a BOFH in a past life the most stressful times in my career were defined by unstisfying performance.
+
+While there were other aspects of the language that appealed to me; minimalism, simplicity, orthogonality; it was the performance that was the deciding factor.
+
+Go is a general purpose language currently in use in a wide range of application domains. But if we look back to 2009, to the introductory material specificaly mentions "a language for solving problems of Google's size -- and Google has large problems".
+
+-- And that means, "writing servers"
+
+This then is the subject of my talk, features of the Go language and runtime environemnt that (mostly) transparently to the programmer allow you to write high performance servers with simple, structured programming, code.
+
+
+* Topics
+
+- Escape Analysis
+- Stack management
+- Processes, threads, and goroutines
+- Integrated network poller
+
+* Escape analysis
+
+Allocation
+
+- How many bytes, what is the footprint, per connection, per client, per request ?
+
+
+* Conclusion
+
+All of these features are (mostly) transparent to the programmer.
+
+Go lets you write high performance servers with simple, imperative, code.
+
+The langauge and the runtime take care of handling blocking i/o.
+
+
+
+
