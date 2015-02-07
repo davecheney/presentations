@@ -1,4 +1,4 @@
-Go, a language for getting things done
+Simplicity, and ideas that Go left behind
 Closing Keynote, Gophercon India
 21 Feb 2015
 
@@ -22,15 +22,19 @@ http://dave.cheney.net/
 
 Hello, my name is Dave. I'm a programmer, and Go contributor from Sydney, Australia.
 
-It is my honor to be your final speaker for today.
+It is my honor to be your final speaker for today, and after having the priviledge of listening to the presentations from my fellow speakers I have the inenviable problem of not repeating anything that they have said.
 
 I'm lucky enough that I get to program in Go for my day job, and in my spare time, well, that's pretty much dedicated to Go as well.
+
+I've been involved in porting Go to several new platforms, I've written and spoken a lot about Go performance, but, and I hope this doesn't dissapoint you, I'm not going to speak about any of those things today.
+
+* Linked In image
 
 [ show picture of linked in ]
 
 This is me.
 
-Why do I have a job ? What defines me as senior ?
+What defines me as senior ? Why do I have a job ?
 
 Senior generally implies advanced age -- which is certainly true -- but more accurately it defines a side effect -- I have a job because of my experience; experience gained over many years -- or if we’ve being truthful -- making mistakes.
 
@@ -38,13 +42,7 @@ I have a job, I have can parley my skills because I carry with me a lifetime of 
 
 What does this little monologue have to do with Go ?
 
-Go reintroduces, or at least rediscovered some very old ideas.
-
-November last year, Go turned 5 years old as a public project.
-
-In these 5 years, less if you consider that the language only reached 1.0 in April of 2012, scarcely three years ago, Go, as a language, and a proposition to programmers and development teams, has been wildly successful.
-
-I've been involved in porting Go to several new platforms, I've written and spoken a lot about Go performance, but, and I hope this doesn't dissapoint you, I'm not going to speak about any of those things today.
+Go reintroduces, or at least rediscovered some very old ideas, ideas promulgated by the experience of it's design team, influenced by lifetimes of experience as programmers involed in the trade, and craft, of software development.
 
 * Thesis
 
@@ -52,25 +50,31 @@ I want to open my presentation with a proposion.
 
 "Most programming languages start out aiming to be simple, but end up just settling for being powerful." -- https://twitter.com/davecheney/status/539576755254611968
 
-Being passionate about Go means being passionate about language advocacy, and a natural hazzard of pondering too long about the nature of programming are statements like these.
+Being passionate about Go means being passionate about language advocacy, and a natural hazzard of dwelling too long on the nature of programming results in statements like these.
 
-But underlying the pity form enforced by a tweet, I believe there is a gem of truth. I cannot think of a language introduced in my life time that didn't purport to be simple. To offer as a justification and enticement it's inherent simplicity.
+But underneith the pithy form enforced by a tweet, I believe there is a gem of truth. I cannot think of a language introduced in my life time that didn't purport to be simple. All new langauges offer as a justification and an enticement, they're inherent simplicity.
 
-On the other hand, I cannot also point to a language introduced with a catch cry of complexity; more complexity than its contemporaries.
+On the other hand, I cannot also point to a language introduced in the same time frame with the rallying call of complexity; more complexity than its contemporaries -- but many instead claim to be powerful.
 
-The idea of proposing a language which offered high levels of inherent complexity is, well, laughable. 
+The idea of proposing a language which offered higher levels of inherent complexity is clearly laughable, yet this what so many contemporary languages have become; complicated, baroque messes that defines the inspiration for their replacement.
 
-I mean, tar'ing languages as complex is one of the highest forms of rejection of that language. I should know, I've made more than my share of cheap shots at C++ recently.
+In language advocacy, accusing a language as being complex is one of the highest forms of rejection. I should know, I've made my share of cheap shots at C++.
 
-So, every language starts out with simplicity as a goal, yet many of them fail, eventually falling back on the expressiveness or power of the langauge as justification for a failure to remain simple.
+So, every language starts out with simplicity as a goal, yet many of them fail, eventually falling back on the expressiveness or power of the language as justification for a failure to remain simple.
 
-Any why is this ? One reason, one major reason, I believe is that to be thought successful, a language should have to be a superset of their features of its prdecessors ?
+Clumsy syntax and non orthogonality is justified by the inherent complexity of capturing neuanced corner cases of the language, many of them are self inflicted by years of careless feature creap.
 
-If you would listen to language critics, they demands that any new language should push forward the boundaries of language theory. But really this appears to be a request for your, new, language to include all the bits they felt were important in their favorite old language, while still holding all the promise of whatever it was that drew them to your new language I the first place.
+Any why is this ? Why do so many langauges, launched with idealistic goals, fall afoul of their own self inflicted complexity ?
 
-Why would a new language be proposed if not to address limitations of it’s predecessors? This in itself seems a contradiction
+One reason, one major reason, I believe, is that to be thought successful, a language should be a superset of the features of its prdecessors.
 
-Must simplicity be abandoned to deliver a complete programming language. ?
+If you would listen to language critics, they demand that any new language should push forward the boundaries of language theory. But really this appears to be is a request your, new, should language to include all the bits they felt were important in their favorite old language, while still holding true to the promise of whatever it was that drew them to your new language I the first place.
+
+"I want a language that is simple, but incoporates a full Hindley–Milner type system"
+
+Why would a new language be proposed if not to address limitations of it’s predecessors?
+
+Must simplicity be abandoned to deliver a complete programming language ?
 
 * Quote
 
@@ -78,113 +82,116 @@ Must simplicity be abandoned to deliver a complete programming language. ?
 
 And I believe this is fundamentally an incorrect view.
 
-Why instead should a new langauge not be a refinement of the cornucopia of features presented in existing languages, leaning from history, rather than repeating it.
+Why should a new language not aim to represent a refinement of the cornucopia of features presented in existing languages, leaning from it's predecessors, rather than repeating their folly.
 
 Language design is about trade offs, you cannot have your cake and eat it too.
 
-And the designers chose to do this, not for a malicious reason, but because they explicitly chose to be minimalist, the choice to include a feature was not the default, it was, as Pike said in his "less is exponentially more talk" of twenty twelve, the choice to include a feature was made only when all three, Robert, Ken and himself,  were convinced of its utility.
-
-I challenge the notion that every main stream langauge must be a superset of the incumbents it seeks to replace.
+So I challenge the notion that every main stream langauge must be a superset of the incumbents it seeks to replace.
 
 * Simplicity
 
 This brings me back to my tweet. Go is a language that chooses to be simple, and it does so by choosing to not include many features that other programming languages haveacustomed their users to believing are essential.
 
-So this will be the thesis for my talk. Go is a successful language in part, no small part I believe, because of its decision to not include many of the popular language features which programmers have become accustomed to expecting,
-
-This talk is also, a rejection of the notion that to be successful, a new language be a superset of the popular features of the languages that it was inspired to replace.
+Go is a successful language in part, in no small part I believe, because of its decision to not include many of the popular language features which programmers have become accustomed to expecting,
 
 So the subtext of my thesis would be; what makes Go successful is what has been left out of the language, just as much as what has been included.
 
-* Simplicity, defined
+* Simplicity is not a new idea
 
-“you cannot add simplicity after the fact -- simplicity is only gained from taking things away (removing them) -- this is the subject of my talk.”
+“you cannot add simplicity after the fact -- simplicity is only gained from taking things away”
 
 Simplicity is not a new idea, although Go is the most recent language to place it at the forfrount.
 
-Simplicity is not a new idea, find references from the 70’s and 80’s
+Algol68 and pl/1, monuments to the second system syndrome
+
+- counteracted by C and pascal
+
+C++, an language which was already reguarded in 1995 as too complex, was superceeded by Java
+
+* Simplicity is not easy
 
 Simplicity does not necessarily mean “easy”, but it may mean “straight forward” or uncomplicated. 
 
-- lack of semantic acourtriments in the language
-- a minimum of labour saving shortcuts, which confuse new comers.
+Something which is simple may be time consuming; but reliable
 
-Don’t mistake simple for “crude”
+A simple programming language may lack of semantic acourtriments in order to lower the bar to new devotees
 
-Simple parts connected by well defined interfaces. 
+A simple programming langauge may choose to limit the number of semantic conveniences which offer a minor improvement for experienced users at the cost of alienating newcomers.
 
-Well defined interfaces are more likely to be small interfaces; the prevailing idiom are interfaces with single methods.
+As I said above, simple is not a synonym for "easy", nor is achieving a design which is simple an easy task.
 
-And small interfaces lead to simple implementations
+* Don’t mistake simple for “crude”
 
-A lack of simplicity is, of course complexity. Friction. a force which acts against you getting things done.
+Just because something may be simple, don't mistake it for crude.
+
+While lasers are fabulous technology used in medicine and manufacturing, a chef will always use a knife to prepare food, an activity much more fundamental, and far more common place.
+
+// TODO: time keeping, mechanical clock vs digital watch
+
+* Simplicity is a goal, not a by product
+
+You should design with simplicty as a goal, not to be pleasently surprised when your solution happens to be simple.
+
+A lack of simplicity is, of course complexity. And complexity is friction, a force which acts against you getting things done.
 
 * Choose simplicity over completeness. 
 
 There is an exponential cost in completeness.
 
-The 90% solution, one that remains orthogonal with some things which are not possible, vs a langauge attempting to offer 100% of it's capabilities to every possible permutation or possiblity is more complex because as we engineers know, that last 10% costs another 90% of the effort.
-
-Finish section with “Perfection is achieved when there is nothing left to take away”.
-
-"Simplicity is the ultimate sophistication" -- Leonardo DiVinci
-
+The 90% solution, one that remains orthogonal with some things which are not possible, vs a langauge attempting to offer 100% of its capabilities to every possible permutation will be inherently more complex, because as we engineers know, that last 10% costs another 90% of the effort.
 
 * Good programmers write simple programs
 
+Good programmers write simple programs. 
+
+They bring their experience, their knowledge and their failures to new designs, to learn from and avoid mistakes in the future.
+
 Do you have what it takes to write a simple program, or will you settle for a complex one, or a powerful program ?
 
-* Simplicity
+* Simplicity, conclusion
 
-From gocon
-tip from the experts: good programmers make simple things
+"Simplicity is the ultimate sophistication" -- Leonardo DiVinci
 
-70's and 80's pledge the gospel of simplicity
+Go is a language designed to be simple. It is a feature, not a by product, or an accident. This design for simplicity is woven through every aspect of the language.
 
-the message is clear, good programmers write simple programs
+* Everything is an object
 
-One of the idea of also simplicity interface
-
-A collection of just a method, data is not. It's complicated than expected and I'm a simple idea.
-
-Thanks to the interface, I have realized the true composability such as the Unix pipe. #gocon
-
-Just interface became very Go distinctive features of.
-io.Reader and io.Writer became architecture that connects between the true component. #gocon This is where it is believed from the unix philosophy
-
-Package also is one of the idea of simplicity.
-Took really time to package design.
-But this by a component of, scalability, share, became possible hiding and isolation of data #gocon
-
-Idea of simplicity that there are other:
-- Import of package is easy
-- I use Fpirntf to the direct network connection
-
-Conclusion:
-
-Simplicity is difficult to design.
-To make the simplicity becomes complicated in.
-But simplicity Once if make properly become a powerful feature. #gocon
-
+* Everything is an object
 
 Here is a question for the audience. Who said "Everything is an object" ?
 
 - Java programmers
 - Smalltalk programmers
 
+Language evolution
+
+- earliest langauges, speed coding - grace hopper, glofied languages
+- algol, pl/1, early missteps, a form of second system design where complexity and implementation overwhelmed the programmers and the hardware of the time
 
 
 [ https://twitter.com/ID_AA_Carmack/status/53512300451201024 ]
+
+* Go doesn't force you to use objects
+
+Data and behavior are different things
+
+we have struts which represent pure data, and interfaces which represent pure behavior
+
+* Everything is not an object
+
+So maybe everything is not always an object.
 
 (10 minutes)
 
 Inrerfaces let you talk about behavior, _not_ type. _Has a_, not _Is a_.
 
-* Ideas which Go left behind
-
 * Programming languages as part of an environment
 
 * A language for collaboration
+
+- talk about how go allows teams to reduce complexity
+- complexity budget
+- technical debt ? what about complexity debt
 
 - all go code is go formatted (by convention)
 
@@ -247,11 +254,6 @@ As well as cross platform as the superset of the expected capabilities, not the 
 * Unix design philosophy applied to Go.
 
 * Go is designed for programming in the large
-
-- talk about how go allows teams to reduce complexity
-- complexity budget
-- technical debt ? what about complexity debt
-
 * How to build a Go community
 
 Investigate the social issues beyond just a language that gets things done.
@@ -282,13 +284,6 @@ Consider this to the variety of error handling
 
 * large teams by their very nature produce large code bases
 
-* Love the language you have
-
-(5 minutes)
-
-- code reuse
-- interroperability
-
 * CLI renesaunce
 
 What is something Go left behind ? GUI's
@@ -316,9 +311,6 @@ Rewriting code is time consuming, risky, and sometimes of dubious benefit. So wh
 Does your heart sink when you try the latest Hacker News or Reddit bauble only find it requires node.js, or some assortment of Python or Ruby dependencies ? Mine does.
 
 For Go programmers dependency managament remains an open wound, but for users of programs written in Go their life just got a whole lot easier; compile the program, scp it to the server, job done.
-
-As Andrew Gerrand noted in the fifth birthday announcement last month
-“Go arrived as the industry underwent a tectonic shift toward cloud computing, and we were thrilled to see it quickly become an important part of that movement.”
 
 As muted above
 Simple, and fast
@@ -357,6 +349,9 @@ For the last few decades, since the rise of interpreted languages, or virtual ma
 Slow languages, or bloated deployments encourage programmers to pile additional functionality into one application to amoratise the cost of the installation and setup support load.
 
 * A programming environment, not [just] a programming language
+
+It may appear heretical to suggest this, as many of the metrics that we, as professional software developers are judged by; lines of code written, changed or deleted; the number of revisions committed to source control, etc. But writing a program, or more accurately solving a problem; delivering a solution, has little to do with the final act of entering the program into the computer.
+
 not just a place to write source code
 
 * Programming languages as part of an environment
@@ -370,27 +365,12 @@ Ruby and python ate better citizens, but are hamstrung by the clumsy deployment 
 
 Why has go been a success? Why has to enabled us to be here today, this weekend, for the latest in a growing sequence of conferences
 
-* Really learn the language that we have today
-
-I am going to be straight up with you. I am not a polyglot. This is not comment on those who may choose to describe themselves as such, but it’s not for me. I feel that it is better to engross yourself with a topic wholely and fully, up to your kneck
-show examples of novel syntax constructions
-karl’s func() closure
-brainman’s multiline var declaration
-
 * implicit integer conversions
 
 - No implicit conversions
 - Seems small, especially if you mainly work in book keeping buisiness logic
 - but is hurely important if you do low level bit level twiddling
 - C's implicit integer widening (and narrowing) was a mindfield of bugs where code would be _legally_ miscompiled
-
-* Orthogonality
-
-* many combinations
-
-There was s a lot to love in pur language, dont be able n such hurry to dismiss it before you have discoverered its beauty and 
-
-Learn to love the language. _really_ learn the langauge, it'll take longer than you would think to _really_ understand the langauge. Learn to love the choices of the designers. Go will make you a better programmer.
 
 * OO 
 
@@ -418,19 +398,9 @@ Go does assume some level of responsiblity from the programmer, it won't provide
 
 
 
-An opportunity to learn from and collaborate with a set of amazingly talented human beings, tall.about google and community.
-An opportunity to get in one the ground floor, and make a concrete impact in a project that I was truly invested in. To feel a sense of ownership, rather than to be merely a consumer.
-If you had asked me in 2009 what my ambitions were in the future, I doubt I would have said author or public speaker, yet both of these have turned out to be true and consume a growing amount of my time.
-An opportunity to change careers, from system administrator to programmer.
-An opportunity to travel, to attend and sometimes speak, at conferences around the world as the popularity of the language, as someone who lives INA country that is a long way from most places, this afforded me a chance to grow my horizons, to see a world larger than the 23 million of my fellow Australians, huddled (mostly) on the eastern seabosrd of this strange island.
-To be a part of a movement toward simplicity, a rediscovery of programming without
-Minimalism. Although given the pedigree of the authors, and their track record, hardly surprising.
-
 What does Carmack mean ? 
 
 * A language for collaboration 
-
-"Go is a langauge designed by Google to help solve Google's problems; and Google has big problems" -- Rob Pike, 2012
 
 Go is a small langauge, but it's unashamadly a language intended to be used on big projects.
 
@@ -441,8 +411,6 @@ The truth is that large software teams, through their very nature, write large p
 - Controlling imports, which speaks to controlling build times.
 - Go format
 - one build system
-
-
 
 * Why is go a language for collaboration ?
 
@@ -464,17 +432,23 @@ As with many transformations, this encode of the source program is not lossless,
 
 Beyond a certain size, the most important part of a language is it's community.
 
-By supporting conferences like Gophercon, here this weekend, and
-
 * Conclusion
 
 (5 minutes)
 
-* Go is a language for programmers who want to get things done (tm).
+* Go is a simple language
+
+Go is a simple language
+
+This wasn't an accident. This was a deliberate desision, executed brilliantly by the Go authors who struck a chord with pragmatic developers.
 
 * Go is growing. 
 
-- In 2014 there were six international Go conferences.
+November last year, Go turned 5 years old as a public project.
+
+In these 5 years, less if you consider that the language only reached 1.0 in April of 2012, scarcely three years ago, Go, as a language, and a proposition to programmers and development teams, has been wildly successful.
+
+- In 2014 there were five international Go conferences. In 2015 there are six, so far, plus
 
 [ google trends graph ]
 
@@ -482,12 +456,71 @@ By supporting conferences like Gophercon, here this weekend, and
 - reddit.com/r/golang
 - Go projects reguarly feature on hacker news
 - Go featured in mainstream tech press 
+- Go training in both professional and academic contexts.
+- Over 100 meetups around the world
+- [a] Sites like Damien Gryskies gophervids helping to desceminate the material produced by those meetups and conferences.
 
 - Community events like GopherGala 
 
+* Go is the right language at the right time.
+
+As Andrew Gerrand noted in the fifth birthday announcement blog post
+“Go arrived as the industry underwent a tectonic shift toward cloud computing, and we were thrilled to see it quickly become an important part of that movement.”
+
+Ultimately Go's success is directly attributable to the factors that motivated it's designers. As Rob Pike noted in his 2012 Splash paper. 
+
+"Go is a langauge designed by Google to help solve Google's problems; and Google has big problems" -- Rob Pike, 2012
+
+And it turns out that Go's design choices are applicable to the problems that an increasing number of professional programmers face today.
+
+Ultimately a langauge for the problems that exist in commercial programming, not language theory.
+
+- Efficient excution
+- Powerful abstraction through simple interfaces
+- Effective collaboration on large, distributed, projects
+
+* Go is a language for programmers who want to get things done (tm).
+
+[ Deloris Herbig picture ]
+
+Put simple, Go is a language for programmers who want to get things done.
+
 * Take the time to really learn the language
 
-Go is a language built with care and moderation. The language is what it is because of the deliberate decisions that were made at every step. Language design is about trade offs, learn to appreciate the care in which it’s features were chosen and the skill in which they were combined.
+This paper describes the langauge we have today. A language built with care and moderation. The language is what it is because of the deliberate decisions that were made at every step. Language design is about trade offs, learn to appreciate the care in which Go's features were chosen and the skill in which they were combined.
 
+While the langauge strives for simplicity, and is easy to learn, it does not immediately follow that the langauge is trival to master.
+
+There was s a lot to love in our language, don't be in such a hurry to dismiss it before you have explored it fully.
+
+Learn to love the language. _Really_ learn the langauge, it'll take longer than you would think to _really_ understand the langauge. Learn to appreciate the choices of the designers. Go will make you a better programmer.
+
+Thank you.
+
+.fin
+
+* Notes
 
 The unix way; with interfaces
+
+- profressional programmers use professional tools. Fast programming langauges, efficient solutions, 
+
+And the designers chose to do this, not for a malicious reason, but because they explicitly chose to be minimalist, the choice to include a feature was not the default, it was, as Pike said in his "less is exponentially more talk" of twenty twelve, the choice to include a feature was made only when all three, Robert, Ken and himself,  were convinced of its utility.
+
+Simple parts connected by well defined interfaces. 
+
+Well defined interfaces are more likely to be small interfaces; the prevailing idiom are interfaces with single methods.
+
+And small interfaces lead to simple implementations
+
+* Unifying ideas
+
+Interfaces in Go are a unifying force; the are _the_ means of describing abstract behaviour.
+
+Thanks to the interface, I have realized the true composability such as the Unix pipe. #gocon
+
+io.Reader and io.Writer became architecture that connects between the true component. #gocon This is where it is believed from the unix philosophy
+
+Idea of simplicity that there are other:
+- I use Fpirntf to the direct network connection
+
