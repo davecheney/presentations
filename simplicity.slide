@@ -161,6 +161,52 @@ Go is a language designed to be simple. It is a feature, not a by product, or an
 
 (10 minutes)
 
+* Definitions
+
+What do we mean when we say objects ?
+
+The first use of this term that I was surprised to read, was 1978 - the C programming language.
+
+[ slide: show quote // chapter two “the C programming langauge”, first published in 1978 ]
+
+Now, 37 years later, I don’t think anyone will say that the object that Kernighan and Ritchie were discussing is what they consider to be an object in the modern parlance.
+
+To avoid a debate about what is, and what is not an object, and thus what it means to be object oriented -- or as I prefer, to have object semantics. Lets’ quickly recap the defining property of objects.
+
+[ slide
+
+An object has both state (data) and behavior (code).
+
+]
+
+Objects have both state, their fields, and behavior, their methods.
+
+That’s it.
+
+Ideas like inheritance, polymorphic dispatch, these are nice to haves, but are not the defining feature of object oriented semantics -- it is the fusion of state and behavior which distinguishes object oriented style from the procedural.
+
+[ slide: timeline
+
+     C (72)
+     C++ (80 ? ) - sidenote, c with classes
+     Java
+     
+     Perl
+     Python
+     Ruby
+     Javascript
+]
+
+timeline shows the progression from languages without object semantics, to languages with optional object semantics, to languages with _manditory_ object semantics.
+
+There is an implicit expectation that being entirely OO oriented is good, in fact, necessary to be considered a modern language.
+
+And this is a concept I reject, and especially when discussing Go. In fact my respect for Go is seated in the fact that it was a language which rejected, as I mentioned earlier, the orthodoxy that to be accepted it must incorporate all the ideas de jour of it’s contemporaries.
+
+Go is a language of refinement, minimal to the point of being stark. A language of contemplation, a language of reevaluation.
+
+So, just as Go has demonstrated that inheretence is not necessary for composing effective programs, an idea which, compared to the other critisisms commonly leveled at Go appears to have been accepted favorably -- possibly giving my position credence.
+
 * Everything is an object
 
 Here is a question for the audience. Who said "Everything is an object" ?
@@ -169,7 +215,17 @@ Here is a question for the audience. Who said "Everything is an object" ?
 - Smalltalk programmers
 - Ruby programmers
 
-Language evolution
+Who didn't say this ?
+
+- C programmers
+- Fortran programmers
+- Pascal Programmers
+
+They said this because their languages did not support objects, they did not support the concept of binding state and behavior into a single unit.
+
+Now, in the middle we have most of the other languages, D, rust, python, Julia, Lua, and of course go.
+
+And that means we have a choice, a choice of when to use function semantics and when to use object semantics.
 
 - earliest langauges, speed coding - grace hopper, glofied languages
 
@@ -209,6 +265,37 @@ What does Carmack mean ?
 Data and behavior are different things
 
 We have struts which represent pure data, and interfaces which represent pure behavior
+
+* Functions not methods
+
+easier to black box test
+
+* Data structures are greater than code. 
+
+public members over getters and setters
+write programs that write programs, not code generation
+encapsulate ideas as programs - regexp interpreter
+
+* Interfaces, the unix way
+
+[ https://twitter.com/jmoiron/status/532314843689132032 ]
+
+In 1964 Doug McIlroy postulated about the power of pipes for composing programs , this is four years before Unix was written mind you.
+
+In the last few decades programmers have lost the ability to compose prograns, lost behind waves of run time dependencies and bloated frameworks that degrade the ability to move quickly and experiment cheaply. 
+
+We all know that methods and functions should take interfaces not concrete values.
+
+But if your method does not do anything with its receiver then it remains trapped on the receiver, when it could be reused by other callers. 
+
+
+In 1964 Doug McIlroy postulated about the power of pipes for composing programs , this is four years before Unix was written mind you.
+
+In the last few decades programmers have lost the ability to compose prograns, lost behind waves of run time dependencies and bloated frameworks that degrade the ability to move quickly and experiment cheaply. 
+
+We all know that methods and functions should take interfaces not concrete values.
+
+But if your method does not do anything with its receiver then it remains trapped on the receiver, when it could be reused by other callers. 
 
 * Everything is not an object
 
@@ -341,13 +428,22 @@ Go simply doesn't have this problem either, just the source, which has everythin
 
 Putting aside the contentious issues of package versioning, once you _have_ the source in your GOPATH, integrating with ANY piece of third party Go code is just an import statement away.
 
-* Real machines not virtual machines
+* Sans runtime
 
 Does your heart sink when you try the latest Hacker News or Reddit bauble only find it requires node.js, or some assortment of Python or Ruby dependencies ? Mine does.
 
 For Go programmers dependency managament remains an open wound, but for users of programs written in Go their life just got a whole lot easier; compile the program, scp it to the server, job done.
 
 As well as cross platform as the superset of the expected capabilities, not the intersection.
+
+* Real machines not virtual machines
+As muted above
+Simple, and fast
+
+In the new world of metered usage, the difference between a slow interpreted language, and a nimble compiled Go program is stark.
+
+Nobody would consider using Java for CLI apps
+
 
 * Unix design philosophy applied to Go.
 
@@ -369,14 +465,6 @@ In October, Jingwen Owen Ou, developer program member at Github,announced that t
 That same month, MongoDB announced they had rewritten their suite of command line tools (mongodump, mongostat, etc) from C++ to Go.
 
 Rewriting code is time consuming, risky, and sometimes of dubious benefit. So why are more and more companies opting for a change ?
-
-* Sans runtime
-As muted above
-Simple, and fast
-
-In the new world of metered usage, the difference between a slow interpreted language, and a nimble compiled Go program is stark.
-
-Nobody would consider using Java for CLI apps
 
 * A command line renesaunce
 
@@ -445,6 +533,8 @@ Ruby and python are better citizens, but are hamstrung by the clumsy deployment 
 (5 minutes)
 
 * Go is a simple language
+
+[ https://twitter.com/Supermighty/status/548897982016663552 ]
 
 Go is a simple language
 
