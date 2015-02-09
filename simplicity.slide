@@ -213,7 +213,9 @@ The inclusion of maps and slices in the language side steps the most basic inter
 
 * Interfaces, the UNIX way
 
-[ https://twitter.com/jmoiron/status/532314843689132032 ]
+.image simplicity/pipe.png 700 _
+
+# [ https://twitter.com/jmoiron/status/532314843689132032 ]
 
 In 1964 Doug McIlroy postulated about the power of pipes for composing programs. This was five years before the first Unix was written mind you.
 
@@ -348,28 +350,33 @@ Go lets you write CLI applications, that in turn enables developers to leverage 
 
 * Go is a simple language
 
-[ https://twitter.com/Supermighty/status/548897982016663552 ]
+.image simplicity/supermighty.png
 
-Go is a simple language
+# https://twitter.com/Supermighty/status/548897982016663552
 
-This wasn't an accident. This was a deliberate decision, executed brilliantly by the Go authors who struck a chord with pragmatic developers.
+# Go is a simple language
+
+# This wasn't an accident.
+
+# This was a deliberate decision, executed brilliantly by the Go authors who struck a chord with pragmatic developers.
 
 * Go is a language for programmers who want to get things done (tm).
 
 "I just get things done instead of talking about getting them done." -- Henry Rollins
 
-Put simply, Go is a language for programmers who want to get things done.
+# Put simply, Go is a language for programmers who want to get things done.
 
 * Go is the right language at the right time.
 
-As Andrew Gerrand noted in his firth birthday announcement 
+# As Andrew Gerrand noted in his firth birthday announcement 
+
 “Go arrived as the industry underwent a tectonic shift toward cloud computing, and we were thrilled to see it quickly become an important part of that movement.” -- Andrew Gerrand
 
-Ultimately Go's success is directly attributable to the factors that motivated it's designers. As Rob Pike noted in his 2012 Splash paper. 
+# Ultimately Go's success is directly attributable to the factors that motivated it's designers. As Rob Pike noted in his 2012 Splash paper. 
 
 "Go is a langauge designed by Google to help solve Google's problems; and Google has big problems" -- Rob Pike
 
-And it turns out that Go's design choices are applicable to the problems that an increasing number of professional programmers face today.
+# And it turns out that Go's design choices are applicable to the problems that an increasing number of professional programmers face today.
 
 * Go is growing. 
 
