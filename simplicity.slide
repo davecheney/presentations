@@ -141,40 +141,43 @@ Do you have what it takes to write a simple program, or will you settle for a po
 
 # (10 minutes)
 
-There is more than just being simple which is attributable to the success of Go, and that is the realisation that for a programming language to be successful, it must ultimately exist inside a larger community.
+# There is more to the success of Go than just being simple.
 
-Is programming and art or a science ? Are we artists or engineers ? While this one question is a debate in itself, I hope you will agree with me that as professionals, it is a little of both; we are both software artists, and software engineers -- and engineers work as a team. 
+# And this is the realisation that for a programming language to be successful, it must coexist inside a larger community.
+
+# Is programming and art or a science ? Are we artists or engineers ? While this one question is a debate in itself, I hope you will agree with me that as professionals, programming is a little of both; we are both software artists, and software engineers -- and as engineers work as a team. 
 
 * A language for collaboration
 
-Large programs are written by large teams, I don't believe this is a contraversial statement. 
+Large programs are written by large teams
 
-The inverse is also true, large teams of programmers, by their nature, produce large code bases.
+# I don't believe this is a contraversial statement. 
 
-Projects with large goals will necesitate large teams, and thus their output will be large.
+# The inverse is also true
 
-This is the nature of our work.
+Large teams of programmers, by their nature, produce large code bases.
+
+# Projects with large goals will necesitate large teams, and thus their output will be comensurate.
+
+# This is the nature of our work.
 
 * Big problems 
 
-Go is a small language, but it is unashamadly a language intended to be used on big projects.
+// TODO need image
 
-This does not mean that Go is not suitable for the single developer working alone, or a small program written for a specific need, but speaks to the fact that a number of the choices within the language are aimed at growing software teams, and their needs.
+# Go is a small language, but it is unashamadly a language intended to be used on big projects.
 
-Ultimately Go is a language for the problems that exist in commercial programming, not language theory.
+# This does not mean that Go is not suitable for the single developer working alone, or a small program written for a specific need, but speaks to the fact that a number of the choices within the language are aimed at growing software teams, and their needs.
 
-# Effective collaboration on large, distributed, projects
-# dependency and deploynment
-# loose coupling
-# Efficient excution
-# technical debt ? what about complexity debt
-# compilation speed
+# Ultimately Go is a language for the problems that exist in todays commercial programming, not language theory.
 
 * Programming languages as part of an environment
 
-It may appear heretical to suggest this, as many of the metrics that we as professional software developers are judged by; lines of code written, changed or deleted; the number of revisions committed to source control, etc. But writing a program, or more accurately solving a problem; delivering a solution, has little to do with the final act of entering the program into the computer.
+# It may appear heretical to suggest this, as many of the metrics that we as professional software developers are judged by; lines of code written, changed or deleted; the number of revisions committed to source control, etc.
 
-Programs are designed, written, debugged and distributed in an environment signficantly larger than the programmer's editor.
+# Writing a program, or more accurately solving a problem; delivering a solution, has little to do with the final act of entering the program into the computer.
+
+# Programs are designed, written, debugged and distributed in an environment signficantly larger than the programmer's editor.
 
 * Code is written to be decoded
 
@@ -182,9 +185,11 @@ Programs are designed, written, debugged and distributed in an environment signf
 
 # The author Peter Siebel suggests that programs are not read, but decoded.
 
-# In hindsight this should have been obvious, we call it 'source code', not 'source literature', the program is _encoded_ into an intermediary form that is somewhere between our concept and the computer's executable notation.
+# In hindsight this should have been obvious, after all we call it 'source code', not 'source literature'.
 
-# As with many transformations, this encoding of the source program is not lossless, some loss of fidelity, some abiguity, some imprecision is present. This is why others reading source code must _decode_ it, to divine the original intention of the programmer.
+# The program is _encoded_ into an intermediary form that is somewhere between our concept and the computer's executable notation.
+
+# As with many transformations, this encoding of the source program is not lossless; some loss of fidelity, some abiguity, some imprecision is present. This is why others reading source code must _decode_ it, to divine the original intention of the programmer.
 
 # Many of the choices relating to the the way Go code is represented as source speak to this impedence mismatch. 
 
@@ -192,53 +197,61 @@ Programs are designed, written, debugged and distributed in an environment signf
 
 * How to build a Go community
 
-Go is a language designed from the beginning to be transposed, transformed and processed, at the source level by tools which are not restricted to the compiler. This has opened fields of analysis and code generation to the wider Go community.
+Pro tip: it starts with
 
-But I believe the regular syntax of a Go source file belies its greatest champion; gofmt. 
+# Go is a language designed from the beginning to be transposed, transformed and processed, at the source level, by tools which are not restricted to the compiler. This has opened up fields of analysis and code generation to the wider Go community.
 
-The set of source code which is accceptable to the compiler is much larger than the set of code which is acceptable to go fmt. 
+# While these tools are impressive, I believe the regular syntax of a Go source file belies its greatest champion;
 
-So, if go formatted represents only a small percentage of valid source code, why is it importnat to use go fmt.
+    go fmt
 
-Part of the reason is to avoid needless debate. Large teams will, by their nature have a wide spectrum of views on many aspects of programming, and source code formatting is on of the most pernitious.
+# The set of source code which is accceptable to the compiler is much larger than the set of code which is acceptable to go fmt. 
 
-Go is a language for collaboration. In a large team, just as in a wider community personal choices are moderated for a harmoneous society.
+# So, if go formatted represents only a small percentage of potentially valid source code, why is it importnat to use go fmt.
 
-So, nearly all go code is go formatted.
+# Part of the reason is to avoid needless debate. Large teams will, by their nature have a wide spectrum of views on many aspects of programming, and source code formatting is on of the most pernitious.
 
-It is formatted not by edict, the compiler is more permissive than gofmt, instead all go code is formatted by convention. Acceptance of this convention is an indicator of alignment with the values of Go.
+# Go is a language for collaboration. So , in a large team, just as in a wider community personal choices are moderated for a harmoneous society.
 
-In fact, code that is not well formatted can be a first order indicator of the suitability of the package. 
+# The outcome is that nearly all go code is go formatted.
 
-Now, I'm not trying to say that poorly formatted code is buggy, but poorly formatted code may be an indication that the authors have not understood the design principials that underscore Go.
+# Importantly it is formatted not by edict, the compiler is more permissive than gofmt, instead all go code is formatted by convention. Acceptance of this convention is an indicator of alignment with the values of Go.
 
-Buggy code can be fixed, but design issues or impedencene mismatches can be much harder to address, especially after it is integrated into your program.
+# In fact, code that is not well formatted can be a first order indicator of the suitability of the package. 
+
+# Now, I'm not trying to say that poorly formatted code is buggy, but poorly formatted code may be an indication that the authors have not understood the design principials that underscore Go.
+
+# Buggy code can be fixed, but design issues or impedencene mismatches can be much harder to address, especially after it is integrated into your program.
 
 * Batteries included
 
-The Go standard library has been called both spartan, and complete; this of course depends on your point of view and your requirements at the time.
+# The Go standard library has been called both spartan, and complete; this of course depends on your point of view and your requirements at the time.
 
-As Go programmers we can pick up any piece of Go writen by anyone in the world and start to read it. This is more than just formatting. 
+# As Go programmers we can pick up any piece of Go writen by anyone in the world and start to read it. This goes deeper than just formatting. 
 
-Go lacks the heavy libraries like Boost. There are no qt base classes, no Gobject. There is no preprocessor to confuse. Domain specific language rarely appear in Go code.
+# Go lacks the heavy libraries like Boost. There are no qt base classes, no Gobject. There is no preprocessor to obfuscate. Domain specific language rarely appear in Go code.
 
-The inclusion of maps and slices in the language side steps the most basic interoperability issues you have when working with C, C++ or Java code bases. All Go code usess these basic building blocks, so all code is accessible to a reader who is versed in the language, not some quaint organisation specfic dialect.
+# The inclusion of maps and slices in the language side steps the most basic interoperability issues you have when working with C, C++ or Java code bases. All Go code usess these basic building blocks, so all Go code is accessible to a reader who is versed in the language, not some quaint organisation specfic dialect.
+
+# At the start of the year, as large portions of the runtime were being rewritten from C to Go, that all Go programmers have obtained a new ability to hack on the Go runtime overnight. 
+
+# As part of the 1.5 cycle the amount of C code in the Go distribution will drop to zero -- now every Go programmer has the skills they need to hack on the compilers, the runtime, the standard library -- you don't need to learn C.
 
 * Interfaces, the UNIX way
+
+# In 1964 Doug McIlroy postulated about the power of pipes for composing programs. This was five years before the first Unix was written mind you.
 
 .image simplicity/pipe.png 700 _
 
 # [ https://twitter.com/jmoiron/status/532314843689132032 ]
 
-In 1964 Doug McIlroy postulated about the power of pipes for composing programs. This was five years before the first Unix was written mind you.
+# In the last few decades programmers have lost the ability to compose programs, lost behind waves of run time dependencies and brittle type heriarchies that degrade the ability to move quickly and experiment cheaply. 
 
-In the last few decades programmers have lost the ability to compose programs, lost behind waves of run time dependencies and brittle type heriarchies that degrade the ability to move quickly and experiment cheaply. 
+# Go packages interact with one another via interfaces. Programs are composed, just like the UNIX shell, by combining packages together.
 
-Packages interact with one another via interfaces. Programs are composed, just like the UNIX shell, by combining packages together.
+# I can use fmt.Fprintf to write formatted output to a network connection, or a zip file, or writer which discards its input. Coversely I can create a gzip reader that consumes data from a http connection, or a string constant. 
 
-I can use fmt.Fprintf to write formatted output to a network connection, or a zip file, or write which discards its input. Coversely I can create a gzip reader that consumes data from a http connection, or a string constant. 
-
-All of these permutations are possible, in McIroy's vision without any of the components having the slightest bit of knowledge about the other parts of the processing chain.
+# All of these permutations are possible, in McIroy's vision without any of the components having the slightest bit of knowledge about the other parts of the processing chain.
 
 However, unlike McIroy's vision where the medium of interchange was text, interfaces provide ways to describe a family of pipe segments.
 
