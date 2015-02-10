@@ -11,17 +11,19 @@ http://dave.cheney.net/
 
 # (5 minutes)
 
-Hello, my name is Dave. I'm a programmer, and Go contributor from Sydney, Australia.
+# Hello, my name is Dave. I'm a programmer, and Go contributor from Sydney, Australia.
 
-It is my honor to be your final speaker for today. After the priviledge of listening to the presentations from my fellow speakers, I find I have the inenviable task of not repeating anything that they have said.
+# It is my honor to be your final speaker for today.
 
-I'm lucky that I get to program in Go for my day job, and in my spare time, well, that's pretty much dedicated to Go as well.
+# After the priviledge of listening to the presentations from my fellow speakers, I find I have the inenviable task of not repeating anything that they have said.
 
-I've been involved in porting Go to several new platforms, I've written and spoken a lot about Go performance, but, and I hope this doesn't dissapoint you, I'm not going to speak about any of those things today.
+# I'm lucky that I get to program in Go for my day job, and in my spare time, well, that's pretty much dedicated to Go as well.
+
+# I've been involved in porting Go to several new platforms, I've written and spoken a lot about Go performance, but, and I hope this is not a dissapointment for you, I'm not going to speak about any of those things today.
 
 * Thesis
 
-.image simplicity/thesis.png
+.image simplicity/thesis.png _ 800
 
 # I want to open my presentation with a proposion.
 
@@ -43,15 +45,15 @@ I've been involved in porting Go to several new platforms, I've written and spok
 
 # One reason, one major reason, I believe, is that to be thought successful, a language should include, somehow, all the popular features of its prdecessors.
 
-# If you would listen to language critics, they demand that any new language should push forward the boundaries of language theory. But really this appears to be a request that your, new, language include all the bits they felt were important in their favorite old language, while still holding true to the promise of whatever it was that drew them to your new language I the first place.
-
-# "I want a language that is simple, but incoporates a full Hindley–Milner type system."
-
 * Quote
 
 "Those who cannot remember the past are condemned to repeat it." -- George Santayana
 
 .image simplicity/history.jpg _ 800
+
+# If you would listen to language critics, they demand that any new language should push forward the boundaries of language theory. But really this appears to be a request that your, new, language include all the bits they felt were important in their favorite old language, while still holding true to the promise of whatever it was that drew them to your new language I the first place.
+
+# "I want a language that is simple, but incoporates a full Hindley–Milner type system."
 
 # I believe this is fundamentally an incorrect view.
 
@@ -79,41 +81,47 @@ I've been involved in porting Go to several new platforms, I've written and spok
 
 * Simplicity is not easy
 
-Simplicity does not necessarily mean “easy”, but it may mean “straight forward” or uncomplicated. 
+# Simplicity does not necessarily mean “easy”, but it may mean “straight forward” or uncomplicated. 
 
-Something which is simple may be time consuming; but reliable.
+# Something which is simple may take a little longer, but it will be reliable.
 
-A simple programming language may choose to limit the number of semantic conveniences which offer a minor improvement for experienced users at the cost of alienating newcomers.
+# Putting this into the context of programming langauges. A simple programming language may choose to limit the number of semantic conveniences it offers to experienced programmers to avoid alienating newcomers.
 
-Conversely a simple programming language may lack of semantic acourtriments in order to lower the bar to new devotees.
-
-As I said above, simple is not a synonym for "easy", nor is achieving a design which is simple an easy task.
+# As I said above, simple is not a synonym for "easy", nor is achieving a design which is simple an easy task.
 
 * Don’t mistake simple for “crude”
 
-Just because something may be simple, don't mistake it for crude.
+.image simplicity/10_ck_chef_hand_10.jpg _ 800
 
-While lasers are fabulous technology used in medicine and manufacturing, a chef will always use a knife to prepare food, an activity much more fundamental, and far more common place.
+# Just because something may be simple, don't mistake it for crude.
+
+# While lasers are fabulous technology used in medicine and manufacturing, a chef would always prefer a knife to prepare food, an activity much more fundamental, and far more common place.
 
 # TODO: time keeping, mechanical clock vs digital watch
 
 * Simplicity is a goal, not a by product
 
+# You should design your programs with simplicty as a goal, not aim to be pleasently surprised when your solution happens to be simple.
+
 "nothing went in [to the langauge], until all three of us [Ken, Robert and myself], agreed that it was a good idea." -- Rob Pike (Gophercon 2014)
 
-You should design with simplicty as a goal, not to be pleasently surprised when your solution happens to be simple.
+# A Rob Pike noted in his "less is exponentially more" presention in 2012, then expanded upon at Gophercon last year. Go was not designed by committee, the choices in the language represented a distilation of the experiences of himself, Robert Griesemer, and Ken Thompson. 
+
+* Complexity
 
 # A lack of simplicity is, of course complexity.
+
+.image simplicity/four_string_braid.jpg
 
 Complexity is friction, a force which acts against getting things done.
 
 * Choose simplicity over completeness. 
 
-There is an exponential cost in completeness.
+# There is an exponential cost in completeness.
 
 # The 90% solution, one that remains orthogonal with some things which are not possible, vs a language attempting to offer 100% of its capabilities to every possible permutation will be inherently more complex, because as we engineers know,
 
-The last 11% costs another 90% of the effort.
+The last 10% costs another 90% of the effort.
 
 * Good programmers write simple programs
 
@@ -127,7 +135,7 @@ Do you have what it takes to write a simple program, or will you settle for a po
 
 "Simplicity is the ultimate sophistication" -- Leonardo da Vinci
 
-Go is a language designed to be simple. It is a feature, not a by product, or an accident. This design for simplicity is woven through every aspect of the language.
+# Go is a language designed to be simple. It is a feature, not a by product, or an accident. This design for simplicity is woven through every aspect of the language.
 
 * Collaboration
 
@@ -365,7 +373,7 @@ Go lets you write CLI applications, that in turn enables developers to leverage 
 
 # This was a deliberate decision, executed brilliantly by the Go authors who struck a chord with pragmatic developers.
 
-* Go is a language for programmers who want to get things done (tm).
+* Go is a language for programmers who want to get things done
 
 "I just get things done instead of talking about getting them done." -- Henry Rollins
 
