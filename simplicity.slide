@@ -11,11 +11,11 @@ http://dave.cheney.net/
 
 # (5 minutes)
 
-# Hello, my name is Dave. I'm a programmer, and Go contributor from Sydney, Australia.
+# Hello, my name is Dave. I'm a programmer and Go contributor from Sydney, Australia.
 
 # It is my honor to be your final speaker for today.
 
-# After the priviledge of listening to the presentations from my fellow speakers, I find I have the inenviable task of not repeating anything that they have said.
+# After the priviledge of listening to the presentations from my fellow speakers, I find myself in the inenviable position of not repeating anything that they have already said.
 
 # I'm lucky that I get to program in Go for my day job, and in my spare time, well, that's pretty much dedicated to Go as well.
 
@@ -23,9 +23,9 @@ http://dave.cheney.net/
 
 * Thesis
 
-.image simplicity/thesis.png _ 800
-
 # I want to open my presentation with a proposion.
+
+.image simplicity/thesis.png _ 800
 
 # Being passionate about Go means being passionate about language advocacy, and a natural hazzard of dwelling too long on the nature of programming results in statements like these.
 
@@ -33,11 +33,11 @@ http://dave.cheney.net/
 
 # On the other hand, I cannot point to a language introduced in the same time frame with the rallying call of complexity; more complexity than its contemporaries -- but many instead claim to be powerful.
 
-# The idea of proposing a language which offered higher levels of inherent complexity is clearly laughable, yet this what so many contemporary languages have become; complicated, baroque, messes that provide the justification for their own inevitable replacement.
+# The idea of proposing a language which offered higher levels of inherent complexity is clearly laughable, yet this what so many contemporary languages have become; complicated, baroque, messes that provide the justification for their own replacement.
 
-# So, every language starts out with simplicity as a goal, yet many of them fail to achieve this goal. Eventually falling back on notions of expressiveness or the power of the language as justification for a failure to remain simple.
+# So, every language starts out with simplicity as a goal, yet many of them fail to achieve this goal. Eventually falling back on notions of expressiveness or power of the language as justification for a failure to remain simple.
 
-# Clumsy syntax and non orthogonality is justified by the inherent complexity of capturing neuanced corner cases of the language, many of them self inflicted by years of careless feature creap.
+# Clumsy syntax and non orthogonality, is justified by the inherent complexity of capturing neuanced corner cases of the language, many of them self inflicted by years of careless feature creap.
 
 # Any why is this ? Why do so many language, launched with sincere, idealistic goals, fall afoul of their own self inflicted complexity ?
 
@@ -57,7 +57,7 @@ http://dave.cheney.net/
 
 # // TODO more examples
 
-# I believe this is fundamentally an incorrect view.
+# I believe that this is a fundamentally incorrect view.
 
 # Why would a new language be proposed if not to address limitations of it’s predecessors?
 
@@ -73,17 +73,17 @@ http://dave.cheney.net/
 
 # This brings me back to my tweet. Go is a language that chooses to be simple, and it does so by choosing to not include many features that other programming languages have acustomed their users to believing are essential.
 
-# So the subtext of this thesis would be; what makes Go successful is what has been left out of the language, just as much as what has been included.Or as Rob Pike put it, "less is exponentially more".
+# So the subtext of this thesis would be; what makes Go successful is what has been left out of the language, just as much as what has been included. Or as Rob Pike put it, "less is exponentially more".
 
 * Simplicity cannot be added later
 
-// TODO picture of foundation drilling bedrock
+.image simplicity/16.gif 450 _
 
 You cannot add simplicity after the fact.
 
-# When raising a new building, engineers first sink long foundations, down to the bedrock to probide a stable foundation for the structure of the building. To not do this, to just tamp the area flat, lay a concrete slab and start construction, would leave the building vulnerable to small disturbances from changes in the local area, at risk from rising damp or subsitence due to changes in environmental conditions.
+# When raising a new building, engineers first sink long foundations, down to the bedrock to provide a stable foundation for the structure of the building. To not do this, to just tamp the area flat, lay a concrete slab and start construction, would leave the building vulnerable to small disturbances from changes in the local area, at risk from rising damp or subsitence due to changes in environmental conditions.
 
-# As programmers, we can recognise this as the parable of leaky abstraction. Just as tall buildings can only be successfully constructed by placing them on a firm foundation, large programs can not be successful if they are placed upon a loose covering of dirt and debris.
+# As programmers, we can recognise this as the parable of leaky abstraction. Just as tall buildings can only be successfully constructed by placing them on a firm foundation, large programs can not be successful if they are placed upon a loose covering of dirt that masks decades of accumulated debris.
 
 # you cannot add simplicity after the fact -- simplicity is only gained by taking things away
 
@@ -107,7 +107,7 @@ Simplicity is not a synonym for "easy", nor is achieving a design which is simpl
 
 # While lasers are fabulous technology used in medicine and manufacturing, a chef would always prefer a knife to prepare food, an activity much more fundamental, and far more common place.
 
-# TODO: time keeping, mechanical clock vs digital watch
+# Compared to the laser, a simple chefs knife may appear unsophisticated, but it represents generations of knowledge in metalergy, manufacturing and usability.
 
 * Simplicity is a goal, not a by product
 
@@ -115,7 +115,7 @@ Simplicity is not a synonym for "easy", nor is achieving a design which is simpl
 
 "nothing went in [to the langauge], until all three of us [Ken, Robert and myself], agreed that it was a good idea." -- Rob Pike (Gophercon 2014)
 
-# A Rob Pike noted at Gophercon last year. Go was not designed by committee, the choices in the language represented a distilation of the experiences of himself, Robert Griesemer, and Ken Thompson, and only once they were all conveninced of the features' utility to the langauge.
+# A Rob Pike noted at Gophercon last year that Go was not designed by committee. The choices in the language represented a distilation of the experiences of Robert Griesemer, Ken Thompson, and himself, and only once they were all conveninced of the features' utility to the langauge.
 
 * Complexity
 
@@ -205,7 +205,7 @@ Large teams of programmers, by their nature, produce large code bases.
 
 # As with many transformations, this encoding of the source program is not lossless; some loss of fidelity, some abiguity, some imprecision is present. This is why others reading source code must _decode_ it, to divine the original intention of the programmer.
 
-# Many of the choices relating to the the way Go code is represented as source speak to this impedence mismatch. 
+# Many of the choices relating to the the way Go code is represented as source speak to this impedence mismatch. The simplicy and regularity of the gramar, while providing few opportunities for individuality, in turn makes it easier for a new reader to decode any Go program and determine its function.
 
 # In fact the language is so regular that the few small conveniences included, like the for range syntax, become gotchas. Non obvious syntactic differnces that require a rule to be memorised for their safe usage.
 
@@ -219,17 +219,15 @@ Pro tip: it starts with
 
     go fmt
 
-# The set of source code which is accceptable to the compiler is much larger than the set of code which is acceptable to go fmt. 
+# What is so important about go fmt, and why is it important to go fmt your source code ?
 
-# So, if go formatted represents only a small percentage of potentially valid source code, why is it important to use go fmt ?
+# Part of the reason is to avoid needless debate. Large teams will, by their nature have a wide spectrum of views on many aspects of programming, and source code formatting is the most pernitious.
 
-# Part of the reason is to avoid needless debate. Large teams will, by their nature have a wide spectrum of views on many aspects of programming, and source code formatting is on of the most pernitious.
-
-# Go is a language for collaboration. So, in a large team, just as in a wider community personal choices are moderated for a harmoneous society.
-
-# This is important because this is a social convention leading to positive reinforcement, which is far more powerful than negative reinforcement via an edict from the compiler writer.
+# Go is a language for collaboration. So, in a large team, just as in a wider community, personal choices are moderated for a harmoneous society.
 
 # The outcome is that nearly all go code is go formatted by convention. Adherence to this convention is an indicator of alignment with the values of Go.
+
+# This is important because it is a social convention leading to positive reinforcement, which is far more powerful than negative reinforcement via a chafing edict from the compiler writer.
 
 # In fact, code that is not well formatted can be a first order indicator of the suitability of the package. 
 
@@ -239,17 +237,11 @@ Pro tip: it starts with
 
 * Batteries included
 
-# The Go standard library has been called both spartan, and complete; this of course depends on your point of view and your requirements at the time.
-
 # As Go programmers we can pick up any piece of Go writen by anyone in the world and start to read it. This goes deeper than just formatting. 
 
-# Go lacks the heavy libraries like Boost. There are no qt base classes, no Gobject. There is no preprocessor to obfuscate. Domain specific language rarely appear in Go code.
+# Go lacks heavy libraries like Boost. There are no qt base classes, no Gobject. There is no preprocessor to obfuscate. Domain specific language rarely appear in Go code.
 
-# The inclusion of maps and slices in the language side steps the most basic interoperability issues you have when working with C, C++ or Java code bases. All Go code usess these basic building blocks, so all Go code is accessible to a reader who is versed in the language, not some quaint organisation specfic dialect.
-
-# At the start of the year, as large portions of the runtime were being rewritten from C to Go, that all Go programmers have obtained a new ability to hack on the Go runtime overnight. 
-
-# As part of the 1.5 cycle the amount of C code in the Go distribution will drop to zero -- now every Go programmer has the skills they need to hack on the compilers, the runtime, the standard library -- you don't need to learn C.
+# The inclusion of maps and slices in the language side steps the most basic interoperability issues you have when working with C or Java code bases. All Go code uses these basic building blocks, so all Go code is accessible to a reader who is versed in the language, not some quaint organisation specfic dialect.
 
 * Interfaces, the UNIX way
 
@@ -267,13 +259,11 @@ Pro tip: it starts with
 
 # All of these permutations are possible, in McIlroy's vision, without any of the components having the slightest bit of knowledge about the other parts of the processing chain.
 
-However, unlike McIroy's vision where the medium of interchange was text, interfaces provide ways to describe a family of pipe segments.
-
-io.Reader and io.Writer became architecture that connects between components that deal with streams of bytes. What interfaces can you design that work with different values ?
+# io.Reader and io.Writer have became architecture that connects between components that deal with streams of bytes. What interfaces can you design that work with different values ?
 
 * Small interfaces
 
-# Interfaces in Go are a unifying force; they are _the_ means of describing behaviour. Interfaces let programmers describe what their program or package does, not _how_ it does it.
+# Interfaces in Go are a unifying force; they are _the_ means of describing behaviour. Interfaces let programmers describe what their package does, not _how_ it does it.
 
 Well designed interfaces are more likely to be small interfaces; the prevailing idiom are interfaces with single methods.
 
@@ -308,7 +298,6 @@ Simple implementations connected by well defined interfaces.
 * Errors and interfaces
 
 # If you've working on some large Go projects you may have come across packages like Canonical's errgo, which provide facilities to apply a stack trace to an error value. 
-
 # I want to be clear that I am remaining neutral on the relative good or badness of this idea.
 
 # What I do want to highlight is even though one piece of code you integrate use fmt.Errorf(), and another a complicated library, from the point of view of the consumer of the language your error handling strategy looks the same. If the err is nil then the call worked.
@@ -335,7 +324,7 @@ Simple implementations connected by well defined interfaces.
 
 * Sans runtime
 
-Does your heart sink when you try the latest project from Hacker News or Reddit only find it requires node.js, or some assortment of Python or Ruby dependencies ? Mine does.
+# Does your heart sink when you want to try the hottest new project from Hacker News or Reddit only find it requires node.js, or some assortment of Python or Ruby dependencies ? Mine does.
 
 # For Go programmers dependency managament remains an open wound, but for users of programs written in Go their life just got a whole lot easier; compile the program, scp it to the server, job done.
 
@@ -343,9 +332,7 @@ Does your heart sink when you try the latest project from Hacker News or Reddit 
 
 * Portability
 
-Go's portability story is like no other language shipping today.
-
-Go’s fresh take on portability, without the requirement to abstract yourself away from the machine you program runs on.
+# Go’s fresh take on portability, without the requirement to abstract yourself away from the machine you program runs on, is like no other langauge available today.
 
 C# isn’t portable, it’s joined at the hip to a Windows host.
 
@@ -353,7 +340,7 @@ Java, Scala, Groovy, and all the rest of the language built atop the JVM may ben
 
 Swift ? Don’t make me laugh, it joins Objective-C in the land of Apple only programming languages. Popular? yes, but portable? no.
 
-The list of supported operating systems and architectures The ability to cross compile a Go program to any of these platforms is similarly unique.
+The list of supported operating systems and architectures The ability to cross compile a Go program to any of these platforms is similarly unique. If you've every worked at a python shop with a late requirement that your application run on Windows, you'll know what I'm talking about.
 
 * Real machines not virtual machines
 
