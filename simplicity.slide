@@ -113,9 +113,9 @@ Simplicity is not a synonym for "easy", nor is achieving a design which is simpl
 
 # You should design your programs with simplicty as a goal, not aim to be pleasently surprised when your solution happens to be simple.
 
-"nothing went in [to the langauge], until all three of us [Ken, Robert and myself], agreed that it was a good idea." -- Rob Pike (Gophercon 2014)
+"nothing went in [to the language], until all three of us [Ken, Robert and myself], agreed that it was a good idea." -- Rob Pike (Gophercon 2014)
 
-# A Rob Pike noted at Gophercon last year that Go was not designed by committee. The choices in the language represented a distilation of the experiences of Robert Griesemer, Ken Thompson, and himself, and only once they were all conveninced of the features' utility to the langauge.
+# A Rob Pike noted at Gophercon last year that Go was not designed by committee. The choices in the language represented a distilation of the experiences of Robert Griesemer, Ken Thompson, and himself, and only once they were all conveninced of the features' utility to the language.
 
 * Complexity
 
@@ -129,7 +129,7 @@ Complexity is friction, a force which acts against getting things done.
 
 # There is an exponential cost in completeness.
 
-# The 90% solution, one that remains orthogonal with some things which are not possible, vs a language attempting to offer 100% of its capabilities to every possible permutation will be inherently more complex, because as we engineers know,
+# The 90% solution, one that remains orthogonal while recognising some things are not possible, vs a language attempting to offer 100% of its capabilities to every possible permutation will be inherently less complex, because as we engineers know,
 
 The last 10% costs another 90% of the effort.
 
@@ -142,6 +142,8 @@ Good programmers write simple programs.
 Do you have what it takes to write a simple program, or will you settle for a powerful program ?
 
 * Simplicity, conclusion
+
+# To steal a quote form Rich Hickey
 
 "Simplicity is the ultimate sophistication" -- Leonardo da Vinci
 
@@ -265,7 +267,7 @@ Pro tip: it starts with
 
 # Interfaces in Go are a unifying force; they are _the_ means of describing behaviour. Interfaces let programmers describe what their package does, not _how_ it does it.
 
-Well designed interfaces are more likely to be small interfaces; the prevailing idiom are interfaces with single methods.
+Well designed interfaces are more likely to be small interfaces; the prevailing idiom are interfaces with a single method.
 
 # Compare this to other languages, say Java which has both interface types and abstract classes, or C++ which only has the latter. 
 
@@ -310,7 +312,7 @@ Simple implementations connected by well defined interfaces.
 
 # Go's lack of Makefile is more than a convenience. It's part of making large interoperable software.
 
-# With other programming languages, when you integrate something, maybe it's something complex, like v8, or something more mundane, like a database driver from your vendor, you're integrating that code into your program, this is obvious, but you are also integrating their build system.
+# With other programming languages, when you integrate something, maybe it's something complex, like v8, or something more mundane, like a database driver from your vendor, you're integrating that code into your program, this part is obvious, but you are also integrating their build system.
 
 # This is a far less visible, and sometimes far more intractable problem. You've introduced not just a dependency on that piece of code, but also on its build system, be it cmake, scons, gnu autotools, what have you.
 
