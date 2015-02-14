@@ -19,7 +19,7 @@ http://dave.cheney.net/
 
 # I'm lucky that I get to program in Go for my day job, and in my spare time, well, that's pretty much dedicated to Go as well.
 
-# I've been involved in porting Go to several new platforms, I've written and spoken a lot about Go performance, but, and I hope this is not a dissapointment for you, I'm not going to speak about any of those topics today.
+# I've been involved in porting Go to several new platforms, I've written and spoken a lot about design and performance, but, and I hope this is not a dissapointment for you, I'm not going to speak about any of those topics today.
 
 * Thesis
 
@@ -33,11 +33,11 @@ http://dave.cheney.net/
 
 # On the other hand, I cannot point to a language introduced in the same time frame with the rallying call of complexity; more complexity than its contemporaries -- but many instead claim to be powerful.
 
-# The idea of proposing a language which offered higher levels of inherent complexity is clearly laughable, yet this what so many contemporary languages have become; complicated, baroque, messes that provide the justification for their own replacement.
+# The idea of proposing a language which offered higher levels of inherent complexity is clearly laughable, yet this is what so many contemporary languages have become; complicated, baroque, messes. A parody of the languages they sought to replace.
+
+# Clumsy syntax and non orthogonality is justified by the inherent complexity of capturing neuanced corner cases of the language, many of them self inflicted by years of careless feature creap.
 
 # So, every language starts out with simplicity as a goal, yet many of them fail to achieve this goal. Eventually falling back on notions of expressiveness or power of the language as justification for a failure to remain simple.
-
-# Clumsy syntax and non orthogonality, is justified by the inherent complexity of capturing neuanced corner cases of the language, many of them self inflicted by years of careless feature creap.
 
 # Any why is this ? Why do so many language, launched with sincere, idealistic goals, fall afoul of their own self inflicted complexity ?
 
