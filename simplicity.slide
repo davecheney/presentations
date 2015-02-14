@@ -7,7 +7,9 @@ dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
-* Opening
+* Hello
+
+.image simplicity/IMG_8124.jpg
 
 # (5 minutes)
 
@@ -91,7 +93,7 @@ You cannot add simplicity after the fact.
 
 * Simplicity is not easy
 
-# Simplicity does not necessarily mean “easy”, but it may mean “straight forward” or uncomplicated. 
+# Simplicity does not mean “easy”, but it may mean “straight forward” or uncomplicated. 
 
 # Something which is simple may take a little longer, be a little more verbose, but it will be reliable.
 
@@ -455,4 +457,4 @@ Learn to love the language. _Really_ learn the language, it'll take longer than 
 
 # Learn to appreciate the choices of the designers.
 
-Go will make you a better programmer.
+* Go will make you a better programmer.
