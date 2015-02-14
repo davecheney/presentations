@@ -79,7 +79,7 @@ http://dave.cheney.net/
 
 * Simplicity cannot be added later
 
-.image simplicity/16.gif 450 _
+.image simplicity/IMG_0095.png _ 750
 
 You cannot add simplicity after the fact.
 
@@ -93,7 +93,7 @@ You cannot add simplicity after the fact.
 
 # Simplicity does not necessarily mean “easy”, but it may mean “straight forward” or uncomplicated. 
 
-# Something which is simple may take a little longer, but it will be reliable.
+# Something which is simple may take a little longer, be a little more verbose, but it will be reliable.
 
 # Putting this into the context of programming langauges. A simple programming language may choose to limit the number of semantic conveniences it offers to experienced programmers to avoid alienating newcomers.
 
@@ -107,7 +107,7 @@ Simplicity is not a synonym for "easy", nor is achieving a design which is simpl
 
 # Just because something may be simple, don't mistake it for crude.
 
-# While lasers are fabulous technology used in medicine and manufacturing, a chef would always prefer a knife to prepare food, an activity much more fundamental, and far more common place.
+# While lasers are fabulous technology used in medicine and manufacturing, a chef prefers a knife to prepare food.
 
 # Compared to the laser, a simple chefs knife may appear unsophisticated, but it represents generations of knowledge in metalergy, manufacturing and usability.
 
@@ -119,17 +119,19 @@ Simplicity is not a synonym for "easy", nor is achieving a design which is simpl
 
 .caption -- Rob Pike (Gophercon 2014)
 
-# A Rob Pike noted at Gophercon last year that Go was not designed by committee. The choices in the language represented a distilation of the experiences of Robert Griesemer, Ken Thompson, and himself, and only once they were all conveninced of the features' utility to the language.
+# A Rob Pike noted at Gophercon last year that Go was not designed by committee. The features of the language represented a distilation of the experiences of Robert Griesemer, Ken Thompson, and himself, and only once they were all conveninced of the features' utility to the language.
 
 * Complexity
 
 # A lack of simplicity is, of course complexity.
 
-.image simplicity/four_string_braid.jpg
+.image simplicity/four_string_braid.jpg 420 _
 
 Complexity is friction, a force which acts against getting things done.
 
-* Choose simplicity over completeness. 
+Complexity is debt, it robs you of the capital to invest in the future.
+
+* Choose simplicity over completeness 
 
 # There is an exponential cost in completeness.
 
@@ -153,7 +155,7 @@ Do you have what it takes to write a simple program, or will you settle for a po
 
 .caption -- Leonardo da Vinci
 
-# Go is a language designed to be simple. It is a feature, not a by product, or an accident. This design for simplicity is woven through every aspect of the language.
+# Go is a language designed to be simple. It is a feature, not a by product, or an accident. The desire for simplicity is woven through every aspect of the language.
 
 * Collaboration
 
@@ -161,9 +163,9 @@ Do you have what it takes to write a simple program, or will you settle for a po
 
 # I hope by now I have convinced you that a need for simplicity in programming langauges, if not many aspects of life, is self evident.
 
-# Is programming and art or a science ? Are we artists or engineers ? This one question is a debate in itself, but I hope you will agree with me that as professionals, programming is a little of both; we are both software artists, and software engineers -- and as engineers work as a team. 
+# Is programming and art or a science ? Are we artists or engineers ? This one question is a debate in itself, but I hope you will agree with me that as professionals, programming is a little of both; we are both software artists, and software engineers -- and as engineers we work as a team. 
 
-# But there is more than just being simple which is a definition attribute of the success of Go, and this is the realisation that for a programming language to be successful, it must coexist inside a larger community.
+# There is more than just being simple which is a definition attribute of the success of Go, and this is the realisation that for a programming language to be successful, it must coexist inside a larger community.
 
 * A language for collaboration
 
@@ -179,7 +181,7 @@ Large teams of programmers, by their nature, produce large code bases.
 
 # This is the nature of our work.
 
-# Go is a langauge explicity designed for collaboration
+# Go is a langauge explicity designed for collaboration.
 
 * Big problems 
 
@@ -189,7 +191,7 @@ Large teams of programmers, by their nature, produce large code bases.
 
 # Small annoyances such as a lack of warnings, a refusal to allow unused imports, or unused local variables, are all facets of choices designed to help Go work well for large teams of software developers.
 
-# This does not mean that Go is not suitable for the single developer working alone, or a small program written for a specific need, but speaks to the fact that a number of the choices within the language are aimed at growing software teams, and their needs.
+# This does not mean that Go is not suitable for the single developer working alone, or a small program written for a specific need, but speaks to the fact that a number of the choices within the language are aimed at the needs of growing software teams.
 
 # Ultimately Go is a language for the problems that exist in todays commercial programming, not language theory.
 
@@ -200,6 +202,8 @@ Large teams of programmers, by their nature, produce large code bases.
 # Writing a program, or more accurately solving a problem; delivering a solution, has little to do with the final act of entering the program into the computer.
 
 # Programs are designed, written, debugged and distributed in an environment signficantly larger than one programmer's editor.
+
+# Go recognises this, it is a langauge designed to work in this larger environment, not in spite of it.
 
 * Code is written to be decoded
 
