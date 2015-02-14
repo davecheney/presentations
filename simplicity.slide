@@ -213,13 +213,11 @@ Large teams of programmers, by their nature, produce large code bases.
 
 * How to build a Go community
 
-Pro tip: it starts with
+// TODO image (from wordle)
 
-# Go is a language designed from the beginning to be transposed, transformed and processed, at the source level, by tools which are not restricted to the compiler. This has opened up fields of analysis and code generation to the wider Go community.
+# Go is a language designed from the beginning to be transposed, transformed and processed, at the source level, by tools which are not restricted to the compiler. This has opened new up fields of analysis and code generation to the wider Go community.
 
-# While these tools are impressive, I believe the regular syntax of a Go source file belies its greatest champion;
-
-    go fmt
+# While these tools are impressive, I believe the regular syntax of a Go source file belies its greatest champion, go fmt.
 
 # What is so important about go fmt, and why is it important to go fmt your source code ?
 
@@ -239,11 +237,13 @@ Pro tip: it starts with
 
 * Batteries included
 
-# As Go programmers we can pick up any piece of Go writen by anyone in the world and start to read it. This goes deeper than just formatting. 
+# As Go programmers we can pick up a piece of Go writen by anyone in the world and start to read it. This goes deeper than just formatting. 
 
 # Go lacks heavy libraries like Boost. There are no qt base classes, no Gobject. There is no preprocessor to obfuscate. Domain specific language rarely appear in Go code.
 
 # The inclusion of maps and slices in the language side steps the most basic interoperability issues you have when working with C or Java code bases. All Go code uses these basic building blocks, so all Go code is accessible to a reader who is versed in the language, not some quaint organisation specfic dialect.
+
+# This is better for you as a programmer joining a new team, and better for you as your skills are more transferable across different Go codebases.
 
 * Interfaces, the UNIX way
 
@@ -251,17 +251,15 @@ Pro tip: it starts with
 
 .image simplicity/pipe.png 700 _
 
-# [ https://twitter.com/jmoiron/status/532314843689132032 ]
+# McIlroys observations became the foundation of the UNIX philosophy, small, sharp tools which can be combined to solve larger tasks.
 
-# In the last few decades programmers have lost the ability to compose programs, lost behind waves of run time dependencies and brittle type heriarchies that degrade the ability to move quickly and experiment cheaply. 
+# In the last few decades I feel that programmers have lost the ability to compose programs, lost behind waves of run time dependencies and brittle type heriarchies that degrade the ability to move quickly and experiment cheaply. 
 
-# Go packages interact with one another via interfaces. Programs are composed, just like the UNIX shell, by combining packages together.
+# Go programs embody the spirit of the unix philosophy. Go packages interact with one another via interfaces. Programs are composed, just like the UNIX shell, by combining packages together.
 
 # I can use fmt.Fprintf to write formatted output to a network connection, or a zip file, or writer which discards its input. Coversely I can create a gzip reader that consumes data from a http connection, or a string constant. 
 
 # All of these permutations are possible, in McIlroy's vision, without any of the components having the slightest bit of knowledge about the other parts of the processing chain.
-
-# io.Reader and io.Writer have became architecture that connects between components that deal with streams of bytes. What interfaces can you design that work with different values ?
 
 * Small interfaces
 
@@ -279,38 +277,23 @@ Small interfaces lead to simple implementations.
 
 Simple implementations connected by well defined interfaces. 
 
-* Error handling without exceptions
-
-# I've written a lot on the subject of Go's error handling, so I'll restrict my comments to the area of collaboration.
-
-# Java was the only main stream language to attempt to make exceptions checked, to make them part of the method's signature. The rational by Gosling at the time was sound. Looking at the history of unchecked exceptions in languages that existed in the early 1990's, which was basically C++, the difficulty using libraries that relied on exceptions for error handling was clear.
-
-# However it is clear by modern standards that checked exceptions, however well intentioned, are an evolutionary dead end. In fact, modern C++ not only still has not introduced checked exceptions, but has instead introduced a keyword to indicate that a method will never throw an exception.
-
-# So, if exceptions were to be used in any new language they will be of an unchecked variety.
-
-# What a waste, all this effort on type safety, memory ownership, reflection on unknown types, only to allow every single function call to explode without warning.
-
-# No, it is clear to me, to butcher Churchill
-
-# "Returning error values is the worst form of error handling, except all the others that have been tried."
-
-# And in the context of collaboration, Go's error handling is the only form that makes sense.
-
 * Errors and interfaces
 
-# If you've working on some large Go projects you may have come across packages like Canonical's errgo, which provide facilities to apply a stack trace to an error value. 
+# I've written a lot about the subject of Go's error handling, so I'll restrict my comments to the errors as they relate to collaboration.
+
+# If you've worked on some large Go projects you may have come across packages like Canonical's errgo, which provide facilities to apply a stack trace to an error value. 
+
 # I want to be clear that I am remaining neutral on the relative good or badness of this idea.
 
 # What I do want to highlight is even though one piece of code you integrate use fmt.Errorf(), and another a complicated library, from the point of view of the consumer of the language your error handling strategy looks the same. If the err is nil then the call worked.
 
 # Consider this to the variety of error handling strategies that must be managed in other languages as programs grow through acretion of dependencies.
 
-# This is the key to a Go programmer's ability to write an application at any size with the same levels of reliability.
+# This is the key to a Go programmer's ability to write an application at any size with the same levels of reliability. I the context of collaboration, Go's error handling is the only form that makes sense.
 
 * Simple build system
 
-# Go's lack of Makefile is more than a convenience. It's part of making large interoperable software.
+# Go's lack of Makefiles is more than a convenience. It's part of making large interoperable software work.
 
 # With other programming languages, when you integrate something, maybe it's something complex, like v8, or something more mundane, like a database driver from your vendor, you're integrating that code into your program, this part is obvious, but you are also integrating their build system.
 
@@ -339,6 +322,10 @@ Simple implementations connected by well defined interfaces.
 C# isn’t portable, it’s joined at the hip to a Windows host.
 
 Java, Scala, Groovy, and all the rest of the language built atop the JVM may benefit from the architecture indepedence of the JVM bytecode format, until you realise that Oracle is only interested in supporting the JVM on Intel hardware. Similarly the attempts to modularise the JVM to reduce its startup time remain perpetually one or two releases away.
+
+# Java.  Tone deaf to the requirements of a programming environment. The JVM is too sandboxed, to divorced from the reality of the environment it is working inside.
+
+# Ruby and python are better citizens, but are hamstrung by the clumsy deployment strategies. A niche that Go fills well.
 
 Swift ? Don’t make me laugh, it joins Objective-C in the land of Apple only programming languages. Popular? yes, but portable? no.
 
@@ -417,7 +404,7 @@ Go lets you write CLI applications, that in turn enables developers to leverage 
 
 # In these 5 years, less if you consider that the language only reached 1.0 in April of 2012, Go, as a language, and a proposition to programmers and development teams, has been wildly successful.
 
-# In 2014 there were five international Go conferences. In 2015 there are six, so far, plus
+# In 2014 there were five international Go conferences. In 2015 there are _seven_, plus
 
 .image simplicity/growing.png 1200 _
 
@@ -446,9 +433,3 @@ Learn to love the language. _Really_ learn the language, it'll take longer than 
 # Learn to appreciate the choices of the designers.
 
 Go will make you a better programmer.
-
-# Java.  Tone deaf to the requirements of a programming environment. The JVM is too sandboxed, to divorced from the reality of the environment it is working inside.
-
-# Pike and Kernighan. The Unix programming environment. Note the plan 9 environment. Rob pike creates programming environments not just programs.
-
-# Ruby and python are better citizens, but are hamstrung by the clumsy deployment strategies. A niche that Go fills well.
