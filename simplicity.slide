@@ -13,7 +13,11 @@ http://dave.cheney.net/
 
 # (5 minutes)
 
+# (thank Gautam for his work as MC)
+
 # Hello, my name is Dave. I'm a programmer and Go contributor from Sydney, Australia.
+
+# (if you're confused, in the picture, I'm the Elvis on your right)
 
 # It is my honor to be your final speaker for today.
 
@@ -31,11 +35,13 @@ http://dave.cheney.net/
 
 # Being passionate about Go means being passionate about language advocacy, and a natural hazzard of dwelling too long on the nature of programming results in statements like these.
 
-# But underlying the pithy form enforced by a tweet, I believe there is a gem of truth. I cannot think of a language introduced in my life time that didn't purport to be simple. Each new language offer as a justification, and an enticement, they're inherent simplicity.
+# But underlying the pithy form enforced by a tweet, I believe there is a gem of truth.
+
+# I cannot think of a language introduced in my life time that didn't purport to be simple. Each new language offers as a justification, and an enticement, their inherent simplicity.
 
 # On the other hand, I cannot point to a language introduced in the same time frame with the rallying call of complexity; more complexity than its contemporaries -- but many instead claim to be powerful.
 
-# The idea of proposing a language which offered higher levels of inherent complexity is clearly laughable, yet this is what so many contemporary languages have become; complicated, baroque, messes. A parody of the languages they sought to replace.
+# The idea of proposing a language which offered higher levels of inherent complexity is clearly laughable, yet this is exactly what so many contemporary languages have become; complicated, baroque, messes. A parody of the languages they sought to replace.
 
 # Clumsy syntax and non orthogonality is justified by the inherent complexity of capturing neuanced corner cases of the language, many of them self inflicted by years of careless feature creap.
 
@@ -47,11 +53,11 @@ http://dave.cheney.net/
 
 * Quote
 
+.image simplicity/history.jpg _ 800
+
 "Those who cannot remember the past are condemned to repeat it."
 
 .caption -- George Santayana
-
-.image simplicity/history.jpg _ 800
 
 # If you would listen to language critics, they demand that any new language should push forward the boundaries of language theory.
 
@@ -63,7 +69,7 @@ http://dave.cheney.net/
 
 # I believe that this is a fundamentally incorrect view.
 
-# Why would a new language be proposed if not to address limitations of it’s predecessors?
+# Why would a new language be proposed if not to address limitations of it’s predecessors ?
 
 # Why should a new language not aim to represent a refinement of the cornucopia of features presented in existing languages, leaning from it's predecessors, rather than repeating their folly.
 
@@ -77,7 +83,9 @@ http://dave.cheney.net/
 
 # This brings me back to my tweet. Go is a language that chooses to be simple, and it does so by choosing to not include many features that other programming languages have acustomed their users to believing are essential.
 
-# So the subtext of this thesis would be; what makes Go successful is what has been left out of the language, just as much as what has been included. Or as Rob Pike put it, "less is exponentially more".
+# So the subtext of this thesis would be; what makes Go successful is what has been left out of the language, just as much as what has been included.
+
+# Or as Rob Pike put it, "less is exponentially more".
 
 * Simplicity cannot be added later
 
@@ -85,7 +93,9 @@ http://dave.cheney.net/
 
 You cannot add simplicity after the fact.
 
-# When raising a new building, engineers first sink long foundations, down to the bedrock to provide a stable foundation for the structure of the building. To not do this, to just tamp the area flat, lay a concrete slab and start construction, would leave the building vulnerable to small disturbances from changes in the local area, at risk from rising damp or subsitence due to changes in environmental conditions.
+# When raising a new building, engineers first sink long foundations, down to the bedrock to provide a stable foundation for the structure of the building.
+
+# To not do this, to just tamp the area flat, lay a concrete slab and start construction, would leave the building vulnerable to small disturbances from changes in the local area, at risk from rising damp or subsitence due to changes in environmental conditions.
 
 # As programmers, we can recognise this as the parable of leaky abstraction. Just as tall buildings can only be successfully constructed by placing them on a firm foundation, large programs can not be successful if they are placed upon a loose covering of dirt that masks decades of accumulated debris.
 
@@ -95,11 +105,9 @@ You cannot add simplicity after the fact.
 
 # Simplicity does not mean “easy”, but it may mean “straight forward” or uncomplicated. 
 
-# Something which is simple may take a little longer, be a little more verbose, but it will be reliable.
+# Something which is simple may take a little longer, be a little more verbose, but may be comprehensible.
 
 # Putting this into the context of programming langauges. A simple programming language may choose to limit the number of semantic conveniences it offers to experienced programmers to avoid alienating newcomers.
-
-# As I said above
 
 Simplicity is not a synonym for "easy", nor is achieving a design which is simple an easy task.
 
@@ -109,11 +117,11 @@ Simplicity is not a synonym for "easy", nor is achieving a design which is simpl
 
 # Just because something may be simple, don't mistake it for crude.
 
-# While lasers are fabulous technology used in medicine and manufacturing, a chef prefers a knife to prepare food.
+# While lasers are fabulous technology used in manufacturing and medicine, a chef prefers a knife to prepare food.
 
 # Compared to the laser, a simple chefs knife may appear unsophisticated, but it represents generations of knowledge in metalergy, manufacturing and usability.
 
-* Simplicity is a goal, not a by product
+* Simplicity is a goal, not a by-product
 
 # You should design your programs with simplicty as a goal, not aim to be pleasently surprised when your solution happens to be simple.
 
@@ -121,7 +129,7 @@ Simplicity is not a synonym for "easy", nor is achieving a design which is simpl
 
 .caption -- Rob Pike (Gophercon 2014)
 
-# A Rob Pike noted at Gophercon last year that Go was not designed by committee. The features of the language represented a distilation of the experiences of Robert Griesemer, Ken Thompson, and himself, and only once they were all conveninced of the features' utility to the language.
+# A Rob Pike noted at Gophercon last year that Go was not designed by committee. The language represent a distilation of the experiences of Robert Griesemer, Ken Thompson, and himself, and only once they were all conveninced of the features' utility to the language.
 
 * Complexity
 
@@ -157,7 +165,7 @@ Do you have what it takes to write a simple program, or will you settle for a po
 
 .caption -- Leonardo da Vinci
 
-# Go is a language designed to be simple. It is a feature, not a by product, or an accident. The desire for simplicity is woven through every aspect of the language.
+# Go is a language designed to be simple. It is a feature, not a by-product, or an accident. The desire for simplicity is woven through every aspect of the language.
 
 * Collaboration
 
@@ -165,9 +173,9 @@ Do you have what it takes to write a simple program, or will you settle for a po
 
 # I hope by now I have convinced you that a need for simplicity in programming langauges, if not many aspects of life, is self evident.
 
-# Is programming and art or a science ? Are we artists or engineers ? This one question is a debate in itself, but I hope you will agree with me that as professionals, programming is a little of both; we are both software artists, and software engineers -- and as engineers we work as a team. 
+# Is programming and art or a science ? Are we artists or engineers ? This one question is a debate in itself, but I hope you will humor me that as professionals, programming is a little of both; we are both software artists, and software engineers -- and as engineers we work as a team. 
 
-# There is more than just being simple which is a definition attribute of the success of Go, and this is the realisation that for a programming language to be successful, it must coexist inside a larger community.
+# There is more than being simple which has defined the success of Go, and this is the realisation that for a programming language to be successful, it must coexist inside a larger community.
 
 * A language for collaboration
 
@@ -436,11 +444,10 @@ Simple implementations connected by well defined interfaces.
 # Ever growing engagement in social media; twitter, Google plus, ...
 # An established community in the golang sub reddit
 # Real time discussion communities like the #go-nuts IRC channel, or the slack gophers group.
-# Go projects reguarly feature on hacker news
 # Go featured in mainstream tech press, companies shipping api's in Go to talk to their services 
 # Go training available in both professional and academic contexts.
 # Over 100 meetups around the world, [[http://go-meetups.appspot.com/][go-meetups.appspot.com]]
-# [a] Sites like Damien Gryskies gophervids helping to desceminate the material produced by those meetups and conferences.
+# Sites like Damien Gryskies Gophervids helping to desceminate the material produced by those meetups and conferences.
 # Community events like GopherGala 
 
 * Take the time to really learn the language
