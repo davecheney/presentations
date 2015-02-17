@@ -41,7 +41,7 @@ http://dave.cheney.net/
 
 # The idea of proposing a language which offered higher levels of inherent complexity is clearly laughable, yet this is exactly what so many contemporary languages have become; complicated, baroque, messes. A parody of the languages they sought to replace.
 
-# Clumsy syntax and non orthogonality is justified by the inherent complexity of capturing neuanced corner cases of the language, many of them self inflicted by years of careless feature creap.
+# Clumsy syntax and non orthogonality is justified by the difficulty of capturing neuanced corner cases of the language, many of them self inflicted by years of careless feature creap.
 
 # So, every language starts out with simplicity as a goal, yet many of them fail to achieve this goal. Eventually falling back on notions of expressiveness or power of the language as justification for a failure to remain simple.
 
@@ -59,7 +59,7 @@ http://dave.cheney.net/
 
 # If you would listen to language critics, they demand that any new language should push forward the boundaries of language theory.
 
-# But really this appears to be a veiled request that your, new, language include all the bits they felt were important in their favorite old language, while still holding true to the promise of whatever it was that drew them to your new language I the first place.
+# In really this appears to be a veiled request that your, new, language include all the bits they felt were important in their favorite old language, while still holding true to the promise of whatever it was that drew them to your new language I the first place.
 
 # I believe that this is a fundamentally incorrect view.
 
@@ -151,8 +151,6 @@ Good programmers write simple programs.
 
 # They bring their experience, their knowledge and their failures to new designs, to learn from and avoid mistakes in the future.
 
-Do you have what it takes to write a simple program, or will you settle for a powerful program ?
-
 * Simplicity, conclusion
 
 # To steal a quote form Rich Hickey
@@ -163,9 +161,11 @@ Do you have what it takes to write a simple program, or will you settle for a po
 
 # Go is a language designed to be simple. It is a feature, not a by-product, nor an accident.
 
-# This was the message that spoke to me when I first learned about the language in 2009.
+# This was the message that spoke to me when I first learned about the language in 2009. And is has stayed with me to this day.
 
 # The desire for simplicity is woven through every aspect of the language.
+
+# My question for you, the audience. Will you write simple programs, or will you settle for writing powerful programs ?
 
 * Collaboration
 
@@ -191,19 +191,17 @@ Large teams of programmers, by their nature, produce large code bases.
 
 # This is the nature of our work.
 
-# Go is explicity designed as a language for large teams of programmers.
-
 * Big problems 
 
 .image simplicity/nasa-mainframe-980x663.jpg _ 800
 
-# Go is a small language, but it is unashamadly a language intended to be used on big projects.
+# Go is a small language, but deliberatly designed as a language for large teams of programmers.
 
 # Small annoyances such as a lack of warnings, a refusal to allow unused imports, or unused local variables, are all facets of choices designed to help Go work well for large teams of software developers.
 
 # This does not mean that Go is not suitable for the single developer working alone, or a small program written for a specific need, but speaks to the fact that a number of the choices within the language are aimed at the needs of growing software teams.
 
-# And if your project is successful, your team will grow, so need plan for it.
+# And if your project is successful, your team will grow, so you need plan for it.
 
 * Programming languages as part of an environment
 
@@ -289,13 +287,13 @@ Large teams of programmers, by their nature, produce large code bases.
 
 * Small interfaces
 
-# Interfaces in Go are a unifying force; they are _the_ means of describing behaviour. Interfaces let programmers describe what their package does, not _how_ it does it.
+# Interfaces in Go are therefore a unifying force; they are _the_ means of describing behaviour. Interfaces let programmers describe what their package does, not _how_ it does it.
 
-Well designed interfaces are more likely to be small interfaces; the prevailing idiom are interfaces with a single method.
+Well designed interfaces are more likely to be small interfaces; the prevailing idiom here is that interfaces have only a single method.
 
 # Compare this to other languages like Java or C++. In those langauges interfaces are generally larger, in terms of the method count required to satsify them, and more complex because of their entanglement with the inhertence based nature of those languages. 
 
-# Interfaces in Go share none of those restrictions and so are simpler, yet at the same time, more powerful. 
+# Interfaces in Go however share none of those restrictions and so are simpler, yet at the same time, more powerful, and more composable.
 
 # And critical to the narrative of collaboration, interfaces in Go are satisfied _implicity_. Any Go type, written at any time, in any package, by any programmer, can implement an interface by simply providing the method(s) necessary to satisfy the interface's contract.
 
@@ -321,7 +319,7 @@ Simple implementations connected by common interfaces.
 
 # The error interface is the key to Go's composable error handling story.
 
-# If you've worked on some large Go projects you may have come across packages like Canonical's errgo, which provide facilities to apply a stack trace to an error value. Perhaps the project themselves have rolled their own implementation.
+# If you've worked on some large Go projects you may have come across packages like Canonical's errgo, which provide facilities to apply a stack trace to an error value. Perhaps the project themselves have rolled their own implementation. Maybe you have one developed in house.
 
 # I want to be clear that I am remaining neutral on the relative good or badness of this idea.
 
@@ -347,8 +345,6 @@ Simple implementations connected by common interfaces.
 
 # This is also the key to Go's efficient compilation. The source indicates only those things that it depends on, any nothing else. Compiling your program will touch only the lines of source necessary.
 
-# Combined with the removal of header files, and a prohibition on circular imports Go can deliver efficient compilation for programs of huge size. 
-
 * Sans runtime
 
 # Does your heart sink when you want to try the hottest new project from Hacker News or Reddit only find it requires node.js, or some assortment of Ruby dependencies that aren't available on your operating system, or you have to look up what is the correct way to install a python package this week? Is it pip, is it easy_install, does that need an egg, or are they wheels ? (I can tell you mine does)
@@ -357,9 +353,9 @@ Simple implementations connected by common interfaces.
 
 # Go's ability to produce stand alone applications; and even cross compile them directly from your machine means that programmers are rediscovering the lost art of shiping a program, a real compiled program, the exact same one they tested, to customers.
 
-# This one fact alone has allowed Go to establish a commanding position in the container orchestration market, a market which would not exist in its current form if not for Go's deployment story.
+# This one fact alone has allowed Go to establish a commanding position in the container orchestration market, a market which arguably would not exist in its current form if not for Go's deployment story.
 
-# This story also illustrates how Go's design decisions move beyond just thinking about how the programmer and the language will interact during the devlopement phase, and extend right though into the deployment phase.
+# This story also illustrates how Go's design decisions move beyond just thinking about how the programmer and the language will interact during the devlopement phase, and extend right though the software lifecycle to the deployment phase.
 
 # Go's choice of a single static binary is directly influenced by Google's experiences deploying their own large complex applications, and I their advice should not be dismissed lightly.
 
@@ -375,7 +371,7 @@ Simple implementations connected by common interfaces.
 
 # Ruby and python are better citizens in this reguard, but are hamstrung by their clumsy deployment strategies.
 
-# In the new world of metered cloud deployments, where you pay by the hour, the difference between a slow interpreted language, and a nimble compiled Go program is stark.
+# In the new world of metered cloud deployments we find ourselves in, where you pay by the hour, the difference between a slow interpreted language, and a nimble compiled Go program is stark.
 
 # Go’s fresh take on portability, without the requirement to abstract yourself away from the machine you program runs on, is like no other langauge available today.
 
@@ -383,7 +379,7 @@ Simple implementations connected by common interfaces.
 
 # For the last few decades, since the rise of interpreted languages, or virtual machine runtimes, programming has been less about writing small target tools, and more about managing the complexity of the environment those tools are deployed into.
 
-# Slow languages, or bloated deployments encourage programmers to pile additional functionality into one application to amoratise the cost of the installation and setup support load.
+# Slow languages, or bloated deployments encourage programmers to pile additional functionality into one application to amoratise the cost of installation and setup.
 
 # We are in the early stage of a command line renaissance, a renaissance driven by the rediscovery of languages which produce compiled, self contained, programs. Go is leading this charge.
 
@@ -393,7 +389,7 @@ Simple implementations connected by common interfaces.
 
 # Over the last year we've seen a number of companies shift their client side tools from interpreted languages like Ruby and Python to Go. Cloud Founrary, Github's hub, and Mongodb's tool suite are the ones that spring to mind.
 
-# In every case their motivations were similar; while the existing tools worked well, the support load from 
+# In every case their motivations were similar; while the existing tools worked well, the support load from customer who were not able to get the tool installed correctly on their machine was huge.
 
 # Go lets you write CLI applications, that in turn enables developers to leverage the unix philosophy; small, sharp tools that work well together.
 
