@@ -99,6 +99,8 @@ You cannot add simplicity after the fact.
 
 * Simplicity is not easy
 
+.image simplicity/IMG_0245.JPG 450 _ 
+
 # Simplicity does not mean “easy”, but it may mean “straight forward” or uncomplicated. 
 
 # Something which is simple may take a little longer, be a little more verbose, but it will be more comprehensible.
@@ -194,6 +196,8 @@ Large teams of programmers, by their nature, produce large code bases.
 * Big problems 
 
 .image simplicity/nasa-mainframe-980x663.jpg _ 800
+
+# (The IBM System/360 Model 91, NASA)
 
 # Go is a small language, but deliberately designed as a language for large teams of programmers.
 
