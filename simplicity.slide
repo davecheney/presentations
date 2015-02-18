@@ -309,13 +309,7 @@ Simple implementations connected by common interfaces.
 
 # I've written a lot about the subject of Go's error handling, so I'll restrict my comments to the errors as they relate to collaboration.
 
-	% godoc builtin error
-	type error interface {
-	    Error() string
-	}
-	    The error built-in interface type is the conventional interface for
-	    representing an error condition, with the nil value representing no
-	    error.
+.image simplicity/error.png _ 900
 
 # The error interface is the key to Go's composable error handling story.
 
