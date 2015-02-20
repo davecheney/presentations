@@ -85,9 +85,6 @@ http://dave.cheney.net/
 
 .image simplicity/IMG_0095.png _ 750
 
-You cannot add simplicity after the fact.
-
-# (don't speak this line)
 
 # When raising a new building, engineers first sink long pillars, down to the bedrock to provide a stable foundation for the structure of the building.
 
@@ -95,7 +92,9 @@ You cannot add simplicity after the fact.
 
 # As programmers, we can recognize this as the parable of leaky abstraction. Just as tall buildings can only be successfully constructed by placing them on a firm foundation, large programs can not be successful if they are placed upon a loose covering of dirt that masks decades of accumulated debris.
 
-# you cannot add simplicity after the fact -- simplicity is only gained by taking things away
+You cannot add simplicity after the fact.
+
+# simplicity is only gained by taking things away.
 
 * Simplicity is not easy
 
@@ -118,6 +117,8 @@ Simplicity is not a synonym for "easy", nor is achieving a design which is simpl
 # While lasers are fabulous technology used in manufacturing and medicine, a chef prefers a knife to prepare food.
 
 # Compared to the laser, a simple chefs knife may appear unsophisticated, but it represents generations of knowledge in metallurgy, manufacturing and usability.
+
+# When considering a programming language, don't mistake a lack of the latest fearures for a lack of sophistication.
 
 * Simplicity is a goal, not a by-product
 
@@ -163,11 +164,11 @@ Complexity is debt, it robs you of the capital to invest in the future.
 
 # Go is a language designed to be simple. It is a feature, not a by-product, nor an accident.
 
-# This was the message that spoke to me when I first learned about the language in 2009. And is has stayed with me to this day.
+# This was the message that spoke to me when I first learned about the language in 2009. And is the message that has stayed with me to this day.
 
 # The desire for simplicity is woven through every aspect of the language.
 
-# My question for you, the audience. Will you write simple programs, or will you settle for writing powerful programs ?
+# My question for you, the audience. Do you want to you write simple programs, or will you settle for writing powerful programs ?
 
 * Collaboration
 
@@ -201,7 +202,7 @@ Large teams of programmers, by their nature, produce large code bases.
 
 # Go is a small language, but deliberately designed as a language for large teams of programmers.
 
-# Small annoyances such as a lack of warnings, a refusal to allow unused imports, or unused local variables, are all facets of choices designed to help Go work well for large teams of software developers.
+# Small annoyances such as a lack of warnings, a refusal to allow unused imports, or unused local variables, are all facets of choices designed to help Go work well for large teams.
 
 # This does not mean that Go is not suitable for the single developer working alone, or a small program written for a specific need, but speaks to the fact that a number of the choices within the language are aimed at the needs of growing software teams.
 
@@ -209,7 +210,7 @@ Large teams of programmers, by their nature, produce large code bases.
 
 * Programming languages as part of an environment
 
-# It may appear heretical to suggest this, as many of the metrics that we as professional software developers are judged by; lines of code written, changed or deleted; the number of revisions committed to source control, etc, are all accounted for character by character, line by line, file by file.
+# It may appear heretical to suggest this, as many of the metrics that we as professional software developers are judged by; lines of code written; the number of revisions committed to source control, etc, are all accounted for character by character, line by line, file by file.
 
 # BUT
 
@@ -319,17 +320,17 @@ Simple implementations connected by common interfaces.
 
 # If you've worked on some large Go projects you may have come across packages like Canonical's errgo, which provide facilities to apply a stack trace to an error value. Perhaps the project themselves have rolled their own implementation. Maybe you have one developed in house.
 
-# I want to be clear that I am remaining neutral on the relative good or badness of this idea.
+# I want to be clear that I am remaining neutral on the relative good or badness of the idea of gift wrapping errors.
 
 # What I do want to highlight is even though one piece of code you integrate use fmt.Errorf(), and another a third party package, and in your package you have developed your own error handling type. From the point of view of you the programmer, your error handling strategy _always_ looks the same. If the err is nil then the call worked.
 
 # Compare this to the variety of error handling strategies that must be managed in other languages as programs grow through accretion of dependencies.
 
-# This is the key to a Go programmer's ability to write an application at any size with the same levels of reliability. In the context of collaboration, it must be said that Go's error handling strategy is the only form that makes sense.
+# This is the key to a Go programmer's ability to write an application at any size without sacrificing reliability. In the context of collaboration, it must be said that Go's error handling strategy is the only form that makes sense.
 
 * Simple build system
 
-# Go's lack of Makefiles is more than a convenience. It's part of making large software interroperate.
+# Go's lack of Makefiles is more than a convenience.
 
 # With other programming languages, when you integrate something, maybe it's something complex, like v8, or something more mundane, like a database driver from your vendor, you're integrating that code into your program, this part is obvious, but you are also integrating their build system.
 
@@ -369,29 +370,29 @@ Simple implementations connected by common interfaces.
 
 # Ruby and python are better citizens in this reguard, but are hamstrung by their clumsy deployment strategies.
 
-# In the new world of metered cloud deployments we find ourselves in, where you pay by the hour, the difference between a slow interpreted language, and a nimble compiled Go program is stark.
+# In the new world of metered cloud deployments in which we find ourselves, where you pay by the hour, the difference between a slow interpreted language, and a nimble compiled Go program is stark.
 
 # Go’s fresh take on portability, without the requirement to abstract yourself away from the machine you program runs on, is like no other language available today.
 
-* A command line renascence
+* A command line renaissance
 
-# For the last few decades, since the rise of interpreted languages, or virtual machine runtimes, programming has been less about writing small target tools, and more about managing the complexity of the environment those tools are deployed into.
+# For the last few decades, since the rise of interpreted languages, or virtual machine runtimes, programming has been less about writing small targeted tools, and more about managing the complexity of the environment those tools are deployed into.
 
 # Slow languages, or bloated deployments encourage programmers to pile additional functionality into one application to amortize the cost of installation and setup.
 
-# We are in the early stage of a command line renaissance, a renaissance driven by the rediscovery of languages which produce compiled, self contained, programs. Go is leading this charge.
+# I believe that We are in the early stage of a command line renaissance, a renaissance driven by the rediscovery of languages which produce compiled, self contained, programs. Go is leading this charge.
 
-# A command line renascence which enables developers to deliver simple programs that fit together, cross platform, in a way that suites the needs of the nascent cloud automation community, and reintroduces a generation of programmers to the art of writing small tools which fit together, as Doug McIlroy described, “like segments in a garden hose”
+# A command line renaissance which enables developers to deliver simple programs that fit together, cross platform, in a way that suites the needs of the nascent cloud automation community, and reintroduces a generation of programmers to the art of writing tools which fit together, as Doug McIlroy described, “like segments in a garden hose”
 
-# A key part of the renascence is Go's deployment story. I spoke earlier and many of my fellow speakers have praised Go for its pragmatic deployment story, focusing on server side deployments, but I believe there is more to this.
+# A key part of the renaissance is Go's deployment story. I spoke earlier and many of my fellow speakers have praised Go for its pragmatic deployment story, focusing on server side deployments, but I believe there is more to this.
 
 # Over the last year we've seen a number of companies shift their client side tools from interpreted languages like Ruby and Python to Go. Cloud Founrary, Github's hub, and Mongodb's tool suite are the ones that spring to mind.
 
-# In every case their motivations were similar; while the existing tools worked well, the support load from customer who were not able to get the tool installed correctly on their machine was huge.
+# In every case their motivations were similar; while the existing tools worked well, the support load from customers who were not able to get the tool installed correctly on their machine was huge.
 
 # Go lets you write CLI applications, that in turn enables developers to leverage the UNIX philosophy; small, sharp tools that work well together.
 
-# This is a command line renascence that has been missing for a generation.
+# This is a command line renaissance that has been missing for a generation.
 
 * Conclusion
 
@@ -441,7 +442,7 @@ Simple implementations connected by common interfaces.
 
 # In 2014 there were five international Go conferences. In 2015 there are _seven_, plus
 
-.image simplicity/growing.png 1200 _
+.image simplicity/growing.png 
 
 * Plus!
 
@@ -460,7 +461,7 @@ Simple implementations connected by common interfaces.
 
 # In closing
 
-# This paper describes the language we have today. A language built with care and moderation. The language is what it is because of the deliberate decisions that were made at every step.
+# This paper describes the language we have today. A language built with care and moderation. The language is what it is because of deliberate decisions that were made at every step.
 
 # Language design is about trade offs, so learn to appreciate the care in which Go's features were chosen and the skill in which they were combined.
 
