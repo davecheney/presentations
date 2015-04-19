@@ -1,0 +1,323 @@
+Reproducible Builds
+Gophercon
+20 Apr 2015
+
+Dave Cheney
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* Warning: this presentation contains nuts
+
+# I feel a certain degree of trepidation on stage today.
+
+# Not just because the size of the audience I am addressing, but because of the subject I will be talking on.
+
+# Dependency management is our Waterloo, it's an emotionally charged issue, many influential Go developers have proposed their solutions. So it is important for me to clarify my requirements for a solution, and in effect explain why I am not satisfied with the solutions that exist today.
+
+# What I see is many people who are actively choosing to stay "standard library only", and this is an overall negative effect.
+
+* Agenda
+
+- Problem statement
+- Competitive analysis
+- Proposal
+
+* Problem statement
+
+* Repeatable builds
+
+The primary requirement is repeatable builds, I have a requirement that at any time I can construct the entire graph of source that went into a program, feed that to a compiler and produce a program that is identical to one created in the past.
+
+This is the requirement I have, and this is the motivation for this talk. If you don't have this requirement, that's fine.
+
+The plethora of tools that exist in this space shows that Go programmers have multiple, sometimes overlapping requirements. Again, that is fine, this is my solution for my requirements; it is my _hope_ that I can convince you of it's utility to you, but again, if you don't share my requirements, I may not be successful in my arguments.
+
+Out of scope
+
+- compiler doesn't produce byte for byte comparable binaries
+- archiving compiler tool chain versions
+
+* Why don't have a reliable builds today
+
+OK, so now I've told you what I want; I need to explain to you why I don't feel that I have it today.
+
+     import "github.com/pkg/sftp"  # yes, but which revision!
+
+The most obvious reason is the import statement inside a Go package does not provide enough information to select from the set of revisions available in a remote code repository the specific revision I want.
+
+That information simply isn't there.
+
+# But this isn't the only reason why we don't have reliable builds today.
+
+
+# And it isn't anywhere else inside the package's source, because Go programs don't have makefiles, or grunt files or whatever
+
+* Naming things (part 1)
+
+Things that are different must have different names.
+
+Who has written a log or logger package, they might all be called "log", but they are not the same package.
+
+This why we have namespaces, `github.com/you/log`, `github.com/me/log`.
+
+* Naming things (part 2)
+
+Things that are the same _must_ have the same name.
+
+Are these two packages the same, or are they different ?
+
+     github.com/lib/pq
+     github.com/docker/internal/github/com/lib/pq
+
+They are the same, this is the same code -- this is obvious to a human, not a computer.
+
+To a compiler these are different packages. This means type assertions and equality is broken. This is a *NIGHTMARE* to debug.
+
+	if err := querySomethingFromTheDB(); err == mgo.Error {
+	      // not equal
+	      // ffffffuuuuuuuuuuu
+	}
+
+* The import statement cannot be changed
+
+We cannot add anything to the import syntax for two reasons
+
+    import "github.com/pkg/term" "somehash"
+
+- Imports are opaque to the language, so some external tool dictating the format of the import declaration to the compiler is not appropriate.
+- More importantly, this would be a backward incompatible syntax change.
+
+We cannot embed anything in the import syntax
+
+    import "github.com/pkg/term#somehash"
+
+- Every import statement in every file in the package *must* be identical, even using build tags, even using conditional compilation.
+- Rules of at most one file has to have a #hash are brittle wrt. build tags and conditional compilation. 
+
+* Versions in the URL
+
+    import "github.com/project/v7/library"
+
+- Popular if you want to provide multiple versions of your API at the same time.
+- Not accurate enough to checkout a specific revision.
+- Not reproducible to ensure everyone has the _same_ revision.
+- Breaks the rule of naming things, two things which are the same, must have the same name.
+
+    import v7 "github.com/project/v7/library"
+    import v9 "github.com/project/v9/library"
+
+    fmt.Println(v7.ErrTimeout == v9.ErrTimeout) ==> *false*
+
+Doesn't solve my problem, it might solve your problem, doesn't promise me the build reproducibility I need.
+
+* Competitive Analysis
+
+* Dude, be a good Gopher, don't break users
+
+So the first, and longest standing solution to this problem is to always have a stable API.
+
+- Proposed solution from the Go team for several years.
+- Admirable attempt to extend the Go 1 contract to all Go code.
+
+If it worked, we wouldn't be having this conversation today
+
+- You _want_ to change the API for your package
+- Often the API and the consumer evolve in parallel
+- Even putting versions in the path only guarantees I have _a_ version of that package, not _the_ version.
+
+* I live in the real world
+
+If my time in system administration taught me anything, it's the unexpected failures that get you. You can plan for the big disasters, but it turns out that the little disasters can be just as disruptive.
+
+- code.google.com going away. Isolated incident ? maybe, sourceforge will go too, probalby not a big deal, will github be around in 10 years ?
+- codehaus :(
+- companies merging, people getting married, someone dies, trademark dispute, etc.
+- FoundationDB :(
+
+These are all little disasters, you can usually find the code again, maybe it's just a quick sed rewrite and you're back again. 
+
+But just like the big disasters, these little disasters are indistinguishable, code which built one day, won't build the next.
+
+* Don't be this person
+
+.image reproducible-builds/github.png
+
+* Tools which manage $GOPATH
+
+Tools which fixup `$GOPATH` after `go`get`
+
+- godeps (plural, canonical)
+- glock
+- gvp
+
+Problems
+
+- not reproducible, the upstream can still disappear
+- must adjust your `$GOPATH` manually when moving between projects
+- near universal dislike for a .lock file in the package
+- universal disagreement on the format and layout of a .lock file
+
+* Tools which vendor packages 
+
+Copying, vendoring, rewriting the source, is the _new_ position from the Go team.
+
+- godep -r
+- vendor
+
+Problems
+
+- requires source rewriting; many uncomfortable with this
+- possibly breaks the naming rules
+- concerns about loosing track of the upstream
+- ugly long import lines
+
+* Tools which give you one $GOPATH per project
+
+Virtual env all the things!
+
+- gpm https://github.com/pote/gpm
+- gvm 
+- govm
+- glide
+- /usr/bin/direnv (old skool)
+
+Problems
+
+- not isolated from upstream going away
+- hard to use, terminal or shell session becomes magic
+
+* Proposal
+
+* Stop working around go get
+
+.image reproducible-builds/goget.jpg _ 400
+
+Every one of the existing solutions is hamstrung by the fact it is working around the limitations of the `go` tool.
+
+Stop using `go`get`. Don't use the `go` tool at all.
+
+* Requirements
+
+So, we're talking about writing a new build tool for Go, not a wrapper around an existing tool.
+
+* Project based
+
+A new build tool should be project based.
+
+- A project is effectively a single $GOPATH.
+
+- like gpm, gvm, direnv, etc, but automatic -- you don't need to 'enter' a build environment.
+
+* No configuration files
+
+This one I find hard to accept, but Go developers do not want to have any sort of configuration file to build their code.
+
+I find this hard to rationalize because most repos that I look have had dozens of turds in them, Gruntfiles, Dockerfiles, Werker configs, etc. 
+
+- Projects are detected from the path, anything that has a `src` in the path is a project.
+- Works well in practice, and is backwards compatible with `$GOPATH`.
+
+* Respect the canonical import path
+
+- rsc added this, it's clear what he thinks about the possibility of duplicates in the binary
+- import rewriting has to rewrite the import comment as well, and that sounds like deliberately disabling the safety interlock on a handgun.
+
+* Leaves source untouched
+
+- No import rewriting
+- check the whole source in
+- use submodules or subtrees, svn externals, etc
+- don't touch the source, then you stand a chance of hashing it / diffing it / signing it
+
+
+* An import path is an API
+
+The import statement represents something abstract.
+
+Most coming from the JVM understand this implicitly, the import statement represents a contract, I need something called "github.com/davecheney/foo". Now I need to go find the jar that provides a class with that name.
+
+* Annoying things
+
+If we're going to go the extreme of divorcing ourselves from the `go` tool then maybe we can fix a few other annoyances along the way
+
+- `-tags`something` now just works
+- deleting a file from a package, causes a rebuild
+- deleting a package's source, we won't use the stale .a in ~/pkg
+
+* Introducing `gb`
+
+.image reproducible-builds/gb.jpg
+
+    % /usr/bin/gb
+
+* The design
+
+Start from make(1)
+
+OK, if you were humoring me up to now, this is probably the point where you've suddenly realised you need to be somewhere else for that important thing.
+
+Never the less, if you break down the problem of build a go program, _every_ part of that can be expressed as a set of dependent steps
+
+or, a DAG. Yes, the good old DAG.
+
+And make(1) is, in my opinion, a great way of expressing this workflow. 
+
+Now the downside with make(1) for this kind of problem is make workflow steps are inherently (in my opinion, sorry if John Graham-Cumming is in the crowd) based on files, especially when you consider incremental builds.
+
+So, for gb, our workflow steps are based on simpler idea we call a target
+
+* Targets
+
+This is what a target looks like, it's just an interface
+
+    type Target interface {
+         Result() error
+    }
+
+That's it. 
+
+A target is in effect, a future, or a promise. (read interface definition)
+
+* Diamond dependencies
+
+How can we resolve this problem ?
+
+A -> B -> D
+  -> C -> D'
+
+My solution
+
+- Vendor, but without changing the source
+- You, as the project, choose the revision of D you want, it's called D, and everyone imports it as D
+
+* Demo time
+
+* This only works for projects, what about packages
+
+Yes, this solution works for projects, it encourages you to build larger projects.
+
+Personally, I think this is what Go needs at the moment.
+
+- Projects that proudly claim they have no dependencies apart from the standard library.
+
+- Packages developed and thrown out there, hoping that someone else will use and popularise them. As Peter Bourgon noted at FOSDEM this year, does Go really need another http mux ?
+
+What I want to see is large projects being built with Go, then, when they are proven, lets circle back and peal off parts of those projects that are reusable. But that happens second, you can't have a stable complete package without an anchor tenant, and it makes sense to me that those libraries should be incubated inside their host, not along side them -- it worked for django, it worked for rails, I think it's a message that should be studied.
+
+* Take aways
+
+The problem is `go`get`, not the import statement.
+
+The `go` tool doesn't define the language, we can build our own.
+
+* Try it out
+
+    go get github.com/constabulary/gb/...
+
+- 100 % compatible with `cmd/go`.
+- Don't even need to change `$GOPATH`.
+- Upgrade to a gb project if you like.
+- Reusable library for building Go packages, no more shelling out to `go build`
+- Write a plugin, please write a plugin.
+
