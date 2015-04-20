@@ -9,13 +9,13 @@ http://dave.cheney.net/
 
 * Warning: this presentation contains nuts
 
-I feel a certain degree of trepidation on stage today. Not just because the size of the audience I am addressing, but because of the subject I will be talking on.
+I feel a certain degree of trepidation on stage today. Not just because the size of the audience I am addressing, but because of the subject I will be discussing.
 
-Dependency management is the single most common question I have been asked consistently for several years now.
+Dependency management in Go is the single most common question I have been asked consistently for several years now.
 
-Dependency management is our Waterloo, it's an emotionally charged issue, many influential Go developers have proposed their solutions.
+Dependency management is the equivilent of Python's GIL, a problem that everyone has, but one that has not been solved.
 
-What I see is many people who are actively choosing to stay "standard library only", and this is an overall negative effect.
+What I see is many people who are actively choosing to stay "standard library only", and I worry that more are silently sitting on the fence until a solution is found.
 
 * Agenda
 
@@ -65,11 +65,14 @@ Rule 2: Things that are the same _must_ have the same import path.
 Are these two packages the same, or are they different ?
 
      github.com/lib/pq
-     github.com/davecheney/foo/internal/github/com/lib/pq
+     github.com/davecheney/foo/internal/github.com/lib/pq
 
 They are the same, this is the same code -- this is obvious to a human, not a computer.
 
-To a compiler these are different packages. This means type assertions and equality are broken. This is a *NIGHTMARE* to debug.
+To a compiler these are different packages.
+
+- Type assertions and equality are broken.
+- `init()` functions will run multiple times. [[http://godoc.org/database/sql#Register][database/sql.Register]]
 
 * The import statement cannot be changed
 
@@ -96,12 +99,13 @@ We cannot embed anything in the import syntax
 
 Leads to nightmarish scenarios where equality and type assertions are broken.
 
-    import "github.com/project/v9/lib"
+    import "github.com/project/v9/lib" // registers itself as a dialer
+    import "github.com/project/dialer"
 
-    err := lib.Dial(...)
+    err := dialer.Dial("someurl")
     fmt.Println(err == lib.ErrTimeout) => false
     fmt.Printf("%T", err) => "lib.ErrTimeout"
-    fmt.Println(v7.ErrTimeout == v9.ErrTimeout) => false
+    fmt.Println(v7/lib.ErrTimeout == v9/lib.ErrTimeout) => false
 
 * Competitive Analysis
 
@@ -157,7 +161,6 @@ Problems
 Copying, vendoring, rewriting the source, is the _new_ position from the Go team.
 
 - godep 
-- vendor
 
 Problems
 
@@ -201,7 +204,7 @@ A new build tool should be project based.
 
 - A project is where main packages live.
 - A project is effectively a single $GOPATH.
-- like gpm, gvm, direnv, etc, but automatic -- you don't need to 'enter' a build environment.
+- Automatic detection, you don't need 'enter' a project.
 - The owner of the project decides on the version of a particular import path in use.
 - Never more than one copy of a single import per project.
 
@@ -216,13 +219,15 @@ I find this hard to rationalize because most repos that I look have had dozens o
 
 * Respect the canonical import path
 
+     package pdf // import "rsc.io/pdf"
+
 - rsc added this, it's clear what he thinks about the possibility of duplicates in the binary
 - Import rewriting has to rewrite the import comment as well, and that sounds like deliberately disabling the safety interlock on a handgun.
 
 * Leaves source untouched
 
 - Check the whole source in
-- Use submodules or subtrees, svn externals, etc
+- Use submodules or subtrees, svn externals, etc, if you prefer
 - Don't touch the source, then you stand a chance of hashing it / diffing it / signing it
 
 * Annoying things
@@ -232,13 +237,15 @@ If we're going to go the extreme of divorcing ourselves from the `go` tool then 
 - `-tags`something` now just works
 - deleting a file from a package, causes a rebuild
 - deleting a package's source, we won't use the stale .a in ~/pkg
+- not restricted to `go`get` ideas of correct DVCS usage, ie, can use ssh://github.com/...
 
 * Introducing gb
 
-.image reproducible-builds/gb.jpg
+.image reproducible-builds/gb.jpg _ 350
 
     % /usr/bin/gb
 
+- Proof of concept
 - Project based, project is automatically detected
 - Dependencies are a property of the project, one copy of any package per project
 - Supports vendoring without rewriting via multiple src/ directories
@@ -246,17 +253,17 @@ If we're going to go the extreme of divorcing ourselves from the `go` tool then 
 
 * Demo time
 
-* This only works for projects, what about packages ?
+# * This only works for projects, what about packages ?
 
-Yes, this solution works for projects, it encourages you to build larger projects.
+# Yes, this solution works for projects, it encourages you to build larger projects.
 
-Personally, I think this is what Go needs at the moment.
+# Personally, I think this is what Go needs at the moment.
 
-- Projects should think hard about each dependency they bring in -- they aren't free
+# - Projects should think hard about each dependency they bring in -- they aren't free
 
-- Packages developed and thrown out there, hoping that someone else will use and popularise them. As Peter Bourgon noted at FOSDEM this year, does Go really need another http mux ?
+# - Packages developed and thrown out there, hoping that someone else will use and popularise them. As Peter Bourgon noted at FOSDEM this year, does Go really need another http mux ?
 
-What I want to see is large projects being built with Go, then, when they are proven, lets circle back and peal off parts of those projects that are reusable. But that happens second, you can't have a stable complete package without an anchor tenant, and it makes sense to me that those libraries should be incubated inside their host, not along side them -- it worked for django, it worked for rails, I think it's a message that should be studied.
+# What I want to see is large projects being built with Go, then, when they are proven, lets circle back and peal off parts of those projects that are reusable. But that happens second, you can't have a stable complete package without an anchor tenant, and it makes sense to me that those libraries should be incubated inside their host, not along side them -- it worked for django, it worked for rails, I think it's a message that should be studied.
 
 * Take aways
 
