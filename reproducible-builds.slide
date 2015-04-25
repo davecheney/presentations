@@ -166,7 +166,7 @@ Problems
 
 - requires source rewriting; many uncomfortable with this
 - possibly breaks the naming rules; the same package can exist in the dependency graph under multiple names
-- concerns about loosing track of the upstream
+- concerns about losing track of the upstream
 - ugly long import lines
 
 * Tools which give you one $GOPATH per project
