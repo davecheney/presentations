@@ -31,9 +31,11 @@ I have a requirement that at any time I can fetch the entire graph of source tha
 
 This is the requirement I have, and this is the motivation for this talk. If you don't have this requirement, that's fine.
 
-The plethora of tools that exist in this space shows that Go programmers have multiple, sometimes overlapping requirements. Again, that is fine, this is my solution for my requirements; it is my _hope_ that I can convince you of it's utility to you, but again, if you don't share my requirements, I may not be successful in my arguments.
+The plethora of tools that exist in this space shows that Go programmers have multiple, sometimes overlapping requirements.
 
-* Why I don't have a reproducible builds today
+This is my solution for my requirements; it is my _hope_ that I can convince you of it's utility to you, but again, if you don't share my requirements, I may not be successful in my arguments.
+
+* Why I don't have a reproducible build today ?
 
 OK, so now I've told you what I want; I need to explain to you why I don't feel that I have it today.
 
@@ -42,6 +44,15 @@ OK, so now I've told you what I want; I need to explain to you why I don't feel 
 The most obvious reason is the import statement inside a Go package does not provide enough information for `go`get` to select from a set of revisions available in a remote code repository the specific revision to fetch.
 
 That information simply isn't there.
+
+* Interlude
+
+# env GOPATH=/tmp go get -v github.com/pkg/sftp
+# env GOPATH=/tmp go get -v github.com/spf13/hugo
+# env GOPATH=/tmp go get -v github.com/juju/juju/...
+# env GOPATH=/tmp go get -v launchpad.net/godeps
+# cd /tmp/src/github.com/juju/juju
+# env GOPATH /tmp/bin/godeps -u dependencies.tsv
 
 * A brief digression
 
@@ -53,7 +64,10 @@ Rule 1: Things that are different _must_ have different import paths.
 
 Who has written a log or logger package, they might all be called "log", but they are not the same package.
 
-This why we have namespaces, `github.com/you/log`, `github.com/me/log`.
+This why we have namespaces.
+
+    github.com/you/log 
+    github.com/me/log
 
 * Naming things (part 2)
 
@@ -66,19 +80,10 @@ Are these two packages the same, or are they different ?
 
 They are the same, this is the same code -- this is obvious to a human, not a computer.
 
-To a compiler these are different packages.
+To a compiler these are different packages; this has serious implications.
 
 - Type assertions and equality are broken.
 - `init()` functions will run multiple times. [[http://godoc.org/database/sql#Register][database/sql.Register]]
-
-* The import statement cannot be changed
-
-We cannot add anything to the import syntax for two reasons
-
-    import "github.com/pkg/term" "{hash,tag,version}"
-
-- Imports are opaque to the language, so some external tool dictating the format of the import declaration to the compiler is not appropriate.
-- More importantly, this would be a backward incompatible syntax change.
 
 * Versions in the URL
 
@@ -92,6 +97,15 @@ We cannot embed anything in the import syntax
 - Every import statement in every file in the package *must* be identical, even using build tags, even using conditional compilation.
 - Breaks the rule of naming things, two things which are the same, must have the same import path.
 
+* The import statement cannot be changed
+
+This information will not be added to the import syntax for two reasons
+
+    import "github.com/pkg/term" "{hash,tag,version}"
+
+- Imports are opaque to the language, so some external tool dictating the format of the import declaration to the compiler is not appropriate.
+- More importantly, this would be a backward incompatible syntax change.
+
 * Do Go packages even have versions ?
 
 Proposition: Go packages do not have versions
@@ -101,15 +115,6 @@ Go packages do not have versions, because there is no widely accepted method of 
 Go packages are usually tracked in source control, and source control systems give copies of source code in time revision numbers or hashes.
 
 _Revision_!=_Version_
-
-* Interlude
-
-# env GOPATH=/tmp go get -v github.com/pkg/sftp
-# env GOPATH=/tmp go get -v github.com/spf13/hugo
-# env GOPATH=/tmp go get -v github.com/juju/juju/...
-# env GOPATH=/tmp go get -v launchpad.net/godeps
-# cd /tmp/src/github.com/juju/juju
-# env GOPATH /tmp/bin/godeps -u dependencies.tsv
 
 * Competitive Analysis
 
@@ -206,7 +211,6 @@ So, we're talking about writing a new build tool for Go, not a wrapper around an
 
 A new build tool should be project based.
 
-
 - A project is where main packages live.
 - A project is effectively a single $GOPATH.
 - Automatic detection, you don't need 'enter' a project.
@@ -243,7 +247,8 @@ I find this hard to rationalize because most repos that I look have had dozens o
 
 - Project based, project is automatically detected
 - Dependencies are a property of the project, one copy of any package per project
-- Supports vendoring without rewriting via multiple src/ directories
+- Supports multiple working copies concurrently
+- Supports vendoring without rewriting via separate vendor/ directory
 - Supports plugins (git style) 
 
 * Demo time
