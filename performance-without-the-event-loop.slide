@@ -7,6 +7,26 @@ dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
+* Abstract
+
+Conventional wisdom suggests that high performance servers require native threads, or more recently, event loops.
+
+Neither solution is without its downside. Threads carry a high overhead in terms of scheduling cost and memory footprint. Event loops ameliorate those costs, but introduce their own requirements for a complex callback driven style.
+
+A common refrain when talking about Go is its a language that works well on the server; static binaries, powerful concurrency, and high performance.
+
+This talk focuses on the last two items, how the language and the runtime transparently let Go programmers write highly scalable network servers without having to worry about thread management or blocking I/O.
+
+The goal of this talk is to introduce the following features of the language and the runtime:
+
+- Escape Analysis
+- Stack management
+- Processes and threads vs goroutines
+- Integrated network poller
+
+These four features work in concert to build an argument for the suitability of Go as a language for writing high performance servers.
+
+
 * Introduction
 
 I got into Go because it offered performance.
