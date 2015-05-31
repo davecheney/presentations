@@ -1,0 +1,97 @@
+gb, a project based build tool
+GoSF
+15 Jul 2015
+
+@davecheney
+
+* About me
+
+
+* gb
+
+- Project based workflow
+- Repeatable builds via source vendoring 
+- Vendoring without rewriting imports
+- Reusable components and a plugin interface
+
+* Why is a project based appraoch useful ?
+
+- Controll all your source, including your dependencies
+- Clear separation between the code you write, and the code you depend on
+- Upgrade your team on your schedule
+- Don't let the internet break your team
+- Nifty tooling. Go is all about tools, and gb gives you even more tools.
+
+- Project ownership
+
+* Project ownership
+
+The owner of the project has a specicial responsibility
+
+- resolve missing dependencies
+
+- responsible dependency management
+
+Project ownership is important. You, the developer, the project owner, the build engineer, needs to own all the source that goes into your product. Don't be the person who cannot deliver a release because github is down. ibid.
+
+* How is gb different ?
+
+- We don't wrap the go tool
+- We don't use GOPATH
+
+This gives us agility.
+
+We can talk about building code without fitting it through the needle of go build
+
+This gives us speed
+
+You don don't have to wait up to six months to get a bug fix in your build tool
+
+This gives us extensibility
+
+gb is a Go package, and cmd/gb is a consumer of that package. We support a git style plugin's which can also reuse gb code.
+
+* No import rewriting
+
+Why do I think it is important that imports are not rewritten
+
+- maybe one day, we can get a bit smarter about managing dependencies, without whole cloth vendoring
+- this cannot happen if imports are rewritten
+
+* Project setup
+
+demo creating a project, pushing it up to github
+
+- show project layout
+
+* Dependency management
+
+demo gb vendor, add vendor/, push up to github
+
+* gb only cares about builds
+
+gb is only concerned with providing a project based approached to building go code. 
+
+The project structure lets you achieve repeatable builds by including (vendoring) all the source of your dependencies into your project.
+
+gb-vendor is a plugin, it adds a little bit of smarts on top of git clone, or hg checkout, but it isn't manditory to use gb-vendor. All gb cares about is the source on disk, you don't have to use it.
+
+* dependency management (part ii)
+
+Show gb vendor list
+
+Show gb vendor update
+
+gb vendor update is just, gb vendor delete, and gb vendor fetch. If you need to update to a specific revision, gb vendor delete, then gb vendor fetch --rev [ --branch ]
+
+* Diamond dependencies
+
+How does gb handle the diamond dependncy problem ?
+
+* Can a gb project be a library ?
+
+Yes. 
+
+* Who should use gb
+
+In the pantheon of solutions, arranged in complexity from go run $FILE, to go install package, to gb build, gb build is clearly the most 
