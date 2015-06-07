@@ -6,30 +6,31 @@ GoSF
 
 * About me
 
+- Organiser of the Sydney Go Users Group
+- GopherCon organiser 
 
 * gb
+
+.image gb/gb.slide
 
 - Project based workflow
 - Repeatable builds via source vendoring 
 - Vendoring without rewriting imports
 - Reusable components and a plugin interface
 
-* Why is a project based appraoch useful ?
+* Why is a project based approach useful ?
 
-- Controll all your source, including your dependencies
+- Control all your source, including your dependencies
 - Clear separation between the code you write, and the code you depend on
 - Upgrade your team on your schedule
 - Don't let the internet break your team
 - Nifty tooling. Go is all about tools, and gb gives you even more tools.
-
-- Project ownership
 
 * Project ownership
 
 The owner of the project has a specicial responsibility
 
 - resolve missing dependencies
-
 - responsible dependency management
 
 Project ownership is important. You, the developer, the project owner, the build engineer, needs to own all the source that goes into your product. Don't be the person who cannot deliver a release because github is down. ibid.
@@ -38,6 +39,9 @@ Project ownership is important. You, the developer, the project owner, the build
 
 - We don't wrap the go tool
 - We don't use GOPATH
+- GOPATH only allows one copy of a project, and it's dependency
+- moving away from the go tool, actually means moving away from GOPATH
+- why move away from GOPATH, because GOPATH doesn't help dependency management.
 
 This gives us agility.
 
@@ -60,21 +64,34 @@ Why do I think it is important that imports are not rewritten
 
 * Project setup
 
-demo creating a project, pushing it up to github
+demo setting up a new project
 
 - show project layout
 
+demo a simple hello world webserver
+
 * Dependency management
+
+demo converting from a go gettable package, to a project.
+
+mkdir src, mv code into source
+mkdir vendor/src, use gb vendor
+
+demo converting a godeps project
 
 demo gb vendor, add vendor/, push up to github
 
 * gb only cares about builds
 
+Hang on, I spotted a metadata file in there. Aren't you the guy who made a big song and dance about no metadata files, not configuraion files, etc ? 
+
+Yes, that is true, gb-vendor records the dependencies fetched from 
+
 gb is only concerned with providing a project based approached to building go code. 
 
 The project structure lets you achieve repeatable builds by including (vendoring) all the source of your dependencies into your project.
 
-gb-vendor is a plugin, it adds a little bit of smarts on top of git clone, or hg checkout, but it isn't manditory to use gb-vendor. All gb cares about is the source on disk, you don't have to use it.
+gb-vendor is a plugin, it adds a little bit of smarts on top of git clone, or hg checkout, but it isn't manditory to use gb-vendor. All gb cares about is the source on disk, you don't have to use it. If your workflow works well with svn externals or git subtrees, or maybe just copying the file and recording the revision you copied from in the commit message, you can use that approach as well. gb-vendor is not required to use gb, and gb is completely oblivious to its operation, all gb cares about is the source is on disk, in your project, with the correct layout.
 
 * dependency management (part ii)
 
@@ -92,6 +109,28 @@ How does gb handle the diamond dependncy problem ?
 
 Yes. 
 
+* How can I vendor a library which is also a gb project ?
+
+Show gb vendor fetch http://..../ --as
+
 * Who should use gb
 
 In the pantheon of solutions, arranged in complexity from go run $FILE, to go install package, to gb build, gb build is clearly the most 
+
+* Wrapping up 
+
+* gb
+
+.image gb/gb.slide
+
+- Project based workflow
+- Repeatable builds via source vendoring 
+- Vendoring without rewriting imports
+- Reusable components and a plugin interface
+
+
+* Next steps
+
+- gb does not seek to establish a single package respository for Go code
+- Not a discussion about how to update packages safely (for whatever this means)
+- Now a discussion about Semver
