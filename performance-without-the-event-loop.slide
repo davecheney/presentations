@@ -65,5 +65,94 @@ Go lets you write high performance servers with simple, imperative, code.
 The langauge and the runtime take care of handling blocking i/o.
 
 
+* Hello
+
+Who am I
+
+Establish subject matter expert, arm contribution, arm64, ppc64 maintainer. 
+Used to be the performance guy
+
+Why did I stop, harder to show performance improvements in absolute numbers,answers became more nuanced.
+
+Thus isn't today's talk, but the narrative remains the same, go is fast, and efficient, and I'm going to show you how and why this is, and especially how you can reap the benefits of this simply
+
+* Who is this presentation for
+
+* Background
+
+based on 5 things presentation from Gocon Japan, the idea
+
+realisation that many of the painful thigns in writing high performacne concurrent servers
+
+* What do we mean high performance
+
+Vitess
+dl.google.com
+natsd
+etcd
+
+* What do we mean concurrent
+
+10,000 connections, but we'll come back to that in a second
+
+* History
+
+Internet circa 1998, enter me, stage left
+
+E10k
+
+photog.net
+
+sun hardware
+
+apache multu process
+
+solaris mainly, cisco networking, linux, too puny for much good
+
+plus, if you work on windwos, you get these for free, node does this, few other langauges do, go is one of the good guys
+
+Dave Cheney
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* Introduction
+
+I got into Go because it offered performance.
+
+As a BOFH in a past life the most stressful times in my career were defined by unstisfying performance.
+
+While there were other aspects of the language that appealed to me; minimalism, simplicity, orthogonality; it was the performance that was the deciding factor.
+
+Go is a general purpose language currently in use in a wide range of application domains. But if we look back to 2009, to the introductory material specificaly mentions "a language for solving problems of Google's size -- and Google has large problems".
+
+-- And that means, "writing servers"
+
+This then is the subject of my talk, features of the Go language and runtime environemnt that (mostly) transparently to the programmer allow you to write high performance servers with simple, structured programming, code.
+
+
+* Topics
+
+- Escape Analysis
+- Stack management
+- Processes, threads, and goroutines
+- Integrated network poller
+
+* Escape analysis
+
+Allocation
+
+- How many bytes, what is the footprint, per connection, per client, per request ?
+
+
+* Conclusion
+
+All of these features are (mostly) transparent to the programmer.
+
+Go lets you write high performance servers with simple, imperative, code.
+
+The langauge and the runtime take care of handling blocking i/o.
+
+
 
 
