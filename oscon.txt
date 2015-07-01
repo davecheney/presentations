@@ -1,0 +1,65 @@
+* network servers
+
+not HPC
+
+not desktop gaming
+
+not bitcoin mining
+
+
+* Moore's Law
+
+The oft mis quoted Moore's law states that the number of transistors per die (waifer?) will double every 18 months.
+
+However clock speeds, which are a function of entirely differnt properties topped out a decade ago with the Penryn generation ~ 3.5Ghz and have been slipping backwards ever since
+
+Over the last decade, 
+
+- data centers have moved from space constrained, you could fit e450's in a full height rack, to power constrained. The last two data center rollouts I did, we ran out of power when the rack was barely 1/3rd full
+- being power constrained has effects at the macro level; can't get enough power for your 700 watt 1RU servers, as I showed above, and at the micro level -- all this power, hundreds of amps at very low voltage is being dissipated in microscopic cpu die.
+
+* Where does this power consumption come from ?
+
+CMOS switching, CMOS stands for _complementary_ metal oxcide semiconductor, the _complementary_ part is the key. Digital logic inside a CPU is implemented with pairs of transistors
+
+https://www.ece.cmu.edu/~ece322/LECTURES/Lecture13/Lecture13.03.pdf
+
+* Right, thank's for the non sequitor
+
+What's the point of this background ? The point is, while an argument that moore's law is still in effect, for the people in this room, the free lunch is over
+
+CPU's process size shrink are now primarily aimed at reducing power consumption; this gives longer battery life in laptops, lower power consumption in desktop and server parts. And when I say lower, we're not talking about "green" here, we're talking about keeping power consumption, and thus disipation below levels that will damage the cpu.
+
+Performance increases come mainly from small microarchitecture tweaks, an escoteric vector instructions which are not useful for the 
+
+Added up, each _microarchitecture_ (5 year cycle) change yeilds at most 10% improvement, and most recently 4-6%.
+
+* CPUs are not getting faster, but they are getting wider
+
+So, CPUs are not getting faster, but they are getting wider, that is to say, hyper threading, dual core (mobile i5/i7) , quad core (desktop i5/i7), oct core and more (xeon)
+
+* internet scale
+
+need to plan to be internet scale from day one.
+
+- microservices
+- redundant
+- distributed
+- efficient
+
+* Your grandfathers server
+
+e450 
+
+dialup modems
+
+disk io was the main factor, network io was slower than disk seek times, so raid volumes worked well, and machines like the e450 were workhorses
+
+http serving was apache, apache, apache, and apache 1.3 btw.
+
+prefork was the name of the game
+
+dan keegle's 10k challenge
+
+threaded servers, still one connection per 
+
