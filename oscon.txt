@@ -1,3 +1,22 @@
+* About me
+
+
+* Credentials
+
+- BOFH for many years
+- grew up in internet 1.0 time
+- Yelling at the cloud since '1999
+- automation before it was puppet
+- transitioned to Go programmer 5 years ago
+
+* Agenda
+
+- 
+
+
+
+
+
 * network servers
 
 not HPC
