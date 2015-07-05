@@ -7,6 +7,474 @@ dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
+* Introduction
+
+* whoami(1)
+
+- Yelling at the cloud since 1998
+- automation before it was puppet
+- transitioned to Go programmer 5 years ago
+- Work for Canonical contrinbuting to the Go project
+- maintain the arm port, helped with the port to Solaris, worked on ports of Go to ppc64 and arm64.
+
+Establish subject matter expert, arm contribution, arm64, ppc64 maintainer. 
+Used to be the performance guy
+
+Why did I stop, harder to show performance improvements in absolute numbers,answers became more nuanced.
+
+Thus isn't today's talk, but the narrative remains the same, go is fast, and efficient, and I'm going to show you how and why this is, and especially how you can reap the benefits of this simply
+
+* xx
+
+As we're in a technical track, I'm not here to tell you that Go is fast, instead I hope to _show_ you that Go is fast.
+
+This is a technical track 
+
+* Who is this presentation for
+
+I got into Go because it offered performance.
+
+As a BOFH in a past life the most stressful times in my career were defined by unstisfying performance.
+
+While there were other aspects of the language that appealed to me; minimalism, simplicity, orthogonality; it was the performance that was the deciding factor.
+
+Go is a general purpose language currently in use in a wide range of application domains. But if we look back to 2009, to the introductory material specificaly mentions "a language for solving problems of Google's size -- and Google has large problems".
+
+-- And that means, "writing servers"
+
+This then is the subject of my talk, features of the Go language and runtime environemnt that (mostly) transparently to the programmer allow you to write high performance servers with simple, structured programming, code.
+
+* network servers
+
+what does a fast general purpose language mean ?
+
+not gene folding
+
+not HPC
+
+not desktop gaming
+
+not bitcoin mining
+
+you need a language which is compiled, because interpreted languages just do not justify themselves in production, at scale, on a capex basis
+
+* What do I mean when I say high performance
+
+Vitess (mysql proxy that sits between every db call behind Youtube)
+dl.google.com
+natsd
+etcd
+
+* What do I mean when I say concurrent
+
+100,000 connections, but we'll come back to that in a second
+* Agenda
+
+- History lesson, part i
+- An argument for an efficient programming language
+-- cpu history
+- History lesson, part ii
+- An argument for a concurrent programming language 
+-- c10k history
+- Go is this language, let me show you why
+- You have to be internet scale from the start.
+
+* Moore's Law
+
+The oft mis quoted Moore's law states that the number of transistors per die (waifer?) will double every 18 months.
+
+However clock speeds, which are a function of entirely differnt properties topped out a decade ago with the Penryn generation ~ 3.5Ghz and have been slipping backwards ever since
+
+Over the last decade, 
+
+- data centers have moved from space constrained, you could fit e450's in a full height rack, to power constrained. The last two data center rollouts I did, we ran out of power when the rack was barely 1/3rd full
+- being power constrained has effects at the macro level; can't get enough power for your 700 watt 1RU servers, as I showed above, and at the micro level -- all this power, hundreds of amps at very low voltage is being dissipated in microscopic cpu die.
+
+* Where does this power consumption come from ?
+
+CMOS switching, CMOS stands for _complementary_ metal oxcide semiconductor, the _complementary_ part is the key. Digital logic inside a CPU is implemented with pairs of transistors
+
+https://www.ece.cmu.edu/~ece322/LECTURES/Lecture13/Lecture13.03.pdf
+
+* Right, thanks for the non sequitor
+
+What's the point of this background ? The point is, while an argument that moore's law is still in effect, for the people in this room, the free lunch is over
+
+CPU's process size shrink are now primarily aimed at reducing power consumption; this gives longer battery life in laptops, lower power consumption in desktop and server parts. And when I say lower, we're not talking about "green" here, we're talking about keeping power consumption, and thus disipation below levels that will damage the cpu.
+
+Performance increases come mainly from small microarchitecture tweaks, an escoteric vector instructions which are not useful for the 
+
+Added up, each _microarchitecture_ (5 year cycle) change yeilds at most 10% improvement, and most recently 4-6%.
+
+* What's your point ?
+
+So, why am I rambling on to you about hardware at a software conference ? 
+
+It is clear to me, and hopefuly clear to you now, that hardware is not getting any faster. The old addages that a slow langauge doesn't matter 'cos in a few years hardware will be x times faster do not apply anymore.
+
+If performance and scale is important to you, and arguably it is, as you're here in this session, then you'll agree with me that the days of throwing hardware at the problem are over - at least in the convention sense.
+
+The arguments 'ruby, performance doesn't matter, it's the web' are also busted
+
+If you care about performance, you need a langauge which produces efficient programs on the server.
+
+but with clock speeds fixed, and in direct conflict to total thermal wattage (TDP), achtectural improvements to the core of the cpu, have given only 10% improvements by microachictecture (one every 5 years), and recenly as little as 4-6%
+
+Now, in this talk I'm going to argue that Go is this indeed this langauage, but you'd be right in thinking that there are pleanty of other existing langauges which produce efficient excutables.
+
+- Traditionally C
+- More recently C++, especially after C++ 0x11
+- Jitted languages like Java and Javascript (v8)
+
+To explain why I think Go is a better choice than these languages, on the server, I need to come back to 
+
+* CPUs are not getting faster, but they are getting wider
+
+So, CPUs are not getting faster, but they are getting wider, that is to say, hyper threading, dual core (mobile i5/i7) , quad core (desktop i5/i7), oct core and more (xeon)
+
+* Introducing Go, in two slides
+
+Hopefully some of you in the room have seen or tried Go. If you've been dabbling in Docker, CoreOS, or Kubernetes, it's probably been unavoidable for you.
+
+I'm going to give a 2 slide overview of Go. If you're interested in learning more about the language, I believe the confernce has organised a workshop series on Go, if you would like to know more, I'll be around all week, so come and find me.
+
+- C style language, with curley braces, but no semicolons
+- Imperative style
+- Not class based, there is no inheritence, instead we have composition and interfaces
+- Key features
+-- lightweight concurrrency through goroutines
+-- intraprocess communication by way of channels, typed queues that can be used to pass information or synchornise between goroutines.
+
+* Goroutines
+
+* Stack mangement
+
+* Stack growth and shrinkage
+
+* Heap management through escape analysis
+
+Concurrent, low pause collector, in Go 1.5, but creating garbage will never be free (hint: it's not free with malloc or reference counting either), so you want to avoid that where possible to manage your alloations up front.
+
+
+Go has goroutines. These are the foundations for concurrency in Go.
+
+I want to step back for a moment and explore the history that leads us to goroutines.
+
+In the beginning computers ran one process at a time. Then in the 60’s the idea of multiprocessing, or time sharing became popular.
+
+In a time-sharing system the operating systems must constantly switch the attention of the CPU between these processes by recording the state of the current process, then restoring the state of another.
+
+This is called process switching.
+
+There are three main costs of a process switch.
+
+First is the kernel needs to store the contents of all the CPU registers for that process, then restore the values for another process.
+
+The kernel also needs to flush the CPU’s mappings from virtual memory to physical memory as these are only valid for the current process.
+
+Finally there is the cost of the operating system context switch, and the overhead of the scheduler function to choose the next process to occupy the CPU.
+
+There are a surprising number of registers in a modern processor. I have difficulty fitting them on one slide, which should give you a clue how much time it takes to save and restore them.
+
+Because a process switch can occur at any point in a process’ execution, the operating system needs to store the contents of all of these registers because it does not know which are currently in use.
+
+This lead to the development of threads, which are conceptually the same as processes, but share the same memory space.
+
+As threads share address space, they are lighter than processes so are faster to create and faster to switch between.
+
+Goroutines take the idea of threads a step further.
+
+Goroutines are cooperatively scheduled, rather than relying on the kernel to manage their time sharing.
+
+The switch between goroutines only happens at well defined points, when an explicit call is made to the Go runtime scheduler.
+
+The compiler knows the registers which are in use and saves them automatically.
+
+While goroutines are cooperatively scheduled, this scheduling is handled for you by the runtime.
+
+Places where Goroutines may yield to others are:
+
+Channel send and receive operations, if those operations would block.
+The Go statement, although there is no guarantee that new goroutine will be scheduled immediately.
+Blocking syscalls like file and network operations.
+After being stopped for a garbage collection cycle.
+Gocon 2014 (35)
+
+This an example to illustrate some of the scheduling points described in the previous slide.
+
+The thread, depicted by the arrow, starts on the left in the ReadFile function. It encounters os.Open, which blocks the thread while waiting for the file operation to complete, so the scheduler switches the thread to the goroutine on the right hand side.
+
+Execution continues until the read from the c chan blocks, and by this time the os.Open call has completed so the scheduler switches the thread back the left hand side and continues to the file.Read function, which again blocks on file IO.
+
+The scheduler switches the thread back to the right hand side for another channel operation, which has unblocked during the time the left hand side was running, but it blocks again on the channel send.
+
+Finally the thread switches back to the left hand side as the Read operation has completed and data is available.
+
+This slide shows the low level runtime.Syscall function which is the base for all functions in the os package.
+
+Any time your code results in a call to the operating system, it will go through this function.
+
+The call to entersyscall informs the runtime that this thread is about to block.
+
+This allows the runtime to spin up a new thread which will service other goroutines while this current thread blocked.
+
+This results in relatively few operating system threads per Go process, with the Go runtime taking care of assigning a runnable Goroutine to a free operating system thread.
+
+In the previous section I discussed how goroutines reduce the overhead of managing many, sometimes hundreds of thousands of concurrent threads of execution.
+
+There is another side to the goroutine story, and that is stack management, which leads me to my final topic.
+
+This is a diagram of the memory layout of a process. The key thing we are interested is the location of the heap and the stack.
+
+Traditionally inside the address space of a process, the heap is at the bottom of memory, just above the program (text) and grows upwards.
+
+The stack is located at the top of the virtual address space, and grows downwards.
+
+Because the heap and stack overwriting each other would be catastrophic, the operating system usually arranges to place an area of unwritable memory between the stack and the heap to ensure that if they did collide, the program will abort.
+
+This is called a guard page, and effectively limits the stack size of a process, usually in the order of several megabytes.
+
+We’ve discussed that threads share the same address space, so for each thread, it must have its own stack.
+
+Because it is hard to predict the stack requirements of a particular thread, a large amount of memory is reserved for each thread’s stack along with a guard page.
+
+The hope is that this is more than will ever be needed and the guard page will never be hit.
+
+The downside is that as the number of threads in your program increases, the amount of available address space is reduced.
+
+We’ve seen that the Go runtime schedules a large number of goroutines onto a small number of threads, but what about the stack requirements of those goroutines ?
+
+Instead of using guard pages, the Go compiler inserts a check as part of every function call to check if there is sufficient stack for the function to run. If there is not, the runtime can allocate more stack space.
+
+Because of this check, a goroutines initial stack can be made much smaller, which in turn permits Go programmers to treat goroutines as cheap resources.
+
+This is a slide that shows how stacks are managed in Go 1.2.
+
+When G calls to H there is not enough space for H to run, so the runtime allocates a new stack frame from the heap, then runs H on that new stack segment. When H returns, the stack area is returned to the heap before returning to G.
+
+This method of managing the stack works well in general, but for certain types of code, usually recursive code, it can cause the inner loop of your program to straddle one of these stack boundaries.
+
+For example, in the inner loop of your program, function G may call H many times in a loop,
+
+Each time this will cause a stack split. This is known as the hot split problem.
+
+To solve hot splits, Go 1.3 has adopted a new stack management method.
+
+Instead of adding and removing additional stack segments, if the stack of a goroutine is too small, a new, larger, stack will be allocated.
+
+The old stack’s contents are copied to the new stack, then the goroutine continues with its new larger stack.
+
+After the first call to H the stack will be large enough that the check for available stack space will always succeed.
+
+This resolves the hot split problem.
+
+
+
+* internet scale
+
+need to plan to be internet scale from day one.
+
+- microservices
+- redundant
+- distributed
+- efficient
+
+* Your grandfathers server
+
+e450 
+
+dialup modems
+
+disk io was the main factor, network io was slower than disk seek times, so raid volumes worked well, and machines like the e450 were workhorses
+
+http serving was apache, apache, apache, and apache 1.3 btw.
+
+prefork was the name of the game
+
+dan keegle's 10k challenge
+
+threaded servers, still one connection per 
+
+* Escape analysis
+
+Allocation
+
+- How many bytes, what is the footprint, per connection, per client, per request ?
+
+Mandatory garbage collection makes Go a simpler and safer language.
+
+This does not imply that garbage collection makes Go slow, or that garbage collection is the ultimate arbiter of the speed of your program.
+
+What it does mean is memory allocated on the heap comes at a cost. It is a debt that costs CPU time every time the GC runs until that memory is freed.
+
+There is however another place to allocate memory, and that is the stack.
+
+Unlike C, which forces you to choose if a value will be stored on the heap, via malloc, or on the stack, by declaring it inside the scope of the function, Go implements an optimisation called escape analysis.
+
+Escape analysis determines whether any references to a value escape the function in which the value is declared.
+
+If no references escape, the value may be safely stored on the stack.
+
+Values stored on the stack do not need to be allocated or freed.
+
+Lets look at some examples
+
+Sum adds the numbers between 1 and 100 and returns the result. This is a rather unusual way to do this, but it illustrates how Escape Analysis works.
+
+Because the numbers slice is only referenced inside Sum, the compiler will arrange to store the 100 integers for that slice on the stack, rather than the heap.
+
+There is no need to garbage collect numbers, it is automatically freed when Sum returns.
+
+This second example is also a little contrived. In CenterCursor we create a new Cursor and store a pointer to it in c.
+
+Then we pass c to the Center() function which moves the Cursor to the center of the screen.
+
+Then finally we print the X and Y locations of that Cursor.
+
+Even though c was allocated with the new function, it will not be stored on the heap, because no reference c escapes the CenterCursor function.
+
+Go’s optimisations are always enabled by default. You can see the compiler’s escape analysis and inlining decisions with the -gcflags=-m switch.
+
+Because escape analysis is performed at compile time, not run time, stack allocation will always be faster than heap allocation, no matter how efficient your garbage collector is.
+
+I will talk more about the stack in the remaining sections of this talk.
+
+
+blah blah
+
+* Inlining
+
+- reduces funciton call overhead
+- reduces the pressure on the stack allocator 
+- enables better code motion invariants, dead code elimination, common sub expression elimination, etc
+
+- works at compile time, not run time.
+- no jit warmup, java / c#
+
+- works across file and package boundaries
+-- no need for explicit annotations like __inline__ or static
+-- no need for header tricks in C or macros to 
+
+Function calls are not free.
+
+Three things happen when a function is called.
+
+A new stack frame is created, and the details of the caller recorded.
+
+Any registers which may be overwritten during the function call are saved to the stack.
+
+The processor computes the address of the function and executes a branch to that new address.
+
+Because function calls are very common operations, CPU designers have worked hard to optimise this procedure, but they cannot eliminate the overhead.
+
+Depending on what the function does, this overhead may be trivial or significant.
+
+A solution to reducing function call overhead is an optimisation technique called Inlining.
+
+The Go compiler inlines a function by treating the body of the function as if it were part of the caller.
+
+Inlining has a cost; it increases binary size.
+
+It only makes sense to inline when the overhead of calling a function is large relative to the work the function does, so only simple functions are candidates for inlining.
+
+Complicated functions are usually not dominated by the overhead of calling them and are therefore not inlined.
+
+This example shows the function Double calling util.Max.
+
+To reduce the overhead of the call to util.Max, the compiler can inline util.Max into Double, resulting in something like this
+
+After inlining there is no longer a call to util.Max, but the behaviour of Double is unchanged.
+
+Inlining isn’t exclusive to Go. Almost every compiled or JITed language performs this optimisation. But how does inlining in Go work?
+
+The Go implementation is very simple. When a package is compiled, any small function that is suitable for inlining is marked and then compiled as usual.
+
+Then both the source of the function and the compiled version are stored.
+
+This slide shows the contents of util.a. The source has been transformed a little to make it easier for the compiler to process quickly.
+
+When the compiler compiles Double it sees that util.Max is inlinable, and the source of util.Max is available.
+
+Rather than insert a call to the compiled version of util.Max, it can substitute the source of the original function.
+
+Having the source of the function enables other optimizations.
+
+In this example, although the function Test always returns false, Expensive cannot know that without executing it.
+
+When Test is inlined, we get something like this
+
+The compiler now knows that the expensive code is unreachable.
+
+Not only does this save the cost of calling Test, it saves compiling or running any of the expensive code that is now unreachable.
+
+The Go compiler can automatically inline functions across files and even across packages. This includes code that calls inlinable functions from the standard library.
+
+* Integrated network poller
+
+- I showed:
+
+you _need_ a langauge which is concurrent from the start
+
+and you need a language which is memory efficient, because while concurrecny can be simulated with threads, to hold up an internet's work of traffic you cannot dedicate megabytes of ram per incoming connection, lest your business is dragged under by hardware and overheads.
+
+Inlining, Escape Analysis, Goroutines, and segmented/copying stacks.
+
+These are the five features that I chose to speak about today, but they are by no means the only things that makes Go a fast programming language, just as there more that three reasons that people cite as their reason to learn Go.
+
+As powerful as these five features are individually, they do not exist in isolation.
+
+For example, the way the runtime multiplexes goroutines onto threads would not be nearly as efficient without growable stacks.
+
+Inlining reduces the cost of the stack size check by combining smaller functions into larger ones.
+
+Escape analysis reduces the pressure on the garbage collector by automatically moving allocations from the heap to the stack.
+
+Escape analysis is also provides better cache locality.
+
+Without growable stacks, escape analysis might place too much pressure on the stack.
+
+* success stories
+
+vitess
+dl.google.com
+new your times
+facebook/parse
+
+
+* But wait, there's more
+
+As this is the performance track, i've mostly constrained my remarks to this area, but there is a lot more to the Go success story than just being fast, and these are arguably the more notable features of the language
+
+- Super fast compilation
+- Excellent tooling
+- Excellent cross platform support, cross compilation as well without tears
+- Ridiculusly simple deployment story, scp(1) and you're done -- not runtime interpreter like python, ruby, php, java, etc. Single static binary
+
+if you want to write software that supports the entire internet, it is no long possible to do that with a single monolithic application -- there just isn't a machine that you can buy that is large enough
+
+So, if you're planning on your application being successful, then it needs to be composable from day one
+
+I look ascanse at the topic of microservices, in the same dim view that I looked at Big Data in 2014 when everyone was loosing their shit.
+
+With that said, any succesful consumer facing web business is going to be decomposing their application, and that decomposition is a market that Go serves very well.
+
+Simple deployment story
+Simple conventions
+Excellent network and concurrency support
+
+* Conclusion
+
+All of these features are (mostly) transparent to the programmer.
+
+Go lets you write high performance servers with simple, imperative, code.
+
+The langauge and the runtime take care of handling blocking i/o.
+
+* Stop, question time
+
+* Thank you
+
+
 * Abstract
 
 Conventional wisdom suggests that high performance servers require native threads, or more recently, event loops.
@@ -27,21 +495,6 @@ The goal of this talk is to introduce the following features of the language and
 These four features work in concert to build an argument for the suitability of Go as a language for writing high performance servers.
 
 
-* Introduction
-
-I got into Go because it offered performance.
-
-As a BOFH in a past life the most stressful times in my career were defined by unstisfying performance.
-
-While there were other aspects of the language that appealed to me; minimalism, simplicity, orthogonality; it was the performance that was the deciding factor.
-
-Go is a general purpose language currently in use in a wide range of application domains. But if we look back to 2009, to the introductory material specificaly mentions "a language for solving problems of Google's size -- and Google has large problems".
-
--- And that means, "writing servers"
-
-This then is the subject of my talk, features of the Go language and runtime environemnt that (mostly) transparently to the programmer allow you to write high performance servers with simple, structured programming, code.
-
-
 * Topics
 
 - Escape Analysis
@@ -49,51 +502,6 @@ This then is the subject of my talk, features of the Go language and runtime env
 - Processes, threads, and goroutines
 - Integrated network poller
 
-* Escape analysis
-
-Allocation
-
-- How many bytes, what is the footprint, per connection, per client, per request ?
-
-
-* Conclusion
-
-All of these features are (mostly) transparent to the programmer.
-
-Go lets you write high performance servers with simple, imperative, code.
-
-The langauge and the runtime take care of handling blocking i/o.
-
-
-* Hello
-
-Who am I
-
-Establish subject matter expert, arm contribution, arm64, ppc64 maintainer. 
-Used to be the performance guy
-
-Why did I stop, harder to show performance improvements in absolute numbers,answers became more nuanced.
-
-Thus isn't today's talk, but the narrative remains the same, go is fast, and efficient, and I'm going to show you how and why this is, and especially how you can reap the benefits of this simply
-
-* Who is this presentation for
-
-* Background
-
-based on 5 things presentation from Gocon Japan, the idea
-
-realisation that many of the painful thigns in writing high performacne concurrent servers
-
-* What do we mean high performance
-
-Vitess
-dl.google.com
-natsd
-etcd
-
-* What do we mean concurrent
-
-10,000 connections, but we'll come back to that in a second
 
 * History
 
@@ -111,48 +519,7 @@ solaris mainly, cisco networking, linux, too puny for much good
 
 plus, if you work on windwos, you get these for free, node does this, few other langauges do, go is one of the good guys
 
-Dave Cheney
-dave@cheney.net
-http://dave.cheney.net/
-@davecheney
+* Power constrained
 
-* Introduction
-
-I got into Go because it offered performance.
-
-As a BOFH in a past life the most stressful times in my career were defined by unstisfying performance.
-
-While there were other aspects of the language that appealed to me; minimalism, simplicity, orthogonality; it was the performance that was the deciding factor.
-
-Go is a general purpose language currently in use in a wide range of application domains. But if we look back to 2009, to the introductory material specificaly mentions "a language for solving problems of Google's size -- and Google has large problems".
-
--- And that means, "writing servers"
-
-This then is the subject of my talk, features of the Go language and runtime environemnt that (mostly) transparently to the programmer allow you to write high performance servers with simple, structured programming, code.
-
-
-* Topics
-
-- Escape Analysis
-- Stack management
-- Processes, threads, and goroutines
-- Integrated network poller
-
-* Escape analysis
-
-Allocation
-
-- How many bytes, what is the footprint, per connection, per client, per request ?
-
-
-* Conclusion
-
-All of these features are (mostly) transparent to the programmer.
-
-Go lets you write high performance servers with simple, imperative, code.
-
-The langauge and the runtime take care of handling blocking i/o.
-
-
-
+Since I started my career, data centers have moved from space constrained, to power constrained. Space is no longer a problem, because compute densities have improved so rapidly. However, modern CPUs consume more power, signficantly more power, in a much smaller area, making cooling more critical, and harder. 	
 
