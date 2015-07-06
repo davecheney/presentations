@@ -11,42 +11,29 @@ http://dave.cheney.net/
 
 * whoami(1)
 
-- Yelling at the cloud since 1998
-- automation before it was puppet
-- transitioned to Go programmer 5 years ago
-- Work for Canonical contrinbuting to the Go project
-- maintain the arm port, helped with the port to Solaris, worked on ports of Go to ppc64 and arm64.
+- Sysadmin before Devops
+- Transitioned to Go programmer 5 years ago
+- Work for Canonical contributing to the Go project
+- Worked on a number of ports, solaris, ppc64 (gccgo), arm64
 
-Establish subject matter expert, arm contribution, arm64, ppc64 maintainer. 
-Used to be the performance guy
-
-Why did I stop, harder to show performance improvements in absolute numbers,answers became more nuanced.
-
-Thus isn't today's talk, but the narrative remains the same, go is fast, and efficient, and I'm going to show you how and why this is, and especially how you can reap the benefits of this simply
-
-* xx
-
-As we're in a technical track, I'm not here to tell you that Go is fast, instead I hope to _show_ you that Go is fast.
-
-This is a technical track 
+# Establish subject matter expert, arm contribution, arm64, ppc64 maintainer. 
+# Used to be the performance guy 
 
 * Who is this presentation for
 
 I got into Go because it offered performance.
 
-As a BOFH in a past life the most stressful times in my career were defined by unstisfying performance.
+As an admin in a past life the most stressful times in my career were defined by unsatisfying performance.
 
 While there were other aspects of the language that appealed to me; minimalism, simplicity, orthogonality; it was the performance that was the deciding factor.
 
 Go is a general purpose language currently in use in a wide range of application domains. But if we look back to 2009, to the introductory material specificaly mentions "a language for solving problems of Google's size -- and Google has large problems".
 
--- And that means, "writing servers"
+# Why did I stop, harder to show performance improvements in absolute numbers,answers became more nuanced.
+# Thus isn't today's talk, but the narrative remains the same, go is fast, and efficient, and I'm going to show you how and why this is, and especially how you can reap the benefits of this simply
+# As we're in a technical track, I'm not here to tell you that Go is fast, instead I hope to _show_ you that Go is fast.
 
-This then is the subject of my talk, features of the Go language and runtime environemnt that (mostly) transparently to the programmer allow you to write high performance servers with simple, structured programming, code.
-
-* network servers
-
-what does a fast general purpose language mean ?
+* What does a fast general purpose language mean ?
 
 not gene folding
 
@@ -56,69 +43,87 @@ not desktop gaming
 
 not bitcoin mining
 
-you need a language which is compiled, because interpreted languages just do not justify themselves in production, at scale, on a capex basis
+-- And that means, "writing servers"
+
+This then is the subject of my talk, features of the Go language and runtime environemnt that (mostly) transparently to the programmer allow you to write high performance servers with simple, structured programming, code.
+
+* History lesson, part i
+An argument for an efficient programming language
 
 * What do I mean when I say high performance
 
-Vitess (mysql proxy that sits between every db call behind Youtube)
-dl.google.com
-natsd
-etcd
-
-* What do I mean when I say concurrent
-
-100,000 connections, but we'll come back to that in a second
-* Agenda
-
-- History lesson, part i
-- An argument for an efficient programming language
--- cpu history
-- History lesson, part ii
-- An argument for a concurrent programming language 
--- c10k history
-- Go is this language, let me show you why
-- You have to be internet scale from the start.
-
 * Moore's Law
 
-The oft mis quoted Moore's law states that the number of transistors per die (waifer?) will double every 18 months.
+.image performance-without-the-event-loop/CPU.png _ 400
+.caption Image credit: [[http://www.gotw.ca/publications/concurrency-ddj.htm][Herb Sutter (Dr, Dobb's Journal, March 2005)]]
 
-However clock speeds, which are a function of entirely differnt properties topped out a decade ago with the Penryn generation ~ 3.5Ghz and have been slipping backwards ever since
+# The oft mis quoted
 
-Over the last decade, 
+Moore's law states that the number of transistors per die will double every 18 months.
 
-- data centers have moved from space constrained, you could fit e450's in a full height rack, to power constrained. The last two data center rollouts I did, we ran out of power when the rack was barely 1/3rd full
-- being power constrained has effects at the macro level; can't get enough power for your 700 watt 1RU servers, as I showed above, and at the micro level -- all this power, hundreds of amps at very low voltage is being dissipated in microscopic cpu die.
+Clock speeds topped out a decade ago with the Pentium 4 (Penryn) and have been slipping backwards since.
+
+# However clock speeds, which are a function of entirely differnt properties topped out a decade ago with the Penryn generation ~ 3.5Ghz and have been slipping backwards ever since
+
+* Power constrained
+
+.image performance-without-the-event-loop/sun-ultra-enterprise-450-400mhz-2gb-20-bay-workgroup-server-system-no-hdd-parts_131514071457.jpg
+.caption Image credit: [[http://www.ccmostwanted.com/store/Sun-Ultra-Enterprise-450-400mhz-2gb-20-bay-Workgroup-Server-System-No-Hdd-Parts_131514071457.html][eBay]]
+
+This is the Sun e450. When I started my career, these were the workhorses of the industry. This is Internet 1.0 and everyone bought Sun and Cisco. These things were massive, three of them, stacked one on top of another would consume an entire 19" Rack. They only consumed about 500 Watts each.
+
+Over the last decade, data centers have moved from space constrained, you could fit e450's in a full height rack, to power constrained. The last two data center rollouts I did, we ran out of power when the rack was barely 1/3rd full.
+
+Being power constrained has effects at the macro level; can't get enough power for a rack of 1200 Watt 1RU servers. And at the micro level -- all this power, hundreds of amps at very low voltage is being dissipated in microscopic cpu die.
+
+Space is no longer a problem, because compute densities have improved so rapidly. However, modern CPUs consume more power, signficantly more power, in a much smaller area, making cooling more critical, and harder. 	
 
 * Where does this power consumption come from ?
 
-CMOS switching, CMOS stands for _complementary_ metal oxcide semiconductor, the _complementary_ part is the key. Digital logic inside a CPU is implemented with pairs of transistors
+.image performance-without-the-event-loop/CMOS_Inverter.svg
+.caption Source: [[https://en.wikipedia.org/wiki/CMOS][Wikipedia]]
 
-https://www.ece.cmu.edu/~ece322/LECTURES/Lecture13/Lecture13.03.pdf
+# Simplest possible gate, a NOT gate, an inverter. If we have a high on the input, the output is low, if we have a low on the input, the output is high.
+
+CMOS switching, CMOS stands for _complementary_ metal oxcide semiconductor, the _complementary_ part is the key.
+
+Digital logic inside a CPU is implemented with pairs of transistors, and during transition there is a brief period where _both_ transitors are conducting.
+
+Power consumption, and thus heat disipation, directly proportional to number of transition per second -- Clock speed.
+
+# Better than NMOS, but still consumes power
+
+# https://www.ece.cmu.edu/~ece322/LECTURES/Lecture13/Lecture13.03.pdf
 
 * Right, thanks for the non sequitor
 
-What's the point of this background ? The point is, while an argument that moore's law is still in effect, for the people in this room, the free lunch is over
+# What's the point of this background ? The point is, while an argument that
 
-CPU's process size shrink are now primarily aimed at reducing power consumption; this gives longer battery life in laptops, lower power consumption in desktop and server parts. And when I say lower, we're not talking about "green" here, we're talking about keeping power consumption, and thus disipation below levels that will damage the cpu.
+Moore's Law is still in effect, but for the people in this room, the free lunch is over.
 
-Performance increases come mainly from small microarchitecture tweaks, an escoteric vector instructions which are not useful for the 
+CPU's process size shrink are now primarily aimed at reducing power consumption
 
-Added up, each _microarchitecture_ (5 year cycle) change yeilds at most 10% improvement, and most recently 4-6%.
+# this gives longer battery life in laptops, lower power consumption in desktop and server parts. And when I say lower, we're not talking about "green" here, we're talking about keeping power consumption, and thus heat disipation below levels that will damage the cpu.
+
+Performance increases come mainly from microarchitecture tweaks and escoteric vector instructions which are not useful for the general computation.
+
+Added up, each _microarchitecture_ (5 year cycle) change yeilds at most 10% improvement per generation, and most recently 4-6%.
+
+# With clock speeds fixed, and in direct conflict to total thermal wattage (TDP), achtectural improvements to the core of the cpu, have given only 10% improvements by microachictecture (one every 5 years), and recenly as little as 4-6%
 
 * What's your point ?
 
 So, why am I rambling on to you about hardware at a software conference ? 
 
-It is clear to me, and hopefuly clear to you now, that hardware is not getting any faster. The old addages that a slow langauge doesn't matter 'cos in a few years hardware will be x times faster do not apply anymore.
+# It is clear to me, and hopefuly clear to you now, that hardware is not getting any faster.
 
-If performance and scale is important to you, and arguably it is, as you're here in this session, then you'll agree with me that the days of throwing hardware at the problem are over - at least in the convention sense.
+The old addages that a slow langauge doesn't matter 'cos in a few years hardware will be x times faster do not apply anymore.
 
-The arguments 'ruby, performance doesn't matter, it's the web' are also busted
+# If performance and scale is important to you, and arguably it is, as you're here in this session, then you'll agree with me that the days of throwing hardware at the problem are over - at least in the conventional sense.
 
 If you care about performance, you need a langauge which produces efficient programs on the server.
 
-but with clock speeds fixed, and in direct conflict to total thermal wattage (TDP), achtectural improvements to the core of the cpu, have given only 10% improvements by microachictecture (one every 5 years), and recenly as little as 4-6%
+# The arguments 'ruby, performance doesn't matter, it's the web' are also busted
 
 Now, in this talk I'm going to argue that Go is this indeed this langauage, but you'd be right in thinking that there are pleanty of other existing langauges which produce efficient excutables.
 
@@ -126,11 +131,27 @@ Now, in this talk I'm going to argue that Go is this indeed this langauage, but 
 - More recently C++, especially after C++ 0x11
 - Jitted languages like Java and Javascript (v8)
 
-To explain why I think Go is a better choice than these languages, on the server, I need to come back to 
+
+you need a language which is compiled, because interpreted languages just do not justify themselves in production, at scale, on a capex basis
+
+* What do I mean when I say concurrent
+
+100,000 connections, but we'll come back to that in a second
+* Agenda
+
+* An argument for a concurrent programming language 
 
 * CPUs are not getting faster, but they are getting wider
 
 So, CPUs are not getting faster, but they are getting wider, that is to say, hyper threading, dual core (mobile i5/i7) , quad core (desktop i5/i7), oct core and more (xeon)
+
+-- c10k history
+- Go is this language, let me show you why
+- You have to be internet scale from the start.
+
+
+To explain why I think Go is a better choice than these languages, on the server, I need to come back to 
+
 
 * Introducing Go, in two slides
 
@@ -279,7 +300,20 @@ need to plan to be internet scale from day one.
 - distributed
 - efficient
 
-* Your grandfathers server
+* Your grandfather's server
+
+.image performance-without-the-event-loop/3357832896_896d98bbaf_z.jpg
+.caption Image Credit: [[https://www.flickr.com/photos/tascott/3357832896/in/album-72157615257588587/][Tom Scott]] (CC BY-NC-SA 2.0)
+
+The first web server, [[http://info.cern.ch/Proposal.html][circa March 1989]].
+
+NCSA was the web server, which grew into apache.
+
+* c10k problem
+
+http://www.kegel.com/c10k.html
+
+Sunfire E10k, up to 64 processors in a mesh architecture. Very NUMA, ran at 
 
 e450 
 
@@ -435,22 +469,31 @@ Without growable stacks, escape analysis might place too much pressure on the st
 
 * success stories
 
-vitess
+Vitess (mysql proxy that sits between every db call behind Youtube)
 dl.google.com
 new your times
 facebook/parse
-
+docker
+coreos; fleet, etcd, 
+Baidu (Chinese Google)
 
 * But wait, there's more
 
-As this is the performance track, i've mostly constrained my remarks to this area, but there is a lot more to the Go success story than just being fast, and these are arguably the more notable features of the language
+As this is the performance track, I've mostly constrained my remarks to this area, but there is a lot more to the Go success story than just being fast, and these are arguably the more notable features of the language.
 
-- Super fast compilation
-- Excellent tooling
-- Excellent cross platform support, cross compilation as well without tears
-- Ridiculusly simple deployment story, scp(1) and you're done -- not runtime interpreter like python, ruby, php, java, etc. Single static binary
+Super fast compilation
+- In excess of 50k lines per second
 
-if you want to write software that supports the entire internet, it is no long possible to do that with a single monolithic application -- there just isn't a machine that you can buy that is large enough
+Excellent tooling
+- go build
+- go vet
+- go lint
+- godoc
+- race detector
+
+Excellent cross platform support, cross compilation as well without tears
+
+Ridiculusly simple deployment story, scp(1) and you're done -- not runtime interpreter like python, ruby, php, java, etc. Single static binary
 
 So, if you're planning on your application being successful, then it needs to be composable from day one
 
@@ -466,9 +509,12 @@ Excellent network and concurrency support
 
 All of these features are (mostly) transparent to the programmer.
 
+
 Go lets you write high performance servers with simple, imperative, code.
 
-The langauge and the runtime take care of handling blocking i/o.
+if you want to write software that supports the entire internet, it is no long possible to do that with a single monolithic application -- there just isn't a machine that you can buy that is large enough
+
+The langauge and the runtime take care of handling blocking i/o, thread scheduling, memory management.
 
 * Stop, question time
 
@@ -487,19 +533,14 @@ This talk focuses on the last two items, how the language and the runtime transp
 
 The goal of this talk is to introduce the following features of the language and the runtime:
 
-- Escape Analysis
-- Stack management
-- Processes and threads vs goroutines
-- Integrated network poller
-
 These four features work in concert to build an argument for the suitability of Go as a language for writing high performance servers.
 
 
 * Topics
 
-- Escape Analysis
-- Stack management
 - Processes, threads, and goroutines
+- Stack management
+- Escape Analysis
 - Integrated network poller
 
 
@@ -518,8 +559,4 @@ apache multu process
 solaris mainly, cisco networking, linux, too puny for much good
 
 plus, if you work on windwos, you get these for free, node does this, few other langauges do, go is one of the good guys
-
-* Power constrained
-
-Since I started my career, data centers have moved from space constrained, to power constrained. Space is no longer a problem, because compute densities have improved so rapidly. However, modern CPUs consume more power, signficantly more power, in a much smaller area, making cooling more critical, and harder. 	
 
