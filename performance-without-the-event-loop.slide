@@ -14,12 +14,12 @@ http://dave.cheney.net/
 - Sysadmin before Devops
 - Transitioned to Go programmer 5 years ago
 - Work for Canonical contributing to the Go project
-- Worked on a number of ports, solaris, ppc64 (gccgo), arm64
+- Worked on a number of ports; solaris, ppc64 (gccgo), arm64
 
 # Establish subject matter expert, arm contribution, arm64, ppc64 maintainer. 
 # Used to be the performance guy 
 
-* Who is this presentation for
+* Who is this presentation for ?
 
 I got into Go because it offered performance.
 
@@ -27,7 +27,9 @@ As an admin in a past life the most stressful times in my career were defined by
 
 While there were other aspects of the language that appealed to me; minimalism, simplicity, orthogonality; it was the performance that was the deciding factor.
 
-Go is a general purpose language currently in use in a wide range of application domains. But if we look back to 2009, to the introductory material specificaly mentions "a language for solving problems of Google's size -- and Google has large problems".
+Go is a general purpose language currently in use in a wide range of application domains. But if we look back to 2009, to the introductory material specificaly mentions:
+
+"a language for solving problems of Google's size -- and Google has large problems".
 
 # Why did I stop, harder to show performance improvements in absolute numbers,answers became more nuanced.
 # Thus isn't today's talk, but the narrative remains the same, go is fast, and efficient, and I'm going to show you how and why this is, and especially how you can reap the benefits of this simply
@@ -35,27 +37,48 @@ Go is a general purpose language currently in use in a wide range of application
 
 * What does a fast general purpose language mean ?
 
-not gene folding
+.image performance-without-the-event-loop/turingFull560.jpg
+.caption Image credit: [[http://aturingmachine.com/][aturingmachine.com]]
 
-not HPC
+# Go is a general purpose language, but just to set the scope here
 
-not desktop gaming
+Out of scope
 
-not bitcoin mining
+- gene folding
+- HPC (althought Go is making some interesting inroads in the NumPy crowd)
+- desktop gaming
+- bitcoin mining 
 
--- And that means, "writing servers"
+* Go in the server
 
-This then is the subject of my talk, features of the Go language and runtime environemnt that (mostly) transparently to the programmer allow you to write high performance servers with simple, structured programming, code.
+I'm also going to focus on the intel world, because that is the platform that many of you will be deploying in production. 
 
-* History lesson, part i
-An argument for an efficient programming language
+If you want to talk about other architectures, especially arm and arm64, i'm here all week, and it won't take much to get me talking.
 
-* What do I mean when I say high performance
+Conventional wisdom suggests that high performance servers require native threads, or more recently, event loops.
+
+Threads carry a high overhead in terms of scheduling cost and memory footprint.
+
+Event loops ameliorate those costs, but introduce their own requirements for a complex callback driven style.
+
+# A common refrain when talking about Go is its a language that works well on the server; static binaries, powerful concurrency, and high performance.
+
+# This talk focuses on the last two items, how the language and the runtime transparently let Go programmers write highly scalable network servers without having to worry about thread management or blocking I/O.
+
+# The goal of this talk is to introduce the following features of the language and the runtime:
+
+# These four features work in concert to build an argument for the suitability of Go as a language for writing high performance servers.
+
+# This then is the subject of my talk, features of the Go language and runtime environemnt that (mostly) transparently to the programmer allow you to write high performance servers with simple, structured programming, code.
+
+* An argument for an efficient programming language
+
+# But before I get down to the technical parts, I want to lay out two justifications for the market that Go is targeting
 
 * Moore's Law
 
 .image performance-without-the-event-loop/CPU.png _ 400
-.caption Image credit: [[http://www.gotw.ca/publications/concurrency-ddj.htm][Herb Sutter (Dr, Dobb's Journal, March 2005)]]
+.caption Image credit: [[http://www.gotw.ca/publications/concurrency-ddj.htm][Herb Sutter (Dr. Dobb's Journal, March 2005)]]
 
 # The oft mis quoted
 
@@ -72,9 +95,9 @@ Clock speeds topped out a decade ago with the Pentium 4 (Penryn) and have been s
 
 This is the Sun e450. When I started my career, these were the workhorses of the industry. This is Internet 1.0 and everyone bought Sun and Cisco. These things were massive, three of them, stacked one on top of another would consume an entire 19" Rack. They only consumed about 500 Watts each.
 
-Over the last decade, data centers have moved from space constrained, you could fit e450's in a full height rack, to power constrained. The last two data center rollouts I did, we ran out of power when the rack was barely 1/3rd full.
+Over the last decade, data centers have moved from space constrained, to power constrained. The last two data center rollouts I did, we ran out of power when the rack was barely 1/3rd full.
 
-Being power constrained has effects at the macro level; can't get enough power for a rack of 1200 Watt 1RU servers. And at the micro level -- all this power, hundreds of amps at very low voltage is being dissipated in microscopic cpu die.
+Being power constrained has effects at the macro level; can't get enough power for a rack of 1200 Watt 1RU servers. And at the micro level -- all this power, hundreds of watts is being dissipated in microscopic cpu die.
 
 Space is no longer a problem, because compute densities have improved so rapidly. However, modern CPUs consume more power, signficantly more power, in a much smaller area, making cooling more critical, and harder. 	
 
@@ -87,13 +110,19 @@ Space is no longer a problem, because compute densities have improved so rapidly
 
 CMOS switching, CMOS stands for _complementary_ metal oxcide semiconductor, the _complementary_ part is the key.
 
-Digital logic inside a CPU is implemented with pairs of transistors, and during transition there is a brief period where _both_ transitors are conducting.
+# Previous PMOS or NMOS chips consumed power when the gate was on or off (depending on the technology), CMOS improved on this.
+
+Digital logic inside a CPU is implemented with pairs of transistors. 
+
+So when the circuit is on or off, no current flows directly from the source to the draing. However during transition there is a brief period where _both_ transitors are conducting.
+
+# Additional power consumption comes from charging the output capacitence
 
 Power consumption, and thus heat disipation, directly proportional to number of transition per second -- Clock speed.
 
-# Better than NMOS, but still consumes power
-
 # https://www.ece.cmu.edu/~ece322/LECTURES/Lecture13/Lecture13.03.pdf
+
+# Leakage current, which is static power disipation increases as the size of the transitor decreases
 
 * Right, thanks for the non sequitor
 
@@ -101,7 +130,9 @@ Power consumption, and thus heat disipation, directly proportional to number of 
 
 Moore's Law is still in effect, but for the people in this room, the free lunch is over.
 
-CPU's process size shrink are now primarily aimed at reducing power consumption
+# Moore's law is still very much in effect, the number of transitors on a CPU continues to increase, but for the people in this room, that's cold comfort because even with smaller feature sizes and more transitors, clock speeds have stabalised.
+
+CPU process size shrink are now primarily aimed at reducing power consumption
 
 # this gives longer battery life in laptops, lower power consumption in desktop and server parts. And when I say lower, we're not talking about "green" here, we're talking about keeping power consumption, and thus heat disipation below levels that will damage the cpu.
 
@@ -117,7 +148,9 @@ So, why am I rambling on to you about hardware at a software conference ?
 
 # It is clear to me, and hopefuly clear to you now, that hardware is not getting any faster.
 
-The old addages that a slow langauge doesn't matter 'cos in a few years hardware will be x times faster do not apply anymore.
+The old addage that a slow langauge doesn't matter do not apply anymore.
+
+# The old addages that a slow langauge doesn't matter 'cos in a few years hardware will be x times faster do not apply anymore.
 
 # If performance and scale is important to you, and arguably it is, as you're here in this session, then you'll agree with me that the days of throwing hardware at the problem are over - at least in the conventional sense.
 
@@ -125,61 +158,57 @@ If you care about performance, you need a langauge which produces efficient prog
 
 # The arguments 'ruby, performance doesn't matter, it's the web' are also busted
 
-Now, in this talk I'm going to argue that Go is this indeed this langauage, but you'd be right in thinking that there are pleanty of other existing langauges which produce efficient excutables.
-
-- Traditionally C
-- More recently C++, especially after C++ 0x11
-- Jitted languages like Java and Javascript (v8)
-
 
 you need a language which is compiled, because interpreted languages just do not justify themselves in production, at scale, on a capex basis
-
-* What do I mean when I say concurrent
-
-100,000 connections, but we'll come back to that in a second
-* Agenda
 
 * An argument for a concurrent programming language 
 
 * CPUs are not getting faster, but they are getting wider
 
-So, CPUs are not getting faster, but they are getting wider, that is to say, hyper threading, dual core (mobile i5/i7) , quad core (desktop i5/i7), oct core and more (xeon)
+So, CPUs are not getting faster, but they are getting wider.
 
--- c10k history
-- Go is this language, let me show you why
-- You have to be internet scale from the start.
+This is where the transistors are going.
 
+- Hyper threading
+- More cores, dual core on mobile parts, quad core on desktop parts, even more cores on server (xeon) parts.
+, that is to say, hyper threading, dual core (mobile i5/i7) , quad core (desktop i5/i7), oct core and more (xeon)
 
-To explain why I think Go is a better choice than these languages, on the server, I need to come back to 
+# So this is where the transistors are going on the hardware side, and it's shouldn't be a great surprise to many of you in the room. Herb Sutter was talking about this a decade ago, Dual CPU has been a thing since the late 1990's with the Pentium Pro. 
 
+# To make my argument, I want to walk through some of the highlights of scaling server software.
 
-* Introducing Go, in two slides
+* Your grandfather's server
 
-Hopefully some of you in the room have seen or tried Go. If you've been dabbling in Docker, CoreOS, or Kubernetes, it's probably been unavoidable for you.
+.image performance-without-the-event-loop/3357832896_896d98bbaf_z.jpg
+.caption Image Credit: [[https://www.flickr.com/photos/tascott/3357832896/in/album-72157615257588587/][Tom Scott]] (CC BY-NC-SA 2.0)
 
-I'm going to give a 2 slide overview of Go. If you're interested in learning more about the language, I believe the confernce has organised a workshop series on Go, if you would like to know more, I'll be around all week, so come and find me.
+The first web server, [[http://info.cern.ch/Proposal.html][circa March 1989]].
 
-- C style language, with curley braces, but no semicolons
-- Imperative style
-- Not class based, there is no inheritence, instead we have composition and interfaces
-- Key features
--- lightweight concurrrency through goroutines
--- intraprocess communication by way of channels, typed queues that can be used to pass information or synchornise between goroutines.
+NCSA was the web server, which grew into apache.
 
-* Goroutines
+# This represented the state of the art, at the turn of the century, web serving technology.
 
-* Stack mangement
+# dialup modems
 
-* Stack growth and shrinkage
+# disk io was the main factor, network io was slower than disk seek times, so raid volumes worked well, and machines like the e450 were workhorses
 
-* Heap management through escape analysis
+# http serving was apache, apache, apache, and apache 1.3 btw.
 
-Concurrent, low pause collector, in Go 1.5, but creating garbage will never be free (hint: it's not free with malloc or reference counting either), so you want to avoid that where possible to manage your alloations up front.
+# prefork was the name of the game
 
+* Dan Kegel's c10k problem
+
+http://www.kegel.com/c10k.html
+
+How to hold up 10,000 concurrent TCP sessions
+
+* Processes, threads and Goroutines
 
 Go has goroutines. These are the foundations for concurrency in Go.
 
 I want to step back for a moment and explore the history that leads us to goroutines.
+
+* Processes
 
 In the beginning computers ran one process at a time. Then in the 60’s the idea of multiprocessing, or time sharing became popular.
 
@@ -187,6 +216,12 @@ In a time-sharing system the operating systems must constantly switch the attent
 
 This is called process switching.
 
+This was the world that Burners-Lee's NCSA server running on a 25Mhz Next Cube.
+
+* Context switching
+
+.image performance-without-the-event-loop/640px-Table_of_x86_Registers_svg.svg.png
+.caption Image credit: [[https://commons.wikimedia.org/wiki/File:Table_of_x86_Registers_svg.svg#/media/File:Table_of_x86_Registers_svg.svg][Immae (CC BY-SA 3.0)]] 
 There are three main costs of a process switch.
 
 First is the kernel needs to store the contents of all the CPU registers for that process, then restore the values for another process.
@@ -199,11 +234,15 @@ There are a surprising number of registers in a modern processor. I have difficu
 
 Because a process switch can occur at any point in a process’ execution, the operating system needs to store the contents of all of these registers because it does not know which are currently in use.
 
+* Threads
+
 This lead to the development of threads, which are conceptually the same as processes, but share the same memory space.
 
 As threads share address space, they are lighter than processes so are faster to create and faster to switch between.
 
 Goroutines take the idea of threads a step further.
+
+* Goroutines
 
 Goroutines are cooperatively scheduled, rather than relying on the kernel to manage their time sharing.
 
@@ -214,6 +253,38 @@ The compiler knows the registers which are in use and saves them automatically.
 While goroutines are cooperatively scheduled, this scheduling is handled for you by the runtime.
 
 Places where Goroutines may yield to others are:
+
+Go uses a M:N scheduler in user space.
+
+A small number of operating system threads, in the latest release of Go, 1.5 due at the end of next month, one per CPU.
+- Go versions 1.4 and lower, defaults to 1 CPU
+- Go versions 1.5 and above, defaults to the number of CPUs visible to the operating system
+
+If you've lived through the early part of the last decade with LMTP, then you may be feeling uncomfortable at this point. Let me assure you that in practice this user space scheduler works well. This is because it is integrated with the langauge.
+
+Compared to native and user mode threads, goroutine do not preempt each other (mostly). Instead at certain points
+- channel send/receive operations
+- map lookups
+- "blocking" syscalls
+
+These scheduling points are a call into the scheduler to see if the goroutine should yield to another, if so, then the PC and SP are swapped for the new goroutine and the thread continues to execute.
+
+From the pov of the langauge this looks like a function call, and has the same function call semantics. 
+
+Compare this to threaded applications, where a thread can be preempted at any time, at any instruction. The operating system has a lot more work to do, saving all the process'es state. In Go, the compiler handles this as a natural by product of the function call preamble.
+
+Sunfire E10k, up to 64 processors in a mesh architecture. Very NUMA, ran at 
+
+To explain why I think Go is a better choice than these languages, on the server, I need to come back to 
+
+
+* Stack mangement
+
+* Stack growth and shrinkage
+
+* Heap management through escape analysis
+
+Concurrent, low pause collector, in Go 1.5, but creating garbage will never be free (hint: it's not free with malloc or reference counting either), so you want to avoid that where possible to manage your alloations up front.
 
 Channel send and receive operations, if those operations would block.
 The Go statement, although there is no guarantee that new goroutine will be scheduled immediately.
@@ -299,35 +370,6 @@ need to plan to be internet scale from day one.
 - redundant
 - distributed
 - efficient
-
-* Your grandfather's server
-
-.image performance-without-the-event-loop/3357832896_896d98bbaf_z.jpg
-.caption Image Credit: [[https://www.flickr.com/photos/tascott/3357832896/in/album-72157615257588587/][Tom Scott]] (CC BY-NC-SA 2.0)
-
-The first web server, [[http://info.cern.ch/Proposal.html][circa March 1989]].
-
-NCSA was the web server, which grew into apache.
-
-* c10k problem
-
-http://www.kegel.com/c10k.html
-
-Sunfire E10k, up to 64 processors in a mesh architecture. Very NUMA, ran at 
-
-e450 
-
-dialup modems
-
-disk io was the main factor, network io was slower than disk seek times, so raid volumes worked well, and machines like the e450 were workhorses
-
-http serving was apache, apache, apache, and apache 1.3 btw.
-
-prefork was the name of the game
-
-dan keegle's 10k challenge
-
-threaded servers, still one connection per 
 
 * Escape analysis
 
@@ -455,7 +497,7 @@ Inlining, Escape Analysis, Goroutines, and segmented/copying stacks.
 
 These are the five features that I chose to speak about today, but they are by no means the only things that makes Go a fast programming language, just as there more that three reasons that people cite as their reason to learn Go.
 
-As powerful as these five features are individually, they do not exist in isolation.
+As powerful as these four features are individually, they do not exist in isolation.
 
 For example, the way the runtime multiplexes goroutines onto threads would not be nearly as efficient without growable stacks.
 
@@ -475,7 +517,7 @@ new your times
 facebook/parse
 docker
 coreos; fleet, etcd, 
-Baidu (Chinese Google)
+Baidu 
 
 * But wait, there's more
 
@@ -510,7 +552,10 @@ Excellent network and concurrency support
 All of these features are (mostly) transparent to the programmer.
 
 
+
 Go lets you write high performance servers with simple, imperative, code.
+
+If you're launching a product today, the market forces 
 
 if you want to write software that supports the entire internet, it is no long possible to do that with a single monolithic application -- there just isn't a machine that you can buy that is large enough
 
@@ -521,42 +566,27 @@ The langauge and the runtime take care of handling blocking i/o, thread scheduli
 * Thank you
 
 
-* Abstract
-
-Conventional wisdom suggests that high performance servers require native threads, or more recently, event loops.
-
-Neither solution is without its downside. Threads carry a high overhead in terms of scheduling cost and memory footprint. Event loops ameliorate those costs, but introduce their own requirements for a complex callback driven style.
-
-A common refrain when talking about Go is its a language that works well on the server; static binaries, powerful concurrency, and high performance.
-
-This talk focuses on the last two items, how the language and the runtime transparently let Go programmers write highly scalable network servers without having to worry about thread management or blocking I/O.
-
-The goal of this talk is to introduce the following features of the language and the runtime:
-
-These four features work in concert to build an argument for the suitability of Go as a language for writing high performance servers.
-
-
-* Topics
-
-- Processes, threads, and goroutines
-- Stack management
-- Escape Analysis
-- Integrated network poller
-
-
-* History
-
-Internet circa 1998, enter me, stage left
-
-E10k
-
-photog.net
-
-sun hardware
-
-apache multu process
-
 solaris mainly, cisco networking, linux, too puny for much good
 
 plus, if you work on windwos, you get these for free, node does this, few other langauges do, go is one of the good guys
+
+Now, in this talk I'm going to argue that Go is this indeed this langauage, but you'd be right in thinking that there are pleanty of other existing langauges which produce efficient excutables.
+
+- Traditionally C
+- More recently C++, especially after C++ 0x11
+- Jitted languages like Java and Javascript (v8)
+
+
+* Introducing Go, in two slides
+
+Hopefully some of you in the room have seen or tried Go. If you've been dabbling in Docker, CoreOS, or Kubernetes, it's probably been unavoidable for you.
+
+I'm going to give a 2 slide overview of Go. If you're interested in learning more about the language, I believe the confernce has organised a workshop series on Go, if you would like to know more, I'll be around all week, so come and find me.
+
+- C style language, with curley braces, but no semicolons
+- Imperative style
+- Not class based, there is no inheritence, instead we have composition and interfaces
+- Key features
+-- lightweight concurrrency through goroutines
+-- intraprocess communication by way of channels, typed queues that can be used to pass information or synchornise between goroutines.
 
