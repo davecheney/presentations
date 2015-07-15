@@ -22,8 +22,6 @@ http://dave.cheney.net/
 
 # A few months ago I introduced gb as a proof of concept to the audience at GDG Berlin. Since then, together with a small band of contributors and an enthusiastic cabal of early adopters, gb has moved from proof of concept, written mostly on trains during a trip through Europe, to something approaching a usable build tool.
 
-# This post gives an introduction to gb, and explains the benefits of adopting a project based workflow for building solutions in Go.
-
 .image gb/gb.svg _ 400
 
 - Project based workflow
@@ -31,13 +29,27 @@ http://dave.cheney.net/
 - Vendoring without rewriting imports
 - Reusable components and a plugin interface
 
-* Why is a project based approach useful ?
+* How is gb different ?
 
-- Control all your source, including your dependencies
-- Clear separation between the code you write, and the code you depend on
-- Upgrade your team on your schedule
-- Don't let the internet break your team
-- Nifty tooling. Go is all about tools, and gb gives you even more tools.
+# In the previous section I outlined the advantages I see in using a project based tool to build Go applications. I want to digress for a moment to explain why gb is different to other existing go build tools.
+
+gb is not a wrapper around the `go` tool
+
+# gb is not a wrapper around the go tool. Not wrapping the go tool means gb is not constrained to solutions that can be implemented with $GOPATH tricks. Not relying on the go tool means gb can ship faster, and fix bugs faster than the fixed pace of releases of the Go toolchain.
+
+- This gives gb agility. We can talk about building code without fitting it through the needle of `go`build`.
+- This gives gb speed. You don't have to wait for months to get a bug fix in your build tool.
+- This gives gb extensibility. gb is a Go package, and `cmd/gb` is a consumer of that package. We support a git style plugins which can also reuse gb code.
+
+# As gb is written in Go, it's packages can be used to create plugins to gb that extend its functionality.
+
+gb does not use `$GOPATH`
+
+- `$GOPATH` only allows one copy of a project, and its dependencies.
+- moving away from the `go` tool actually means moving away from `$GOPATH`.
+- why move away from `$GOPATH`, because `$GOPATH` doesn't help dependency management.
+
+* Why is a project based approach useful ?
 
 # Why is a project based approach, as opposed to a workspace based approach like $GOPATH, useful ?
 
@@ -49,55 +61,36 @@ http://dave.cheney.net/
 
 # Lastly. As your project can be built at any time without going out to the internet to fetch code, you are insulated from political, financial, or technical events that can unexpectedly break your build. Conversely, as the dependencies for your project are included with the project, upgrading those dependencies is atomic and affects everyone on the team automatically without them having to run external steps like go get -u or godeps -u dependencies.txt.
 
-* Being a project owner
-
-The owner of the project has a special responsibility; they are responsible for admitting new dependencies into a project, and for curating those dependencies once they are part of the shipping product.
-
-Whether the role of project owner falls to a single engineer, or is distributed across your whole team, it is the project owner who is ultimately responsible for shipping your product
-
-gb gives you the tools to achieve this without becoming beholdent to a third party.
-
-# Project ownership is important. You, the developer, the project owner, the build engineer, needs to own all the source that goes into your product whether you wrote it or not. Don't be the person who cannot deliver a release because GitHub is down.
-
-* How is gb different ?
-
-# In the previous section I outlined the advantages I see in using a project based tool to build Go applications. I want to digress for a moment to explain why gb is different to other existing go build tools.
-
-gb is not a wrapper around the `go` tool
-
-# gb is not a wrapper around the go tool. Not wrapping the go tool means gb is not constrained to solutions that can be implemented with $GOPATH tricks. Not relying on the go tool means gb can ship faster, and fix bugs faster than the fixed pace of releases of the Go toolchain.
-
-# This gives us agility. We can talk about building code without fitting it through the needle of go build
-
-# This gives us speed. You don don't have to wait up to six months to get a bug fix in your build tool
-
-# This gives us extensibility. gb is a Go package, and cmd/gb is a consumer of that package. We support a git style plugin's which can also reuse gb code.
-
-gb does not use $GOPATH
-
-- $GOPATH only allows one copy of a project, and it's dependency
-- moving away from the go tool, actually means moving away from $GOPATH
-- why move away from $GOPATH, because $GOPATH doesn't help dependency management.
+- Control all your source, including your dependencies
+- Clear separation between the code you write, and the code you depend on
+- Upgrade your team on your schedule
+- Don't let the internet break your team
+- Nifty tooling. Go is all about tools, and gb gives you even more tools.
 
 * No import rewriting
 
 gb is built around a philosophy of leaving the source of your project's dependencies untouched.
 
-The are various technical reasons why I believe import rewriting is a bad idea for Go projects, I won't repeat them here.
-
 It is my hope that maybe one day, build tools like gb can get a bit smarter about managing dependencies, and avoid the need for whole cloth vendoring, but this cannot happen if imports are rewritten.
 
-* gb is a project based build tool for the Go programming language.
+* Being a project owner
 
-gb projects define an on disk layout that permits repeatable builds via source vendoring. When vendoring (copying) code into a gb project, the original source is not rewritten or modified.
+The owner of the project has a special responsibility
 
-As gb is written in Go, its packages can be used to create plugins to gb that extend its functionality.
+- Responsible for admitting new dependencies into a project.
+- Curating those dependencies once they are part of the shipping product.
+
+Whether the role of project owner falls to a single engineer, or is distributed across your whole team, it is the project owner who is ultimately responsible for shipping your product.
+
+gb gives you the tools to achieve this without becoming beholdent to a third party.
+
+# Project ownership is important. You, the developer, the project owner, the build engineer, needs to own all the source that goes into your product whether you wrote it or not. Don't be the person who cannot deliver a release because GitHub is down.
 
 * Demo time
 
 # Enough background, let's show off gb.
 
-* Creating a gb project (1/2)
+* Creating a gb project (1/3)
 
 Creating a gb project is as simple as creating a directory.
 
@@ -106,7 +99,9 @@ Creating a gb project is as simple as creating a directory.
 	% mkdir -p demo/src
 	% cd demo
 
-# demo is now a gb project. A gb project is defined as any directory that contains a directory called src/. We'll refer to the root of the project, demo in this case, as the project root, or $PROJECT for short. Let's go ahead and create a single main package.
+`demo` is now a gb project, as it contains a directory called `src/`
+
+# A gb project is defined as any directory that contains a directory called src/. We'll refer to the root of the project, demo in this case, as the project root, or $PROJECT for short. Let's go ahead and create a single main package.
 
 	% mkdir -p src/cmd/helloworld
 	% cat > src/cmd/helloworld/main.go <<EOF
@@ -119,205 +114,138 @@ Creating a gb project is as simple as creating a directory.
 	}
 	EOF
 
-Commands (main packages) don't have to be placed in src/cmd/, but that is a nice tradition that has emerged from the Go standard library, so we'll follow it here. Also note that although gb does not use the go tool to compile Go code, that code must still be structured into packages.
+# Commands (main packages) don't have to be placed in src/cmd/, but that is a nice tradition that has emerged from the Go standard library, so we'll follow it here.
 
-In fact gb is much stricter in this respect, Go code can only be built if it is inside a package, there are no facilities to build or run a single .go source file.
+Although gb does not use the `go` tool, your code must still be structured into packages.
 
-gb supports all the usual ways of compiling one package by passing the name of the package to gb build, but it is simpler to just build the entire project by staying at the root of your project and issuing gb build to build all the source in your project.
+In fact gb is much stricter in this respect, Go code can only be built if it is inside a package, there are no facilities to build or run a single `.go` source file.
 
-gb has support for incrementation compilation, so even though gb build is told to build all the source in the project, it will only recompile the parts that have changed; there is no need to point them out to the compiler. Also note that there is no gb install command. gb build both builds and installs (caches packages for incrementation compilation later).
-
-* Creating a gb project (2/2)
+* Creating a gb project (2/3)
 
 With all this said, let's go ahead an build this project, then run the resulting program
 
 	% gb build
 	cmd/helloworld
+
+When compiling, packages will be built and placed in `$PROJECT/pkg/` for possible reuse by latter compilation cycles, main packages (commands), will be placed in `$PROJECT/bin/`.
+
 	% bin/helloworld 
 	Hello world from gb
-By default gb prints out the names of packages it is compiling, you can use the -q flag if you want to suppress this output. When compiling, packages will be built and placed in $PROJECT/pkg/ for possible reuse by latter compilation cycles, main packages (commands), will be placed in $PROJECT/bin/.
 
-If this project contained multiple commands, they would all be built and placed in $PROJECT/bin/. To demonstrated this I created a few more main packages in this project, let's compile them and look at the result
+gb has support for incrementation compilation. gb build both builds and installs (caches packages for incrementation compilation later).
 
-% gb build
-cmd/client
-cmd/helloworld
-cmd/server
-% ls bin/
-client  helloworld  server
+gb supports all the usual ways of compiling one package by passing the name of the package to gb build, but it is simpler to just build the entire project by staying at the root of your project and issuing `gb`build` to build all the source in your project.
+
+* Creating a gb project (3/3)
+
+If this project contained multiple commands, they would all be built and placed in `$PROJECT/bin/`.
+
+To demonstrated this I created a few more main packages in this project, let's compile them and look at the result
+
+	% gb build
+	cmd/client
+	cmd/helloworld
+	cmd/server
+	% ls bin/
+	client  helloworld  server
 
 * gb project layout
 
-The previous section walked through the creation of a gb project from scratch and showed using gb build to compile the project.
-
 Let's have a look at the directory tree of this project an add some annotations to reinforce the gb project concepts.
 
-% tree $(pwd)
-/home/dfc/demo
-├── bin
-│   ├── client
-│   ├── helloworld
-│   └── server
-└── src
-    └── cmd
-        ├── client
-        │   └── main.go
-        ├── helloworld
-        │   └── main.go
-        └── server
-            └── main.go
+    % tree $(pwd)
+    /home/dfc/demo
+    ├── bin
+    │   ├── client
+    │   ├── helloworld
+    │   └── server
+    └── src
+        └── cmd
+            ├── client
+            │   └── main.go
+            ├── helloworld
+            │   └── main.go
+            └── server
+                └── main.go
 
-6 directories, 6 files
-Starting from the top, we have a bin/ directory, this is created by gb build when building main packages to hold the final output of linking executable programs. Inside bin/ we have the the binaries that were built.
+    6 directories, 6 files
 
-Next is the src/ which contains the subdirectory cmd/ and inside that, three packages, client, helloworld, and server.
-
-The final directories you will find inside a gb project is $PROJECT/pkg/ for compiled go packages, and $PROJECT/vendor/ for the source of your project's dependencies. We'll discuss vendoring dependencies later in this piece.
+Other directories you will find inside a gb project is `$PROJECT/pkg/`, for compiled go packages, and `$PROJECT/vendor/` for the source of your project's dependencies.
 
 * Source control
 
 gb doesn't care about source control, all it cares about is the source of your project is arranged in the format it expects. How those files got there, or who is responsible for tracking changes to them is outside gb's concern.
 
-Of course, source control is a great idea, and you should be tracking the source of your project using source control. Let's create a git repo in the $PROJECT root now
+# Of course, source control is a great idea, and you should be tracking the source of your project using source control. Let's create a git repo in the $PROJECT root now
 
-% git init .
-Initialized empty Git repository in /home/dfc/demo/.git/
-% git add src/
-% git commit -am 'initial import'
-[master (root-commit) aa1acfd] initial import
- 3 files changed, 21 insertions(+)
- create mode 100644 src/cmd/client/main.go
- create mode 100644 src/cmd/helloworld/main.go
- create mode 100644 src/cmd/server/main.go
-Then of course add a git remote and push to it.
+    % git init .
+    Initialized empty Git repository in /home/dfc/demo/.git/
+    % git add src/
+    % git commit -am 'initial import'
+    [master (root-commit) aa1acfd] initial import
+     3 files changed, 21 insertions(+)
+     create mode 100644 src/cmd/client/main.go
+     create mode 100644 src/cmd/helloworld/main.go
+     create mode 100644 src/cmd/server/main.go
 
-You should not place $PROJECT/bin/ or $PROJECT/pkg/ under source control, as they are temporary directories. You may wish to add a .gitignore or similar to prevent doing so accidentally.
+You should not place `$PROJECT/bin/` or `$PROJECT/pkg/` under source control, as they are temporary directories.
 
-* Dependency management
+You may wish to add a `.gitignore` or similar to prevent doing so accidentally.
 
-A project which doesn't have any dependencies, apart from the standard library, is not going to be very a compelling use case for gb. For this next section I'll walk through creating a new gb project which has several dependencies.
+* Using the gb-vendor plugin (1/3)
 
-The source for this project is online at github.com/constabulary/example-gsftp. Let's start by creating the project structure and adding some source
+gb's answer to dependency management is vendoring, copying the source of your project's dependencies into `$PROJECT/vendor/src/`.
 
-% mkdir example-gsftp
-% cd example-gsftp
-% mkdir -p src/cmd/gsftp # this is our main package
-% vim src/cmd/gsftp/main.go
-The source for cmd/gsftp/main.go is too long to include, but is available here.
+To assist with this process, gb ships with a plugin called `gb-vendor`, which aims to automate a lot of this work.
 
-This project depends on golang.org/x/crypto/ssh package and github.com/pkg/sftp package, which itself has a dependency on github.com/kr/fs. In its current state, if you were to gb build this project it would fail with an error like this
+    % gb build
+    FATAL command "build" failed: failed to resolve import path "cmd/gsftp": cannot find package "github.com/pkg/sftp" in any of:
+            /Users/dfc/go/src/github.com/pkg/sftp (from $GOROOT)
+            /Users/dfc/devel/gsftp/src/github.com/pkg/sftp (from $GOPATH)
+            /Users/dfc/devel/gsftp/vendor/src/github.com/pkg/sftp
+    % gb vendor fetch github.com/pkg/sftp
+    fetching recursive dependency github.com/kr/fs
+    fetching recursive dependency golang.org/x/crypto/ssh
+    % gb build
+    github.com/kr/fs
+    golang.org/x/crypto/ssh
+    golang.org/x/crypto/ssh/agent
+    github.com/pkg/sftp
+    cmd/gsftp
 
-% gb build
-FATAL command "build" failed: failed to resolve import path "cmd/gsftp": cannot find package "github.com/pkg/sftp" in any of:
-        /home/dfc/go/src/github.com/pkg/sftp (from $GOROOT)
-        /home/dfc/example-gsftp/src/github.com/pkg/sftp (from $GOPATH)
-        /home/dfc/example-gsftp/vendor/src/github.com/pkg/sftp
-gb is unable to find the a package with an import path of github.com/pkg/sftp, in either the project's source directory, $PROJECT/src/, or the project's vendored source directory, $PROJECT/vendor/src/.
+* Using the gb-vendor plugin (2/3)
 
-note the references to $GOPATH are a side effect of reusing the go/build package. gb does not use $GOPATH, this message will be addressed in the future.
+It is a good idea to add your `$PROJECT/vendor/` directory to source control.
 
-Now, I have copies of all of the source of these packages in my $GOPATH, so I can copy them into the $PROJECT/vendor/src directory by hand to satisfy the build.
+	% git add vendor/
+	% git commit -am 'added vendored dependencies'
 
-% mkdir -p vendor/src/github.com/pkg/sftp
-% cp -r $GOPATH/src/github.com/pkg/sftp/* vendor/src/github.com/pkg/sftp
-% mkdir -p vendor/src/github.com/kr/fs
-% cp -r $GOPATH/src/github.com/kr/fs/* vendor/src/github.com/kr/fs
-% mkdir -p vendor/src/golang.org/x/crypto/ssh
-% cp -r $GOPATH/src/golang.org/x/crypto/ssh/* vendor/src/golang.org/x/crypto/ssh
-% gb build
-github.com/kr/fs
-golang.org/x/crypto/ssh
-golang.org/x/crypto/ssh/agent
-github.com/pkg/sftp
-cmd/gsftp
-% ls -l bin/gsftp
--rwxrwxr-x 1 dfc dfc 5949744 Jun  8 14:05 bin/gsftp
-For completeness's sake, let's take a look at the directory structure of the project with these vendored dependencies.
-
-% tree -d $(pwd)                                                                                                                         
-/home/dfc/example-gsftp
-├── bin
-├── pkg
-│   └── linux
-│       └── amd64
-│           ├── github.com
-│           │   ├── kr
-│           │   └── pkg
-│           └── golang.org
-│               └── x
-│                   └── crypto
-│                       └── ssh
-├── src
-│   └── cmd
-│       └── gsftp
-└── vendor
-    └── src
-        ├── github.com
-        │   ├── kr
-        │   │   └── fs
-        │   └── pkg
-        │       └── sftp
-        │           └── examples
-        │               ├── buffered-read-benchmark
-        │               ├── buffered-write-benchmark
-        │               ├── streaming-read-benchmark
-        │               └── streaming-write-benchmark
-        └── golang.org
-            └── x
-                └── crypto
-                    └── ssh
-                        ├── agent
-                        ├── terminal
-                        ├── test
-                        └── testdata
-
-34 directories
-
-* Using the gb-vendor plugin
-
-gb's answer to dependency management is vendoring, copying the source of your project's dependencies into $PROJECT/vendor/src/. As you saw above, this process can be quite tedious, especially if you do not have the source of the dependency easily to hand.
-
-To assist with this process, gb ships with a plugin called gb-vendor, which aims to automate a lot of this work.
-
-gb-vendor can fetch the dependencies of your project. Let's use it to automate the steps we just did above.
-
-	% rm -rf vendor/src
-	% gb vendor fetch github.com/pkg/sftp
-	% gb vendor fetch github.com/kr/fs
-	% gb vendor fetch golang.org/x/crypto/ssh
-	% gb build
-	github.com/kr/fs
-	golang.org/x/crypto/ssh
-	golang.org/x/crypto/ssh/agent
-	github.com/pkg/sftp
-	cmd/gsftp
-
-At this point it is a good idea to add your project's vendor/ directory to source control.
-
-% git add vendor/
-% git commit -am 'added vendored dependencies'
 gb-vendor also provides commands to update, delete, and report on the vendor dependencies of a project. For example
 
-% gb vendor update github.com/pkg/sftp
-will replace the source of github.com/pkg/sftp with the latest available upstream.
+	% gb vendor update github.com/pkg/sftp
 
-% gb vendor delete github.com/pkg/kr/fs
-Will remove $PROJECT/vendor/src/github.com/pkg/kr/fs from disk, and remove its entry from the manifest file.
+will replace the source of `github.com/pkg/sftp` with the latest available upstream.
+
+	% gb vendor delete github.com/pkg/kr/fs
+
+will remove `$PROJECT/vendor/src/github.com/pkg/kr/fs` from disk, and remove its entry from the manifest file.
+
+* Using the gb-vendor plugin (3/3)
 
 Lastly, the list subcommand behaves similarly to go list and lets you report on the dependencies recorded in the manifest file.
 
-	% gb vendor list
-	github.com/pkg/sftp     https://github.com/pkg/sftp     master  f234c3c6540c0358b1802f7fd90c0879af9232eb
-	github.com/kr/fs        https://github.com/kr/fs        master  2788f0dbd16903de03cb8186e5c7d97b69ad387b
-	golang.org/x/crypto/ssh https://go.googlesource.com/crypto/ssh  master  c10c31b5e94b6f7a0283272dc2bb27163dcea24b
+    % gb vendor list
+    github.com/kr/fs        https://github.com/kr/fs               master 2788f0dbd16903de03cb8186e5c7d97b69ad387b
+    github.com/pkg/sftp     https://github.com/pkg/sftp            master 518aed2757a65cfa64d4b1b2baf08410f8b7a6bc
+    golang.org/x/crypto/ssh https://go.googlesource.com/crypto/ssh master 02a186af8b62cb007f392270669b91be5527d39c
 
-* gb-vendor is completely optional
+* Manifest what!
 
 # At this point you're probably saying, "Hang on, aren't you the person who made a big song and dance about no metadata files ?".
 
-gb-vendor is a plugin, it adds a little bit of smarts on top of git clone, or hg checkout, but it isn't mandatory to use gb-vendor to build gb projects.
-
 gb-vendor records the dependencies it fetches in a manifest file, `$PROJECT/vendor/manifest`
+
+gb-vendor is a plugin, it adds a little bit of smarts on top of git clone, or hg checkout, but it isn't mandatory to use gb-vendor to build gb projects.
 
 Manifest file is only used by `gb-vendor`. It is not required to use `gb`.
 
@@ -325,13 +253,23 @@ Manifest file is only used by `gb-vendor`. It is not required to use `gb`.
 
 # All gb cares about is the source on disk. If your workflow works well with svn externals or git subtrees, or maybe just copying the package and recording the revision you copied in the commit message, you can use that approach as well.
 
+gb-vendor is completely optional
+
 All gb cares about is finding the source on disk with the correct layout.
 
 # gb-vendor is not required to use gb, and gb is completely oblivious to its operation. All that gb cares about is finding the source on disk with the correct layout. You are free to use any method of managing the contents of your $PROJET/vendor/src directory.
 
-The project structure lets you achieve repeatable builds by including (vendoring) all the source of your dependencies into your project.
+* Live demo time
 
-* Stop. Question time
+* Wrapping up 
+
+* By the numbers
+
+.image gb/stars.png _ 800
+
+Thank you to all the contributors:
+
+Dávid Kaya, Mario Kostelac, Chris Hines, Gustav Paul, Will Madison, Maurice Nonnekes, Jesus Alvarez, Ulf Holm Nielsen, Daniel Martí, Henry B., Ryan Endacott, 42wim, Alexandre González, Christopher Taylor, Edward Muller, euank, Karan Misra, Maciej Pasternacki, Sheena Artrip, Asbjørn Bjørnstad, Jason Buberel, Antonio Cortes, Tobias Breitwieser, and Fabrizio Milo.  
 
 * How does gb handle the diamond dependency problem ?
 
@@ -374,17 +312,6 @@ Manually copy that project's `src/` directory into another gb project.
 Support for this in `gb-vendor` not complete (patches welcome!).
 
 # At the moment no automated tools exist to assist with this process, but it is likely that gb-vendor will acquire this ability if there is significant demand in developing libraries in the gb project format.
-
-
-* Wrapping up 
-
-* By the numbers
-
-.image gb/stars.png _ 800
-
-Thank you to all the contributors:
-
-Dávid Kaya, Mario Kostelac, Chris Hines, Gustav Paul, Will Madison, Maurice Nonnekes, Jesus Alvarez, Ulf Holm Nielsen, Daniel Martí, Henry B., Ryan Endacott, 42wim, Alexandre González, Christopher Taylor, Edward Muller, euank, Karan Misra, Maciej Pasternacki, Sheena Artrip, Asbjørn Bjørnstad, Jason Buberel, Antonio Cortes, Tobias Breitwieser, and Fabrizio Milo.  
 
 * gb
 
