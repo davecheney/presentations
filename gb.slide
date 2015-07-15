@@ -24,7 +24,7 @@ http://dave.cheney.net/
 
 .image gb/gb.svg _ 400
 
-- Project based workflow
+- Project based work flow
 - Repeatable builds via source vendoring 
 - Vendoring without rewriting imports
 - Reusable components and a plugin interface
@@ -35,7 +35,7 @@ http://dave.cheney.net/
 
 gb is not a wrapper around the `go` tool
 
-# gb is not a wrapper around the go tool. Not wrapping the go tool means gb is not constrained to solutions that can be implemented with $GOPATH tricks. Not relying on the go tool means gb can ship faster, and fix bugs faster than the fixed pace of releases of the Go toolchain.
+# gb is not a wrapper around the go tool. Not wrapping the go tool means gb is not constrained to solutions that can be implemented with $GOPATH tricks. Not relying on the go tool means gb can ship faster, and fix bugs faster than the fixed pace of releases of the Go tool chain.
 
 - This gives gb agility. We can talk about building code without fitting it through the needle of `go`build`.
 - This gives gb speed. You don't have to wait for months to get a bug fix in your build tool.
@@ -51,20 +51,20 @@ gb does not use `$GOPATH`
 
 * Why is a project based approach useful ?
 
-# Why is a project based approach, as opposed to a workspace based approach like $GOPATH, useful ?
+# Why is a project based approach, as opposed to a work space based approach like $GOPATH, useful ?
 
-# First and foremost, by structuring your Go application as a project, rather than a piece of a distributed global workspace, you gain control over all the source that goes into your application, including that of its dependencies.
+# First and foremost, by structuring your Go application as a project, rather than a piece of a distributed global work space, you gain control over all the source that goes into your application, including that of its dependencies.
 
-# Second, while your project's layout contains both the code that you have written, and the code that your code depends on, there is a clear separation between the two; they live in different subdirectory trees.
+# Second, while your project's layout contains both the code that you have written, and the code that your code depends on, there is a clear separation between the two; they live in different sub directory trees.
 
 # Thirdly, now your project, and by extension the repository that houses it, contains all the source to build your application, having multiple working copies on disk is trivial. If you are part of a team responsible for maintaining multiple releases, this is a very useful property.
 
 # Lastly. As your project can be built at any time without going out to the internet to fetch code, you are insulated from political, financial, or technical events that can unexpectedly break your build. Conversely, as the dependencies for your project are included with the project, upgrading those dependencies is atomic and affects everyone on the team automatically without them having to run external steps like go get -u or godeps -u dependencies.txt.
 
-- Control all your source, including your dependencies
-- Clear separation between the code you write, and the code you depend on
-- Upgrade your team on your schedule
-- Don't let the internet break your team
+- Control all your source, including your dependencies.
+- Clear separation between the code you write, and the code you depend on.
+- Upgrade your team on your schedule.
+- Don't let the internet break your team.
 - Nifty tooling. Go is all about tools, and gb gives you even more tools.
 
 * No import rewriting
@@ -82,13 +82,11 @@ The owner of the project has a special responsibility
 
 Whether the role of project owner falls to a single engineer, or is distributed across your whole team, it is the project owner who is ultimately responsible for shipping your product.
 
-gb gives you the tools to achieve this without becoming beholdent to a third party.
+gb gives you the tools to achieve this without becoming beholden to a third party.
 
 # Project ownership is important. You, the developer, the project owner, the build engineer, needs to own all the source that goes into your product whether you wrote it or not. Don't be the person who cannot deliver a release because GitHub is down.
 
-* Demo time
-
-# Enough background, let's show off gb.
+* Quick overview
 
 * Creating a gb project (1/3)
 
@@ -132,7 +130,7 @@ When compiling, packages will be built and placed in `$PROJECT/pkg/` for possibl
 	% bin/helloworld 
 	Hello world from gb
 
-gb has support for incrementation compilation. gb build both builds and installs (caches packages for incrementation compilation later).
+gb has support for incremental compilation. gb build both builds and installs (caches packages for incremental compilation later).
 
 gb supports all the usual ways of compiling one package by passing the name of the package to gb build, but it is simpler to just build the entire project by staying at the root of your project and issuing `gb`build` to build all the source in your project.
 
@@ -232,7 +230,7 @@ will remove `$PROJECT/vendor/src/github.com/pkg/kr/fs` from disk, and remove its
 
 * Using the gb-vendor plugin (3/3)
 
-Lastly, the list subcommand behaves similarly to go list and lets you report on the dependencies recorded in the manifest file.
+Lastly, the list sub command behaves similarly to go list and lets you report on the dependencies recorded in the manifest file.
 
     % gb vendor list
     github.com/kr/fs        https://github.com/kr/fs               master 2788f0dbd16903de03cb8186e5c7d97b69ad387b
@@ -245,19 +243,11 @@ Lastly, the list subcommand behaves similarly to go list and lets you report on 
 
 gb-vendor records the dependencies it fetches in a manifest file, `$PROJECT/vendor/manifest`
 
-gb-vendor is a plugin, it adds a little bit of smarts on top of git clone, or hg checkout, but it isn't mandatory to use gb-vendor to build gb projects.
-
 Manifest file is only used by `gb-vendor`. It is not required to use `gb`.
 
-# Yes, it is true that gb-vendor records the dependencies it fetches in a manifest file, ($PROJECT/vendor/manifest), but this manifest file is only used by gb-vendor, and is not part of gb.
-
-# All gb cares about is the source on disk. If your workflow works well with svn externals or git subtrees, or maybe just copying the package and recording the revision you copied in the commit message, you can use that approach as well.
-
-gb-vendor is completely optional
+`gb-vendor` is a plugin, it adds a little bit of smarts on top of git clone, or hg checkout, but it isn't mandatory to use `gb-vendor` to manage the dependencies in a gb projects.
 
 All gb cares about is finding the source on disk with the correct layout.
-
-# gb-vendor is not required to use gb, and gb is completely oblivious to its operation. All that gb cares about is finding the source on disk with the correct layout. You are free to use any method of managing the contents of your $PROJET/vendor/src directory.
 
 * Live demo time
 
@@ -289,11 +279,11 @@ Resolving a conflict requires the project owner choose _one_ copy of the source 
 
 @kr's proposal was accepted as an experiment for Go 1.5.
 
-Many other annoying `go` tool bugs fixed in Go 1.5—Compeition is good for consumers.
+Many other annoying `go` tool bugs fixed in Go 1.5—Competition is good for consumers.
 
 `go`get` users can now vendor their dependencies into their repos.
 
-Get's more confusing when one `go`get` able repo depends on another.
+Gets more confusing when one `go`get` able repo depends on another.
 
 Doesn't really affect gb; we dont use `go`get` and gb projects are not `go`get` able.
 
