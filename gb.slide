@@ -24,7 +24,7 @@ http://dave.cheney.net/
 
 .image gb/gb.svg _ 400
 
-- Project based work flow
+- Project based workflow
 - Repeatable builds via source vendoring 
 - Vendoring without rewriting imports
 - Reusable components and a plugin interface
@@ -38,8 +38,8 @@ gb is not a wrapper around the `go` tool
 # gb is not a wrapper around the go tool. Not wrapping the go tool means gb is not constrained to solutions that can be implemented with $GOPATH tricks. Not relying on the go tool means gb can ship faster, and fix bugs faster than the fixed pace of releases of the Go tool chain.
 
 - This gives gb agility. We can talk about building code without fitting it through the needle of `go`build`.
-- This gives gb speed. You don't have to wait for months to get a bug fix in your build tool.
-- This gives gb extensibility. gb is a Go package, and `cmd/gb` is a consumer of that package. We support a git style plugins which can also reuse gb code.
+- This gives gb speed. You don't have to wait for months to get a bug fixed in your build tool.
+- This gives gb extensibility. gb is a Go package, and `cmd/gb` is a consumer of that package. We also support a git style plugins which reuse gb code.
 
 # As gb is written in Go, it's packages can be used to create plugins to gb that extend its functionality.
 
@@ -62,6 +62,7 @@ gb does not use `$GOPATH`
 # Lastly. As your project can be built at any time without going out to the internet to fetch code, you are insulated from political, financial, or technical events that can unexpectedly break your build. Conversely, as the dependencies for your project are included with the project, upgrading those dependencies is atomic and affects everyone on the team automatically without them having to run external steps like go get -u or godeps -u dependencies.txt.
 
 - Control all your source, including your dependencies.
+- Multiple working copies, release branches, feature branches, etc are trivial.
 - Clear separation between the code you write, and the code you depend on.
 - Upgrade your team on your schedule.
 - Don't let the internet break your team.
@@ -86,7 +87,7 @@ gb gives you the tools to achieve this without becoming beholden to a third part
 
 # Project ownership is important. You, the developer, the project owner, the build engineer, needs to own all the source that goes into your product whether you wrote it or not. Don't be the person who cannot deliver a release because GitHub is down.
 
-* Quick overview
+* Whirlwind tour
 
 * Creating a gb project (1/3)
 
@@ -125,20 +126,20 @@ With all this said, let's go ahead an build this project, then run the resulting
 	% gb build
 	cmd/helloworld
 
-When compiling, packages will be built and placed in `$PROJECT/pkg/` for possible reuse by latter compilation cycles, main packages (commands), will be placed in `$PROJECT/bin/`.
+When compiling, packages will be built and placed in `$PROJECT/pkg/` for reuse by latter compilation cycles, main packages (commands), will be placed in `$PROJECT/bin/`.
 
 	% bin/helloworld 
 	Hello world from gb
 
-gb has support for incremental compilation. gb build both builds and installs (caches packages for incremental compilation later).
+gb has support for incremental compilation. `gb`build` always builds _and_ installs.
 
 gb supports all the usual ways of compiling one package by passing the name of the package to gb build, but it is simpler to just build the entire project by staying at the root of your project and issuing `gb`build` to build all the source in your project.
 
 * Creating a gb project (3/3)
 
-If this project contained multiple commands, they would all be built and placed in `$PROJECT/bin/`.
+If this project containes multiple commands, they will all be built and placed in `$PROJECT/bin/`.
 
-To demonstrated this I created a few more main packages in this project, let's compile them and look at the result
+Here is an example with a few more main packages in this project, let's build them and look at the result
 
 	% gb build
 	cmd/client
@@ -149,7 +150,7 @@ To demonstrated this I created a few more main packages in this project, let's c
 
 * gb project layout
 
-Let's have a look at the directory tree of this project an add some annotations to reinforce the gb project concepts.
+Let's have a look at the directory tree of this project to illustrate the gb project concepts.
 
     % tree $(pwd)
     /home/dfc/demo
@@ -172,7 +173,7 @@ Other directories you will find inside a gb project is `$PROJECT/pkg/`, for comp
 
 * Source control
 
-gb doesn't care about source control, all it cares about is the source of your project is arranged in the format it expects. How those files got there, or who is responsible for tracking changes to them is outside gb's concern.
+gb doesn't care about source control, all it cares about is the source of your project is arranged in the layout it expects. How those files got there, or who is responsible for tracking changes to them is outside gb's concern.
 
 # Of course, source control is a great idea, and you should be tracking the source of your project using source control. Let's create a git repo in the $PROJECT root now
 
@@ -230,7 +231,7 @@ will remove `$PROJECT/vendor/src/github.com/pkg/kr/fs` from disk, and remove its
 
 * Using the gb-vendor plugin (3/3)
 
-Lastly, the list sub command behaves similarly to go list and lets you report on the dependencies recorded in the manifest file.
+Lastly, the `gb`vendor`list` sub command behaves similarly to `go`list` and lets you report on the dependencies recorded in the manifest file.
 
     % gb vendor list
     github.com/kr/fs        https://github.com/kr/fs               master 2788f0dbd16903de03cb8186e5c7d97b69ad387b
@@ -243,7 +244,7 @@ Lastly, the list sub command behaves similarly to go list and lets you report on
 
 gb-vendor records the dependencies it fetches in a manifest file, `$PROJECT/vendor/manifest`
 
-Manifest file is only used by `gb-vendor`. It is not required to use `gb`.
+The manifest file is only used by `gb-vendor`. It is not required to use `gb`.
 
 `gb-vendor` is a plugin, it adds a little bit of smarts on top of git clone, or hg checkout, but it isn't mandatory to use `gb-vendor` to manage the dependencies in a gb projects.
 
@@ -277,7 +278,7 @@ Resolving a conflict requires the project owner choose _one_ copy of the source 
 
 * How does Go 1.5's vendoring support change things ?
 
-@kr's proposal was accepted as an experiment for Go 1.5.
+@kr's proposal was accepted as an experiment for Go 1.5, godeps now supports the `vendor/` subdir.
 
 Many other annoying `go` tool bugs fixed in Go 1.5—Competition is good for consumers.
 
