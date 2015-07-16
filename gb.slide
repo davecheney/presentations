@@ -13,11 +13,6 @@ http://dave.cheney.net/
 .caption [[http://www.womenwhogo.org][www.womenwhogo.org]]
 .caption [[http://www.meetup.com/Women-Who-Go][www.meetup.com/Women-Who-Go]]
 
-* About me
-
-.image gb/pan.jpg 450 _
-.caption Initially, Francesc and David did not enjoy pan.
-
 * gb
 
 # A few months ago I introduced gb as a proof of concept to the audience at GDG Berlin. Since then, together with a small band of contributors and an enthusiastic cabal of early adopters, gb has moved from proof of concept, written mostly on trains during a trip through Europe, to something approaching a usable build tool.
