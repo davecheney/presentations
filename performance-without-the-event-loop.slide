@@ -58,7 +58,7 @@ Event loops ameliorate those costs, but introduce their own requirements for a c
 .image performance-without-the-event-loop/CPU.png _ 320
 .caption Image credit: [[http://www.gotw.ca/publications/concurrency-ddj.htm][Herb Sutter (Dr. Dobb's Journal, March 2005)]]
 
-Moore's law states that the number of transistors per die double roughly every 18 months.
+Moore's law states that the number of transistors per square inch doubles roughly every 18 months.
 
 However, clock speeds topped out a decade ago with the Pentium 4 (Penryn) and have been slipping backwards since.
 
@@ -142,7 +142,7 @@ So, CPUs are not getting faster, but they are getting wider.
 - Hyper threading
 - More cores, dual core on mobile parts, quad core on desktop parts, even more cores on server parts.
 
-# So this is where the transistors are going on the hardware side, and it's shouldn't be a great surprise to many of you in the room. Herb Sutter was talking about this a decade ago, Dual CPU has been a thing since the late 1990's with the Pentium Pro. 
+# So this is where the transistors are going on the hardware side, and it's shouldn't be a great surprise to many of you in the room. Herb Sutter was talking about this a decade ago, Dual CPU has been a thing since the late 1990's with the Pentium Pro. Intel uses Hyper threading to artificually segment the market for processors, Oracle and Fujitsu apply hyperthreading more agressively to their product line, 8 or 16 hardware threads per core.
 
 # To make my argument, I want to walk through some of the highlights of scaling server software.
 
@@ -171,14 +171,6 @@ NCSA was the web server, which grew into apache.
 
 # prefork was the name of the game
 
-* Dan Kegel's c10k problem
-
-[[http://www.kegel.com/c10k.html]]
-
-How to hold up _at_least_ 10,000 concurrent TCP sessions on a single server. 
-
-Back at the turn of millenia the idea of sustaining 10k connections on the hardware of the day, with the operating systems of the day was considered to be a very challenging problem. This is 10 years after Burners-Lee's initial implementation.
-
 * Processes
 
 In the beginning computers ran one process at a time. Then in the 60’s the idea of multiprocessing, or time sharing became popular.
@@ -189,7 +181,7 @@ This was the world of Burners-Lee's NCSA Mosaic server running on a 25Mhz Next C
 
 In a time-sharing system the operating systems maintains the illusion of concurrency by raplidly switching the attention of the CPU between active processes by recording the state of the current process, then restoring the state of another.
 
-This is called process switching.
+This is called context switching.
 
 * Process context switching
 
@@ -198,7 +190,7 @@ This is called process switching.
 There are three main costs of a process switch.
 
 - The kernel needs to store the contents of all the CPU registers for that process, then restore the values for another process.
-- The kernel needs to flush the CPU’s mappings from virtual memory to physical memory (TLB).
+- The kernel needs to flush the CPU’s virtual memory to physical mappings (TLB).
 - Overhead of the operating system context switch, and the overhead of the scheduler function to choose the next process to occupy the CPU.
 
 # Because a process switch can occur at any point in a process’ execution, the operating system needs to store the contents of all of these registers because it does not know which are currently in use.
@@ -303,9 +295,13 @@ We’ve seen that the Go runtime schedules a large number of goroutines onto a s
 
 * Goroutine stack growth
 
+.image performance-without-the-event-loop/stack-growth.png 250 _
+
 Each goroutine starts with an small stack, allocated from the heap. The size has fluctuated over time, but in Go 1.5 each goroutine starts with a 2k allocation.
 
-Instead of using guard pages, the Go compiler inserts a test as part of every function call to check if there is sufficient stack for the function to run. If there is sufficient stack space, the function runs as normal.
+Instead of using guard pages, the Go compiler inserts a test as part of every function call to check if there is sufficient stack for the function to run.
+
+# If there is sufficient stack space, the function runs as normal.
 
 If there is insuffient space, the runtime will allocate a large stack segment on the heap, copy the contents of the current stack to the new segment, free the old segment, and the function call restarted.
 
@@ -455,67 +451,3 @@ Simple conventions
 Excellent network and concurrency support
 
 * Stop, question time
-
-* Inlining
-
-- reduces funciton call overhead
-- reduces the pressure on the stack allocator 
-- enables better code motion invariants, dead code elimination, common sub expression elimination, etc
-
-- works at compile time, not run time.
-- no jit warmup, java / c#
-
-- works across file and package boundaries
--- no need for explicit annotations like __inline__ or static
--- no need for header tricks in C or macros to 
-
-* Function calls are not free.
-
-Three things happen when a function is called.
-
-- A new stack frame is created, and the details of the caller recorded.
-- Any registers which may be overwritten during the function call are saved to the stack.
-- The processor computes the address of the function and executes a branch to that new address.
-
-Because function calls are very common operations, CPU designers have worked hard to optimise this procedure, but they cannot eliminate the overhead. Depending on what the function does, this overhead may be trivial or significant.
-
-A solution to reducing function call overhead is an optimisation technique called Inlining.
-
-The Go compiler inlines a function by treating the body of the function as if it were part of the caller.
-
-Inlining has a cost; it increases binary size.
-
-It only makes sense to inline when the overhead of calling a function is large relative to the work the function does, so only simple functions are candidates for inlining.
-
-Complicated functions are usually not dominated by the overhead of calling them and are therefore not inlined.
-
-This example shows the function Double calling util.Max.
-
-To reduce the overhead of the call to util.Max, the compiler can inline util.Max into Double, resulting in something like this
-
-After inlining there is no longer a call to util.Max, but the behaviour of Double is unchanged.
-
-Inlining isn’t exclusive to Go. Almost every compiled or JITed language performs this optimisation. But how does inlining in Go work?
-
-The Go implementation is very simple. When a package is compiled, any small function that is suitable for inlining is marked and then compiled as usual.
-
-Then both the source of the function and the compiled version are stored.
-
-This slide shows the contents of util.a. The source has been transformed a little to make it easier for the compiler to process quickly.
-
-When the compiler compiles Double it sees that util.Max is inlinable, and the source of util.Max is available.
-
-Rather than insert a call to the compiled version of util.Max, it can substitute the source of the original function.
-
-Having the source of the function enables other optimizations.
-
-In this example, although the function Test always returns false, Expensive cannot know that without executing it.
-
-When Test is inlined, we get something like this
-
-The compiler now knows that the expensive code is unreachable.
-
-Not only does this save the cost of calling Test, it saves compiling or running any of the expensive code that is now unreachable.
-
-The Go compiler can automatically inline functions across files and even across packages. This includes code that calls inlinable functions from the standard library.
-
