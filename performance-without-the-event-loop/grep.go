@@ -13,8 +13,8 @@ func grep(r io.Reader, needle string) {
 	lines := make(chan string, 20)
 
 	go func() {
+		defer close(lines)
 		for {
-			defer close(lines)
 			line, err := br.ReadString('\n')
 			if err != nil {
 				return
