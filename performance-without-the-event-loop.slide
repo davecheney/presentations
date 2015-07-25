@@ -18,11 +18,11 @@ http://dave.cheney.net/
 .image performance-without-the-event-loop/pager.jpg _ 400
 .caption The horror!
 
-As an admin in a past life the most stressful times in my career were defined by unsatisfying performance.
+As an admin in a past life, the most stressful times in my career were defined by unsatisfying performance.
 
 I got into Go because of its potential to build high performance servers.
 
-As we're in a technical track, I'm not here to _tell_ you that Go is fast, instead I going to _explain_ why Go is fast.
+As we're in a technical track, I'm not here to _tell_ you that Go is fast, instead I'm going to _explain_ why Go is fast.
 
 * An argument for an efficient programming language
 
@@ -54,7 +54,7 @@ Sun Enterprise e450—about the size of a bar fridge, about the same power consu
 
 # Being power constrained has effects at the macro level; can't get enough power for a rack of 1200 Watt 1RU servers. And at the micro level -- all this power, hundreds of watts is being dissipated in microscopic CPU die.
 
-# Space is no longer a problem, because compute densities have improved so rapidly. However, modern CPUs consume more power, significantly more power, in a much smaller area, making cooling more critical, and harder. 	
+# Space is no longer a problem, because compute densities have improved so rapidly. However, modern CPUs consume more power, significantly more power, in a much smaller area, making cooling more critical, and harder.
 
 * Where does this power consumption come from ?
 
@@ -67,9 +67,9 @@ CMOS stands for Complementary Metal Oxide Semiconductor, the _complementary_ par
 
 # Previous PMOS or NMOS chips consumed power when the gate was on or off (depending on the technology), CMOS improved on this.
 
-# Digital logic inside a CPU is implemented with pairs of transistors. 
+# Digital logic inside a CPU is implemented with pairs of transistors.
 
-When the circuit is on or off, no current flows directly from the source to the drain. However during transition there is a brief period where _both_ transistors are conducting.
+When the circuit is on or off, no current flows directly from the source to the drain. However, during transitions there is a brief period where _both_ transistors are conducting.
 
 # Additional power consumption comes from charging the output capacitence
 
@@ -85,7 +85,7 @@ CPU feature size reductions are primarily aimed at reducing power consumption.
 
 Reducing power consumption doesn't just mean "green". The primary goal is to keep power consumption, and thus heat dissipation, below levels that will damage the CPU.
 
-Conversely, performance improvements come mainly from microarchitecture tweaks and esoteric vector instructions which are not directly useful for the general computation.
+Conversely, performance improvements come mainly from microarchitecture tweaks and esoteric vector instructions, which are not directly useful for the general computation.
 
 Added up, each _microarchitecture_ (5 year cycle) change yields at most 10% improvement per generation, and most recently 4-6%.
 
@@ -97,17 +97,17 @@ Moore's Law is still in effect, but for the people in this room, the free lunch 
 
 * What's your point ?
 
-So, why am I rambling on about hardware at a software conference ? 
+So, why am I rambling on about hardware at a software conference ?
 
 # It is clear to me, and hopefully clear to you now, that hardware is not getting any faster.
 
-The old adage that a slow language doesn't matter because hardware is getting faster, do not apply anymore.
+The old adage that a slow language doesn't matter because hardware is getting faster, does not apply anymore.
 
 If performance and scale is important to you, and arguably it is, as you're here in this session, then you'll agree with me that the days of throwing hardware at the problem are over - at least in the conventional sense.
 
 You need a language which is efficient, because inefficient languages just do not justify themselves in production, at scale, on a capex basis.
 
-* An argument for a concurrent programming language 
+* An argument for a concurrent programming language
 
 * CPUs are not getting faster, but they are getting wider
 
@@ -119,17 +119,17 @@ So, CPUs are not getting faster, but they are getting wider.
 - Hyper threading
 - More cores, dual core on mobile parts, quad core on desktop parts, even more cores on server parts.
 
-# So this is where the transistors are going on the hardware side, and it's shouldn't be a great surprise to many of you in the room. Herb Sutter was talking about this a decade ago, Dual CPU has been a thing since the late 1990's with the Pentium Pro. Intel uses Hyper threading to artificially segment the market for processors, Oracle and Fujitsu apply hyper threading more aggressively to their product line, 8 or 16 hardware threads per core.
+# So this is where the transistors are going on the hardware side, and it shouldn't be a great surprise to many of you in the room. Herb Sutter was talking about this a decade ago, Dual CPU has been a thing since the late 1990's with the Pentium Pro. Intel uses Hyper threading to artificially segment the market for processors, Oracle and Fujitsu apply hyper threading more aggressively to their product line, 8 or 16 hardware threads per core.
 
 # To make my argument, I want to walk through some of the highlights of scaling server software.
 
 * Go on the server
 
-A common refrain when talking about Go is its a language that works well on the server; static binaries, powerful concurrency, and high performance.
+A common refrain when talking about Go is it's a language that works well on the server; static binaries, powerful concurrency, and high performance.
 
-This talk focuses on the last two items, how the language and the runtime transparently let Go programmers write highly scalable network servers without having to worry about thread management or blocking I/O.
+This talk focuses on the last two items, how the language and the runtime transparently let Go programmers write highly scalable network servers, without having to worry about thread management or blocking I/O.
 
-# I'm also going to focus on the Intel world, because that is the platform that many of you will be deploying in production. 
+# I'm also going to focus on the Intel world, because that is the platform that many of you will be deploying in production.
 
 # But--If you want to talk about other architectures, especially ppc64 and arm64, I'm here all week, and it won't take much to get me talking.
 
@@ -146,7 +146,7 @@ This talk focuses on the last two items, how the language and the runtime transp
 
 The first web server, [[http://info.cern.ch/Proposal.html][circa March 1989]].
 
-NCSA was the web server, which grew into apache.
+NCSA was the web server, which grew into Apache.
 
 # This represented the state of the art, at the turn of the century, web serving technology.
 
@@ -173,7 +173,7 @@ This is called context switching.
 * Process context switching
 
 .image performance-without-the-event-loop/640px-Table_of_x86_Registers_svg.svg.png
-.caption Image credit: [[https://commons.wikimedia.org/wiki/File:Table_of_x86_Registers_svg.svg#/media/File:Table_of_x86_Registers_svg.svg][Immae (CC BY-SA 3.0)]] 
+.caption Image credit: [[https://commons.wikimedia.org/wiki/File:Table_of_x86_Registers_svg.svg#/media/File:Table_of_x86_Registers_svg.svg][Immae (CC BY-SA 3.0)]]
 There are three main costs of a context switch.
 
 - The kernel needs to store the contents of all the CPU registers for that process, then restore the values for another process.
@@ -184,13 +184,13 @@ There are three main costs of a context switch.
 
 # There are a surprising number of registers in a modern processor. I have difficulty fitting them on one slide, which should give you a clue how much time it takes to save and restore them.
 
-# These costs are reletively fixed by the hardware, and depend on the amount of work done between context switches to ameliorate their cost -- rapid context switching tends to overwhelm the amount of work done between context switches.
+# These costs are relatively fixed by the hardware, and depend on the amount of work done between context switches to ameliorate their cost -- rapid context switching tends to overwhelm the amount of work done between context switches.
 
 * Threads
 
 This lead to the development of threads, which are conceptually the same as processes, but share the same memory space.
 
-As threads share address space, they are lighter than processes so are faster to create and faster to switch between.
+As threads share address space, they are lighter than processes, so they are faster to create and faster to switch between.
 
 Threads still have an expensive context switch cost, a lot of state must be retained.
 
@@ -211,7 +211,7 @@ The switch between goroutines only happens at well defined points, when an expli
 
 In other words, places where the goroutine cannot continue until it has more data, or more space to put data.
 
-* Goroutines 
+* Goroutines
 
 Many goroutines are multiplexed onto a single operating system thread.
 
@@ -231,12 +231,12 @@ If you lived through green threads in Java or user space threads on Linux, then 
 
 A small number of operating system threads service runnable goroutines
 
-- Go versions 1.4 and lower, defaults to 1 
+- Go versions 1.4 and lower, defaults to 1
 - Go versions 1.5 and above, defaults to the number of CPUs visible to the operating system.
 
 Compare this to threaded applications, where a thread can be preempted at any time, at any instruction. In Go, the compiler handles this as a natural by product of the function call preamble.
 
-From the point of view of the language scheduling looks like a function call, and has the same function call semantics. The thread of execution calls into the scheduler with a specific goroutine stack, but may return with a different goroutine stack.
+From the point of view of the language, scheduling looks like a function call, and has the same function call semantics. The thread of execution calls into the scheduler with a specific goroutine stack, but may return with a different goroutine stack.
 
 * Stack management
 
@@ -331,11 +331,11 @@ In a naive implementation this would mean as many threads as goroutines blocked 
 
 In older versions of Go, this was handled by a single goroutine which used select(2) / kqueue(2) / epoll(2), IOCP (windows).
 
-In current versions of Go this has been integrated into the runtime. 
+In current versions of Go this has been integrated into the runtime.
 
 The runtime knows which goroutine is waiting for the socket to become ready and can put it back on the same CPU.
 
-Async file IO slightly harder problem due to spotty operating system support. Maybe for Go 1.6.
+Async file IO is a slightly harder problem due to spotty operating system support. Maybe for Go 1.6.
 
 * Conclusion
 
@@ -357,7 +357,7 @@ As this is the performance track, I've mostly constrained my remarks to this are
 
 - Super fast compilation.
 - Excellent tooling; go build, go test, go fmt, go lint, go vet, godoc, -race detector.
-- Excellent cross platform support, cross compilation as well without tears
+- Excellent cross platform support, cross compilation without tears
 - Single static binary enables a ridiculously simple deployment story, `scp(1)` and you're done -- no runtime interpreter required.
 
 * Success stories
@@ -368,9 +368,9 @@ As this is the performance track, I've mostly constrained my remarks to this are
 - Hailo
 - Facebook/Parse
 - Docker
-- CoreOS; fleet, etcd, rkt, 
+- CoreOS; fleet, etcd, rkt
 - Kubernetes
-- Baidu 
+- Baidu
 - Qihoo 360
 - [[https://github.com/golang/go/wiki/GoUsers][... and many more]]
 
@@ -378,7 +378,7 @@ As this is the performance track, I've mostly constrained my remarks to this are
 
 Go take the tour
 
-[[http://tour.golang.org]]
+[[https://tour.golang.org]]
 
 Go join a meetup
 
