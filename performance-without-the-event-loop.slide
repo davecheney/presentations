@@ -164,7 +164,7 @@ In the beginning computers ran one process at a time. Then in the 60’s the ide
 
 By the 70's this idea was well established for network servers, ftp(1), telnet(1), rlogin(1).
 
-This was the world of Burners-Lee's NCSA Mosaic server running on a 25Mhz Next Cube, every active HTTP session was handled by its own process.
+This was the world of Berners-Lee's NCSA Mosaic server running on a 25Mhz Next Cube, every active HTTP session was handled by its own process.
 
 In a time-sharing system the operating systems maintains the illusion of concurrency by rapidly switching the attention of the CPU between active processes by recording the state of the current process, then restoring the state of another.
 
@@ -234,7 +234,7 @@ A small number of operating system threads service runnable goroutines
 - Go versions 1.4 and lower, defaults to 1
 - Go versions 1.5 and above, defaults to the number of CPUs visible to the operating system.
 
-Compare this to threaded applications, where a thread can be preempted at any time, at any instruction. In Go, the compiler handles this as a natural by product of the function call preamble.
+Compare this to threaded applications, where a thread can be preempted at any time, at any instruction. In Go, the compiler handles this as a natural byproduct of the function call preamble.
 
 From the point of view of the language, scheduling looks like a function call, and has the same function call semantics. The thread of execution calls into the scheduler with a specific goroutine stack, but may return with a different goroutine stack.
 
@@ -285,7 +285,7 @@ We’ve seen that the Go runtime schedules a large number of goroutines onto a s
 
 .image performance-without-the-event-loop/stack-growth.png 250 _
 
-Each goroutine starts with an small stack, allocated from the heap. The size has fluctuated over time, but in Go 1.5 each goroutine starts with a 2k allocation.
+Each goroutine starts with a small stack, allocated from the heap. The size has fluctuated over time, but in Go 1.5 each goroutine starts with a 2k allocation.
 
 Instead of using guard pages, the Go compiler inserts a check as part of every function call to test if there is sufficient stack for the function to run.
 
@@ -341,13 +341,13 @@ Async file IO is a slightly harder problem due to spotty operating system suppor
 
 * Goroutines, stack management, and an integrated network poller
 
-Goroutines provide a powerful abstraction that free the programmer from worrying about thread pools or event loops.
+Goroutines provide a powerful abstraction that frees the programmer from worrying about thread pools or event loops.
 
 The stack of a goroutine is as big as it needs to be without being concerned about sizing thread stacks or thread pools.
 
 The integrated network poller lets Go programmers avoid convoluted callback styles while still leveraging the most efficient IO completion logic available with the operating system.
 
-The runtime make sure that there will be just enough threads to service all your goroutines and keep your cores active.
+The runtime makes sure that there will be just enough threads to service all your goroutines and keep your cores active.
 
 All of these features are transparent to the programmer.
 
