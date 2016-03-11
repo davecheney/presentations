@@ -1,0 +1,130 @@
+Go Proverbs
+Gocon
+24 April 2016
+
+Dave Cheney
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* Thank you for inviting me to speak
+
+This is my third time visiting 東京 and the second time I have had to honor of speaking at GoCon.
+
+
+I love japan, and i love that you love Go. 
+
+In NN of 2015 Rob Pike gave a talk called "Go proverbs", hopefully many of you have seen it`. In this talk he outlined, in the theme of another book, also calle Go prbervs.
+
+Who knows what a proverb is. It's a story, a very short story, that a master may say to his student, or a parent to a child. 
+
+And part of the magic of a proverb is that there is a difference between knowing the proverb and known it's meaning. They are a guide to meaning.
+
+So, today I'm going to talk about the Go proverbs, not all of them, we don't have time for that, and explain what they mean to me, and hopefully by expample, they will become clearer to you.
+
+
+
+* ことわざ
+
+# kotowaza -- proverb
+
+* 井の中の蛙大海を知らず
+
+# Can someone read this for me ?
+# Can you translate it for me ?
+
+# a frog in a well does not know the great ocean
+
+# i no naka no kawazu taikai o shirazu
+
+# What is the story of the frog in the well ? What does it teach us ?
+
+# If you are the frog in the well you may think you know it all, you know your small surrondings intimately, there are few who understand what it is to live in this well like you do.
+# But, the world outside your well is vast in comparison, and your knowledge very limited
+
+* 井の中の蛙
+
+# So if I say you to you all I no naka no kawazu, maybe some of you understand it, and those who do understand it not from the words "a frog in a well", but because you have learnt their meaning.
+
+# You have to understand the meaning to understand the proverb.
+
+* Go proverbs
+
+https://www.youtube.com/watch?v=PAAkCSZUG1c
+
+Last year Rob Pike gave a talked entitled "Go Proverbs", inspired by the english translation of this famous book by Segoe Kensaku
+
+http://senseis.xmp.net/?SegoeKensaku
+
+In his talk, Sensei Pike asked
+
+"Are there Go proverbs"
+
+* Go proverbs
+
+https://go-proverbs.github.io/
+
+The answer is yes, there are Go Proverbs, you may recognise some of them already
+
+Don't communicate by sharing memory, share memory by communicating.
+
+Concurrency is not parallelism.
+
+Channels orchestrate; mutexes serialize.
+
+The bigger the interface, the weaker the abstraction.
+
+Make the zero value useful.
+
+interface{} says nothing.
+
+Gofmt's style is no one's favorite, yet gofmt is everyone's favorite.
+
+A little copying is better than a little dependency.
+
+Syscall must always be guarded with build tags.
+
+Cgo must always be guarded with build tags.
+
+Cgo is not Go.
+
+With the unsafe package there are no guarantees.
+
+Clear is better than clever.
+
+Reflection is never clear.
+
+Errors are values.
+
+Don't just check errors, handle them gracefully.
+
+Design the architecture, name the components, document the details.
+
+Documentation is for users.
+
+Don't panic.
+
+[ read list ]
+
+But just like the parable about the Frog
+
+Rules are written down, but principals must be learnt
+
+So how do we learn the principal's of software development? How do we gain the experience to judge ours designs with the eye of a master?
+
+Simply, by study.
+
+- documentation is for users, explain documentation, comments and the different kind of comments.
+- errors are just values, explain the three heriarchies of error handling
+- communicate via sharing memory, is about ownership, talk about ownership, channels, rust and const
+- interfcaes, when to use them, how to write them, when to use a method rather than a function -- to implement an interface.
+
+* Conclusion
+
+I hope that this has been informative for you.
+
+Proverbs are a great way of encapsulating information; capturing the essence of a story or teaching a moral. But they can equally be bewildering to newcomers who do not know the story behind the proverb.
+
+I hope that my explanations have been informative, and I will leave you to consider the meaning behind the other proverbs which I did not have time to discuss today.
+
+Thank you.

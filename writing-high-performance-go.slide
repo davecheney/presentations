@@ -1,0 +1,259 @@
+Writing High Performance Go
+GopherChina
+17 April 2016
+
+Dave Cheney
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* About me
+
+* Questions
+
+* How to write high performance Go code
+
+.image knuth
+
+Don't do it.
+
+Don't do it, _yet_.
+
+Always, start by writing the simplest, easiest to understand; easiest to read code, then optimise.
+
+# now, I know that you run big servers here in china, that’s why you’re interested in go -- it’s a language for servers. So for the rest of this talk, don’t worry about the man in the chair, we’re going to talk about how to get the most out of your servers.
+
+* How do we know when we are fast ?
+
+Before we start to talk about writing high performance code, we must establish an understanding of where the application is at the moment.
+
+show benchmarks
+show pkg/profile package
+show net/http/pprof
+show perf(1)
+talk about -benchmem, allocs/op and bytes/op, allocs per op is the cost to allocate the memory, bytes/op is the cost to clean it up -- sort of, you want both to be low.
+give warning about profiling in virtual machines
+benchmarking means running something small hundreds of thousands of times
+virtual machines share the hardware between many other vm’s which operate without knowledge of each other -- you cannot run top in one vm and see the effect of a program in another vm
+actually you can, it’s called steal
+so, if you benchmark inside a vm, the cpu may be given to someone else, but the profiler will still thing it’s your code taking the cpu time.
+try to avoid profiling inside vm’s, use real hardware, or vm’s where they do not penalise you for using 100% cpu for extended periods of time.
+
+* What do we mean when we say performance ?
+
+* The hardware
+
+Now that we know how to tell how fast we are going, we can talk about the parts of a computer, and it’s software that contribute to performance.
+
+
+* The CPU
+
+.image CPUDB
+
+Clock speed, not changing very much over the last decade.
+
+* More cores
+
+.image Wide cpu
+
+Over the last decade performance, especially on the server is dictated by multi core performance.
+
+* Memory
+
+Physical memory attached to a server has increased geometrically.
+
+.image cache benchmarks
+
+But, in terms of access time, physical memory is still as far away as ever.
+
+# memory is physically distant from the CPU. In a universe where electricity travels a foot every nano second, distance equals time lost
+
+* Cache is everything
+
+Cache rules everything around it, but it is small, and will stay small because the speed of light determines how large a cache can been at a certain size. 
+
+You can have a larger cache, but it will be slower.
+
+We already have three caches
+
+- L1, per CPU core
+- L2, per set of cores, usually 2-4 cores, sometimes per Hyperthread pair
+- L3, per CPU package
+
+* Network io and disk io are still expensive
+
+Network io and disk io are still expensive, so expensive that the go runtime will schedule something else while those operations are in progress.
+
+* The software
+
+Obviously a good compiler that produces efficient code
+
+It has to be small code as well, because cache
+
+* The language
+
+- Has to be compiled, not interpreted
+- Has to permit efficient code to be written, think aliasing and c++ ‘s const operator to give hints to the compiler
+- Has to let programmers talk about memory effectively, think structs vs java objects
+
+memory, 
+where does it come from; storage classes - global, stack heap
+in order of flexiblity and order of cost
+memory has a cost to allocate and a cost to free, if you want to avoid paying the cost, don’t free it
+writing code the compiler can compile
+pointers are expensive
+prefer slices to maps or linked lists
+a little copying is less bad than always pointer chasing. copying has a fixed cost relative to the size of the thing you copy, pointer chasing gets more expensive the larger your heap because the cache becomes less effective.
+talk about goroutine management
+dont’ start a goroutine unless you know how to stop it
+maybe that is when the program exits, but usualy if this goroutine is for a client, you need to have some rasonable ways to killing it after a certain time
+http.esrver, use timeouts
+
+* Performance 101
+
+Old versions of Go will not get faster
+
+Go 1.5 and 1.6 did have a slower compiler, but it produced faster code.
+
+Go 1.4 had a faster compiler, but the garbage collector does not scale as well as Go 1.6.
+
+We will fix the speed of the compiler, and the code produced by the compiler will always be better
+
+Old version of Go receive no updates, do not stay on them, use the latest and you will get the fastest programs.
+
+* Don't guess, measure
+
+# Before we can talk about writing fast code, we must first know how to tell if what we are doing is making things better, or worse.
+
+* Profiling basics
+
+Before you profile, you have to have a stable environment to get repeatable performance
+
+- The machine must be idle -- don't profile on shared hardware
+# don't browse the web while waiting for a long benchmark to run.
+- Watch out for power saving and thermal scaling.
+- Avoid virtual machines and shared cloud hosting; they are too noisy for consistent measurements.
+- There is a kernel bug on OS X versions less than El Capitan; upgrade or avoid profiling on OS X.
+
+If you can afford it, buy dedicate performance test hardware. Rack them, disable all the power management and thermal scaling you can and never update the software on those machines.
+
+For everyone else, have a before and after sample and run them both multiple times to get consistent results.
+
+* How to profile
+
+* Memory
+
+# Next to your choice of algorythms, memory consumption is the most important factor that determines the performance and scalability of your application.
+
+* Memory numbers
+
+If you are writing a server measure and know the memory footprint
+
+- Per record stored or retrieve
+- Per incoming request
+- Per concurrent connection
+
+* Garbage collector measurement
+
+
+
+* Input / Output
+
+* IO
+
+As you're writing a server process, its primary job is to be an intermediary between clients connecting over the network, and data stored in your application.
+
+If memory is slow, relatively speaking, then IO is so slow that you should avoid doing it at all costs. 
+
+Most importantly avoid doing IO in the context of a request -- don't make the user wait for your disk subsystem to write to disk, or even read. That is a sure recipe for overload.
+
+* IO numbers
+
+Here are the numbers to pay attention to
+
+- The amount of IO requests per incoming request; how many IO events does a single client request generate. It might be on average 1, or possibly less than one if many requests are served out of a cache
+
+- The amount of reads required to service a query; is it fixed, linear (N+1), or exponential (reading the whole table to generate the last page of results).
+
+* Use streaming IO interfaces
+
+Whereever possible use io.Reader and io.Writer; avoid reading into a []byte and passing that around
+
+For efficiency, consider implementing io.ReaderFrom / WriterTo if you use a lot of io.Copy, these are more efficient and avoid copying memory into a temporary buffer.
+
+* Copying
+
+Is copying bad ?
+
+If your servers' job is to read from one place and write to another, then you want to limit the amount of handling of that data as possile to reduce. So yes, in this case unnecessary copying is bad.
+
+BUT, I do not believe you can say all copying is bad, for example, this piece of code
+
+    type T struct {
+           A int
+           B int
+           C int
+    }
+
+    func fn(t T) // takes a copy of t, not a pointer
+
+Is this bad ? Would you rewrite this code to pass the T in as a pointer ?
+
+[ take show of hands ]
+
+What about this code
+
+    func fn(t []string) 
+
+A slice value is the same size as T; three machine words, and we don't think anything of passing slices into functions.
+
+Clearly there is a limit below which copying is not a problem, and intel CPU's are _very_ good at doing bulk memory copy, so please don't go passing around every parameter as a pointer because you think it will avoid copying.
+
+* Go uses efficient network polling for some requests
+
+For network IO, things that implement the net.Conn interfaces that you get from the net package are handled efficiently by the runtime using kqueue, epoll, or windows IOCP.
+
+This is all transpant to you as the user.
+
+However, for disk IO, Go does not implement any io polling -- each os.File operation will consume one OS thread during operation.
+
+Your disk subsystem does not expect to be able to handle hundreds or thousands of concurrent IO requests. It will be very slow and that will cause your go program to spawn hunderds or thousands of threads to service those blocked IO routines.
+
+* Timeouts, timeouts, timeouts
+
+Never start an IO operating without knowing the maximum time it will take.
+
+You need to set a timeout on every network request you make
+
+You need to limit the amount of blocking IO requests in progress as not portable 
+
+* TODO
+
+- Singleflight
+- sync.Pool
+
+* Concurrency
+
+* Goroutines
+
+The key feature of Go that makes it great for server applications is goroutines.
+
+No java.util.ThreadPoolExecutor, no node.js function() callbacks, just write simple goroutines and let the Go runtime take care of multiplexing them onto the hardware.
+
+Gorountines are so easy to use, and so cheap to create, you could think of them as almost _free_. 
+
+Indeed the Go runtime has been written for tens of thousands of goroutines as the norm, hundreds of thousands are not unexpected.
+
+However, each goroutine does consume a minimum amount of memory in runtime tables and in the goroutines' stack which is at least 2k.
+
+2048 * 1,000,000 goroutines == 2Gb of memory per 1,000,000 goroutines.
+
+# Maybe this is a lot, maybe it isn't given the other usages of your application
+
+* Know when to stop a goroutine
+
+Goroutines are cheap to start and cheap to run, but they do have a finite cost in terms of memory footprint; you cannot create an infinite number of them. So I present to you a rule
+
+> Never start a goroutine without knowing how it will stop.
+
+
