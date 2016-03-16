@@ -22,7 +22,7 @@ And part of the magic of a proverb is that there is a difference between knowing
 
 So, today I'm going to talk about the Go proverbs, not all of them, we don't have time for that, and explain what they mean to me, and hopefully by expample, they will become clearer to you.
 
-
+# https://en.m.wikipedia.org/wiki/Japanese_proverbs
 
 * ことわざ
 
@@ -42,6 +42,8 @@ So, today I'm going to talk about the Go proverbs, not all of them, we don't hav
 # If you are the frog in the well you may think you know it all, you know your small surrondings intimately, there are few who understand what it is to live in this well like you do.
 # But, the world outside your well is vast in comparison, and your knowledge very limited
 
+https://en.wikibooks.org/wiki/Chinese_Stories/The_frog_of_the_well
+
 * 井の中の蛙
 
 # So if I say you to you all I no naka no kawazu, maybe some of you understand it, and those who do understand it not from the words "a frog in a well", but because you have learnt their meaning.
@@ -58,7 +60,7 @@ http://senseis.xmp.net/?SegoeKensaku
 
 In his talk, Sensei Pike asked
 
-"Are there Go proverbs"
+"Are there Go proverbs?"
 
 * Go proverbs
 
@@ -112,12 +114,97 @@ Rules are written down, but principals must be learnt
 
 So how do we learn the principal's of software development? How do we gain the experience to judge ours designs with the eye of a master?
 
+So today I want to talk about some of the proverbs, and explain what they mean to me, while talking about the features of go design that are important to me
+
 Simply, by study.
+
+* documentation is for users
+
+Rob Pike is a great fan of documentation, you can see his influence in the language.
+
+Have you ever had to write a manual for a program, maybe for a user, or for someone else using your library ?
+
+How long did it take before that document was wrong, because you'd changed something, or added a new feature, or the product made it to version 2.0 and you wrote a new user interface. 
+
+I'm sure we've all experienced that, and have read documentation from other products that was out of date.
+
+
 
 - documentation is for users, explain documentation, comments and the different kind of comments.
 - errors are just values, explain the three heriarchies of error handling
-- communicate via sharing memory, is about ownership, talk about ownership, channels, rust and const
 - interfcaes, when to use them, how to write them, when to use a method rather than a function -- to implement an interface.
+
+* communicate via sharing memory, is about ownership, talk about ownership, channels, rust and const
+
+Even thought this was the first proverb we ever learnt about Go, published way back in 2009 [ link to blog ] I have chosen to leave it til last.
+
+I have been studying Go for 6 years now and I must tell you that despite this being the first proverb I learnt about Go, it was the one that took me the longest to understand -- and even now I am not entirely sure that I truly understand its meaning.
+
+Part of the difficulty I believe is that this proverb has mutliple meanings, it provides many lessons -- hence the confusion.
+
+So, I will do my best to untagle it, and explain each of the meanings.
+
+* Communicate with data, not with messages
+
+The first, and most obvious meaning of
+
+> Don't communicate by sharing memory, share memory by communicating.
+
+Is rather than sending signs between goroutines, send the data itself.
+
+As an example, imagine if I wanted to send you a letter by mail, I would give the letter to the post office, who would then go to your house and leave a note in your letterbox telling you that there is a letter for you and you should come to collect it from your post office.
+
+This would be quite annoying, they already came to your house, but instead of leaving the letter, all they left was a message for you to come and get the letter. 
+
+So you go to the post office and show them the note that was left for you, but you have arrived to quickly, the letter is still in transit, so you have to come back later, which your letter is ready.
+
+This is the sort of using locks and shared memory.
+
+Rather than just send you the value, one goroutine told another that it was 
+
+Talking about letters and post offices again, you can imagine how complicated this would be if I wanted to send everyone in my family a letter, not only would each of my family have to take the note to their post office to receive their copy of the letter, but some will arrive to early, and others may accidentally be given several copies of the letter by mistake, so other family members, no matter how many times they ask, will never receive their copy of the letter.
+
+Back in the land of Go, this story is simpler. We can solve all the problems with locks and polling with channels. When a receive operation completes you don't just have the notification that a message is available, you have the actual data.
+
+So this is one of the lessons of 
+
+> Don't communicate by sharing memory, share memory by communicating.
+
+That using channels to communicate between goroutines is much simpler, much easier to understand and reason about, than using locks, and shared memory.
+
+* Ownership
+
+But there are also other lessons that  
+
+> Don't communicate by sharing memory, share memory by communicating.
+
+has to teach us. 
+
+The second lesson is about ownership of resources. There are many kinds of resources
+
+- a value in memory
+- a channel
+- a file
+- a network socket
+
+And other types that you create in your own programs. But really it's the ownership of memory that is the most important, and this is because we live 
+in a world where modern computers have 
+
+* Channel ownership
+
+Channel ownership, who owns the channel, only the owner may close it.
+
+You do not need to close a channel for it to be garbage collected, that will happen once every reference to your channel has been discarded.
+
+Closing the channel is a signal, soem metadata apart from the channel values themselves
+
+But the two are related, because most consumers wait for channel to be closed, and won't exit, thus drop their reference to this channel.until it is closed.
+
+From this we draw two recommendations
+
+> Only the owner of a chanel may close the chabel
+
+> Never start a goroutine without knowing how it will stop.
 
 * Conclusion
 
@@ -125,6 +212,14 @@ I hope that this has been informative for you.
 
 Proverbs are a great way of encapsulating information; capturing the essence of a story or teaching a moral. But they can equally be bewildering to newcomers who do not know the story behind the proverb.
 
+I hope that you will watch Sensei Pike's video, I think it was a wonderful presentation and I cannot recommend it enough to each of you.
+
 I hope that my explanations have been informative, and I will leave you to consider the meaning behind the other proverbs which I did not have time to discuss today.
+
+And I will leave you with a proverb of sorts, not of my own, but one I think is appropriate
+
+http://english.stackexchange.com/questions/38837/where-does-this-translation-of-saint-exuperys-quote-on-design-come-from
+
+* Simplicity is the ultimate form of sophistication —Leonardo da Vinci
 
 Thank you.

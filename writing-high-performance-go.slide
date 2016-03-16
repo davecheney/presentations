@@ -155,7 +155,27 @@ If you are writing a server measure and know the memory footprint
 
 * Garbage collector measurement
 
+* Garbage collector tuning
 
+goal = reachable * (1 + GOGC/100)
+
+G
+
+* Benchmarking
+
+* Microbenchmarks
+
+* How to write a reliable benchmark
+
+Beware the inliner
+
+https://github.com/golang/go/issues/14813#issuecomment-196257065
+
+This is only going to get stronger. Because the same optimisations that make real code fast, by removing unnecessary computation are the same ones that remove benchmarks that have no observable side effects.
+
+* Profiling
+
+* Reading Profiles
 
 * Input / Output
 
@@ -256,4 +276,28 @@ Goroutines are cheap to start and cheap to run, but they do have a finite cost i
 
 > Never start a goroutine without knowing how it will stop.
 
+Channel ownership, who owns the channel, only the owner may close it. 
 
+You do not need to close a channel for it to be garbage collected, that will happen once every reference to your channel has been discarded. 
+
+Closing the channel is a signal, soem metadata apart from the channel values themselves
+
+But the two are related, because most consumers wait for channel to be closed, and won't exit, thus drop their reference to this channel.until it is closed. 
+
+From this we draw three recommendations
+
+Only the owner of a chanel may close the chabel / A channel may only be closed by its owner
+
+> and a channel must have at most one owner
+
+Never start a goroutine until you know how it will stop. 
+
+* Don't trade performance for reliability
+
+Most of these tips are about performance, but some of them are about reliability, becsuse I see little value in having a very fast server that panics, deadlocks or blows it's memory cap on a regular basis.
+
+Performance and reliability are equally important. 
+
+China is a big market, and a big market for go.
+
+You in this room are going to be pushing Go hard.
