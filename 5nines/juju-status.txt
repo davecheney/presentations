@@ -1,0 +1,51 @@
+% juju deploy cs:precise/mysql mydatabase
+% juju deploy wordpress myblog
+% juju add-relation mydatabase myblog
+% juju expose myblog
+% juju status
+machines:
+  "0":
+    agent-state: started
+    agent-version: 1.11.0.1
+    dns-name: ec2-184-72-15-27.us-west-1.compute.amazonaws.com
+    instance-id: i-08703b50
+    series: precise
+  "1":
+    agent-state: started
+    agent-version: 1.11.0.1
+    dns-name: ec2-54-241-77-25.us-west-1.compute.amazonaws.com
+    instance-id: i-fe773ca6
+    series: precise
+  "2":
+    agent-state: started
+    agent-version: 1.11.0.1
+    dns-name: ec2-50-18-43-73.us-west-1.compute.amazonaws.com
+    instance-id: i-ba8bc0e2
+    series: precise
+services:
+  myblog:
+    charm: cs:precise/wordpress-15
+    exposed: true
+    relations:
+      db:
+      - mydatabase
+      loadbalancer:
+      - myblog
+    units:
+      myblog/0:
+        agent-state: started
+        agent-version: 1.11.0.1
+        machine: "2"
+        public-address: ec2-50-18-43-73.us-west-1.compute.amazonaws.com
+  mydatabase:
+    charm: cs:precise/mysql-19
+    exposed: false
+    relations:
+      db:
+      - myblog
+    units:
+      mydatabase/0:
+        agent-state: started
+        agent-version: 1.11.0.1
+        machine: "1"
+        public-address: ec2-54-241-77-25.us-west-1.compute.amazonaws.com

@@ -1,0 +1,205 @@
+Go and Juju at Canonical
+GoSF May Meetup
+9 May 2013
+
+Dave Cheney
+Canonical
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* Who is this guy ?
+
+- I work for Canonical developing Juju in Go
+- Co-organiser of the Sydney Go meetup group with @enneff
+- Go Contributor since Feb 2011
+- Go Committer since April 2012
+- ARM enthusiast
+
+* Overview
+
+This is a talk in two parts
+
+- What is Juju ?
+- What are some of the features of Go we use to make Juju reliable ?
+
+* What is Juju ?
+
+Before I can talk about how we use Go to build Juju, I need to spend a few minutes explaining Juju.
+
+* Not a sales presentation
+
+Come see me afterwards if you _do_ want a sales presentation.
+
+* Service Orchestration not host configuration
+
+Juju isn't like Chef or Puppet.
+
+* Not host configuration ?
+
+- Hosts are disposable 
+- Deployments live from minutes to years.
+- Host setup is expected to be handled by the provider or baked into the boot image.
+- If you need a package to installed, Juju charms can handle that for you.
+- If you need a config file to be edited, Juju charms can handle that as well.
+
+* Services
+
+- Unlike Chef or Puppet, Juju treats the Service, not the Host, as the central data type.
+- A bunch of Services deployed together are called an Environment.
+- You describe your Services and how they interrelate and Juju does the rest.
+
+* Environments
+
+An Environment is a collection of Services running on an provider like
+
+- HP Cloud
+- EC2
+- MaaS
+- Openstack 
+
+- more to come
+
+* Charms (1/2)
+
+- Services are an instance of a Charm.
+
+    % juju deploy cs:precise/mysql mydatabase
+
+Output
+
+    % juju status
+     ...
+    services:
+      mydatabase:
+        charm: cs:precise/mysql-19
+        exposed: false
+      units:
+        mydatabase/0:
+          agent-state: installed
+          agent-version: 1.11.0.1
+          machine: "1"
+          public-address: ec2-54-241-77-25.us-west-1.compute.amazonaws.com
+
+* Charms (cont.)
+
+- just a zip file
+
+    % file ~/.juju/cache/cs_3a_precise_2f_wordpress-11.charm 
+    /home/dfc/.juju/cache/cs_3a_precise_2f_wordpress-11.charm: Zip archive data
+
+- Hooks named for verbs; install, start, config-changed
+- Charms can get details of their configuration via shell commands
+
+.code 5nines/config-changed /START OMIT/,/END OMIT/
+
+- Charms can be written in any language you want. Shell, Python, Ruby, PHP, ...
+
+* Relations
+
+- Services are related to one another.
+- Relations are a form of bidirectional dependency.
+- Relations allow Services to discover configuration.
+- Services can query details about other services once a relation has been established.
+
+* Units
+
+- A Unit is an instance of a Service.
+- Deployed into a machine provided for it in the Environment.
+- This usually means a new machine will booted up to handle the Unit.
+
+* Putting it all together
+
+.code 5nines/juju-status.txt 
+
+* End of part 1
+
+So, that was the theory, now on to the implementation.
+
+* The implementation 
+
+Juju has three parts
+
+- A database to store the environment (MongoDB)
+
+- Server side tools
+
+    jujud agents, jujuc tools
+
+- Client side tools
+
+    juju cli
+
+* The implementation (cont.)
+
+At last count, 85k lines of code (182k inc tests), including dependencies developed by Canonical.
+
+- labix.org/v2/mgo
+- launchpad.net/gnuflag
+- launchpad.net/goamz
+- launchpad.net/gocheck
+- launchpad.net/gomaasapi
+- launchpad.net/goose
+- launchpad.net/goyaml
+- launchpad.net/tomb
+
+* The implementation (cont.)
+
+- Juju cli alters the data representing the Environment stored in the Mongo database.
+- Agents running on various machines inside the Environment observe these changes and react by running a Charm hook.
+- Juju Agents are constructed from many goroutines (jobs) selected at runtime for a particular agent role.
+- Everything is asynchronous.
+
+* Two small things
+
+- Tombs
+- Watchers
+
+* Managing goroutines with Tombs
+
+For reliable operation we need to
+
+- Monitor the status of worker goroutines.
+- Be able to stop them when needed.
+- Know when they _have_ stopped.
+
+* A contrived example
+
+.play 5nines/stopping1.go /START OMIT/,/END OMIT/
+
+* Improved example
+
+.play 5nines/stopping2.go /START OMIT/,/END OMIT/
+
+* Rewritten using a Tomb
+
+.play 5nines/stopping3.go /START OMIT/,/END OMIT/
+
+* Returning a value
+
+.play 5nines/stopping4.go /START OMIT/,/END OMIT/
+
+* Watching, always watching
+
+.code 5nines/watcher.txt
+
+* Watchers, really just Tombs
+
+.code 5nines/watcher.go /STARTa OMIT/,/ENDa OMIT/
+.code 5nines/watcher.go /STARTb OMIT/,/ENDb OMIT/
+
+* Some real code
+
+.code 5nines/provisioner.go /START OMIT/,/END OMIT/
+
+* Thank you
+
+- Special thanks to @rogpeppe who helped me a _lot_ with my presentation.
+
+- Big thanks to @enneff for the sweet present tool.
+
+- Huge thanks to Gary Burd for his talks.godoc.org subsite. This presentation is
+.link http://talks.godoc.org/github.com/davecheney/gosf/5nines.slide
+
+- Check out Juju, it's open source.
+.link https://launchpad.net/juju-core 

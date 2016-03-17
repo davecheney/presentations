@@ -1,0 +1,25 @@
+% godoc launchpad.net/juju-core/state EnvironConfigWatcher
+PACKAGE DOCUMENTATION
+
+package state
+    import "launchpad.net/juju-core/state"
+
+TYPES
+
+type EnvironConfigWatcher struct {
+    // contains filtered or unexported fields
+}
+    EnvironConfigWatcher observes changes to the environment configuration.
+
+func (w *EnvironConfigWatcher) Changes() <-chan *config.Config
+    Changes returns a channel that will receive the new environment
+    configuration when a change is detected. Note that multiple changes may
+    be observed as a single event in the channel.
+
+func (w *EnvironConfigWatcher) Err() error
+    Err returns any error encountered while running or shutting down, or
+    tomb.ErrStillAlive if the watcher is still running.
+
+func (w *EnvironConfigWatcher) Stop() error
+    Stop stops the watcher, and returns any error encountered while running
+    or shutting down.
