@@ -1,6 +1,6 @@
 Go Proverbs
 Gocon
-24 April 2016
+24 Apr 2016
 
 Dave Cheney
 dave@cheney.net
@@ -9,10 +9,97 @@ http://dave.cheney.net/
 
 * Thank you for inviting me to speak
 
+Before I begin my talk, I want to express my gratitude to the organisers of GoCon for inviting me to speak today.
+
 This is my third time visiting 東京 and the second time I have had to honor of speaking at GoCon.
 
+# I love japan, and i love that you love Go. 
 
-I love japan, and i love that you love Go. 
+I was in China last week giving a technical talk about Go, but as I was given the honor of being the first speaker today I wanted to prepare something special for you.
+
+If you are intersted, I'll post post my GopherChina talk online in a few days, so make sure you follow me on twitter for the link.
+
+
+* Introduction
+
+I want to start this talk with a little background. over the last few years I've been collecting notes on topics to write about on my blog, things to speak about, ideas from talking with friends, online, etc.
+
+Originally i wanted to write them up as blog posts, but quickly i realised that I had so many it would be a huge undertaking. so
+
+* Practical Go
+
+[ image, book: Practical go
+
+warning: not a real book ]
+
+I thought about writing a book, and before you get to excited, no, i haven't written a book, and that is for all the usual reasons.
+
+But more profoundly, I havne't written a book because I was never able to develop the theme that I wanted
+
+So, what was the theme that I failed to discover. well, as many travellers will tell you,  you should travel the world with your eyes open -- surely a good safety tip -- but what they really mean is, when you travel the world, be open to the ideas and expereinces you will ahve along the way, don't let your preconditions color your interpretations, don't got out into the world decidin gthat you already know all the answers.
+
+So, what was my precondition when I tried to write this book ? What had I decided was the truth, and I just needed to find evidence of that.
+
+In a word rules.
+
+It is so common, as programmers for us to ask quetions like
+
+what is the _right_ way to do something
+
+When should I do X, and when should I do Y
+
+A Go programmers, when should I use and interface, when should I use a concrete type
+
+When should I use a function and when should I use a method
+
+When shoudl I declare a method on a pointer, when should I declare a method on a value
+
+What is the right way to handle errors.
+
+And looking at my stack of notes I said to myself
+
+"I think I can answer these questions, I'm going to write a book with the answers for Go programmers to these questions"
+
+And I felt that it must be possible. I mean if Scott Meyers can write books about this for C++, Go, a much simpler langauge should be easy -- right ?
+
+And to make a long story short, after months of writing and thinking and talking to people I realise that I had made a mistake.
+
+And that mistake was, there are no rules that i can give to explain how I think GO programs should best be written.
+
+In fact, the only rule I could come up with, after months of writing was
+
+"It depends"
+
+And it depends is something that as an engineer I say a lot, maybe you do as well.
+
+David, what's the best way to handle uploads to our application
+
+Well, it depends,
+
+[ and so on ]
+
+And it's not that I'm being difficult, or non comittal, the it depends is always a prelude to asking questions about how they want to _use_ the thing that they have asked me to build.
+
+And this here is the _essence_ of design. Design is about creating a solution that works without the constraints of the environment which it will be used.
+
+Here in Tokyo for example I've seen a lot of these
+
+[ picture, tiny car ]
+
+So, why are these popular here ? Why did someone design a car so specific for Tokyo ?
+
+One answer is tokyo is very crowded city, small lanes, space is at a premium, so if you design a car with a smaller footprint, it will be easier to drive in Tokyo and easier to park.
+
+So, coming back to It Depends.
+
+What I realised working on this book is it is going to be difficult to come up with a set of rules that you can apply  to writing GO programs. And the clue there is really in the word
+
+rules / patterns /  laws
+
+these are all very concrete ideas, everyone must follow the rules, everyone must obey the law, you _should_ use this pattern when designing your software. IN fact, we have books giving 50 patterns that you can use.
+
+But what I realised in the end is that the reader of this book is not looking for rules, or patterns, but advice.
+
 
 In NN of 2015 Rob Pike gave a talk called "Go proverbs", hopefully many of you have seen it`. In this talk he outlined, in the theme of another book, also calle Go prbervs.
 
@@ -118,7 +205,7 @@ So today I want to talk about some of the proverbs, and explain what they mean t
 
 Simply, by study.
 
-* documentation is for users
+* Documentation is for users
 
 Rob Pike is a great fan of documentation, you can see his influence in the language.
 
@@ -128,11 +215,32 @@ How long did it take before that document was wrong, because you'd changed somet
 
 I'm sure we've all experienced that, and have read documentation from other products that was out of date.
 
+The readability of programs is immeasurably more important their writeability. -- C. A. R. Hoare
 
+http://i.stanford.edu/pub/cstr/reports/cs/tr/73/403/CS-TR-73-403.pdf
 
 - documentation is for users, explain documentation, comments and the different kind of comments.
 - errors are just values, explain the three heriarchies of error handling
 - interfcaes, when to use them, how to write them, when to use a method rather than a function -- to implement an interface.
+
+Who are the users of your code? 
+
+Naming and comment ary
+
+The source code is meant to be read
+
+It will be read many more times than it is written
+
+* If you cannot document it, do you understand it ?
+
+* Errors are just values
+
+* Error handling 
+
+- you shouldn't be using sentinal values
+- you shouldn't be making up your own sentinals 
+- you shouldn't use a sentinal in more than on place, because then you won't be able to track down where it came from 
+- so, if you shouldn't use sentinals, and you shouldn't use them more than once, then you're better off treating the error as opaque and using errors.New("exact problem") every time.
 
 * communicate via sharing memory, is about ownership, talk about ownership, channels, rust and const
 
@@ -223,3 +331,14 @@ http://english.stackexchange.com/questions/38837/where-does-this-translation-of-
 * Simplicity is the ultimate form of sophistication —Leonardo da Vinci
 
 Thank you.
+
+https://en.wikipedia.org/wiki/Shibui
+
+Shibui  渋い
+
+I want to close, not on a proverb, but on a beautiful word that I discovered in my research.
+
+And I like this word, because if there is a word which I think properly describes my feelings about Go, it is Shibui. 
+
+An restrained design, functional without a course agrecultural design.
+
