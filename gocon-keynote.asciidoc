@@ -1,42 +1,27 @@
-Go Proverbs
-Gocon
-24 Apr 2016
+= Go Proverbs
+Dave Cheney <dave@cheney.net>
+v1.0, 24th April, 2016
 
-Dave Cheney
-dave@cheney.net
-http://dave.cheney.net/
-@davecheney
+== Preface
 
-* Thank you for inviting me to speak
-
-Before I begin my talk, I want to express my gratitude to the organisers of GoCon for inviting me to speak today.
+Before I begin my talk, I want to express my gratitude to Ueda-san and the organisers of GoCon for inviting me to speak today.
+I also want to acknoledge the generous sponsorshop of CyberAgent for providing the venue for today.
 
 This is my third time visiting 東京 and the second time I have had to honor of speaking at GoCon.
-
-# I love japan, and i love that you love Go. 
-
 I was in China last week giving a technical talk about Go, but as I was given the honor of being the first speaker today I wanted to prepare something special for you.
-
 If you are intersted, I'll post post my GopherChina talk online in a few days, so make sure you follow me on twitter for the link.
 
-* Introduction
+== Introduction
 
 I want to start this talk with a little background.
 Over the last few years I've been collecting notes on Go topics, things to speak about, ideas from talking with friends, online conversations, an so on.
-
-Originally I wanted to write them up as blog posts, but quickly i realised that I had so many it would be a huge undertaking. so
-
-* Practical Go
-
-[ image, book: Practical go
-
-warning: not a real book ]
+Originally I wanted to write them up as blog posts, but I quickly realised that I had so many it would be a huge undertaking. 
 
 I thought about writing a book, and before you get to excited, no, i haven't written a book, and that is for all the usual reasons.
+But more profoundly, I havne't written a book because I was never able to develop the theme that I wanted.
 
-But more profoundly, I havne't written a book because I was never able to develop the theme that I wanted
-
-So, what was the theme that I failed to discover. well, as many travellers will tell you,  you should travel the world with your eyes open -- surely a good safety tip -- but what they really mean is, when you travel the world, be open to the ideas and expereinces you will ahve along the way, don't let your preconditions color your interpretations, don't got out into the world decidin gthat you already know all the answers.
+So, what was the theme that I failed to discover.
+Well, as many travellers will tell you,  you should travel the world with your eyes open -- surely a good safety tip -- but what they really mean is, when you travel the world, be open to the ideas and expereinces you will ahve along the way, don't let your preconditions color your interpretations, don't got out into the world decidin gthat you already know all the answers.
 
 So, what was my precondition when I tried to write this book ? What had I decided was the truth, and I just needed to find evidence of that.
 
@@ -76,7 +61,7 @@ David, what's the best way to handle uploads to our application
 
 Well, it depends,
 
-[ and so on ]
+// [ and so on ]
 
 And it's not that I'm being difficult, or non comittal, the it depends is always a prelude to asking questions about how they want to _use_ the thing that they have asked me to build.
 
@@ -84,7 +69,7 @@ And this here is the _essence_ of design. Design is about creating a solution th
 
 Here in Tokyo for example I've seen a lot of these
 
-[ picture, tiny car ]
+// [ picture, tiny car ]
 
 So, why are these popular here ? Why did someone design a car so specific for Tokyo ?
 
@@ -109,41 +94,41 @@ And part of the magic of a proverb is that there is a difference between knowing
 
 So, today I'm going to talk about the Go proverbs, not all of them, we don't have time for that, and explain what they mean to me, and hopefully by expample, they will become clearer to you.
 
-# https://en.m.wikipedia.org/wiki/Japanese_proverbs
+// https://en.m.wikipedia.org/wiki/Japanese_proverbs
 
 * ことわざ
 
-# kotowaza -- proverb
+// kotowaza -- proverb
 
 * 井の中の蛙大海を知らず
 
-# Can someone read this for me ?
-# Can you translate it for me ?
+// Can someone read this for me ?
+// Can you translate it for me ?
 
-# a frog in a well does not know the great ocean
+// a frog in a well does not know the great ocean
 
-# i no naka no kawazu taikai o shirazu
+// i no naka no kawazu taikai o shirazu
 
-# What is the story of the frog in the well ? What does it teach us ?
+// What is the story of the frog in the well ? What does it teach us ?
 
-# If you are the frog in the well you may think you know it all, you know your small surrondings intimately, there are few who understand what it is to live in this well like you do.
-# But, the world outside your well is vast in comparison, and your knowledge very limited
+// If you are the frog in the well you may think you know it all, you know your small surrondings intimately, there are few who understand what it is to live in this well like you do.
+// But, the world outside your well is vast in comparison, and your knowledge very limited
 
 https://en.wikibooks.org/wiki/Chinese_Stories/The_frog_of_the_well
 
 * 井の中の蛙
 
-# So if I say you to you all I no naka no kawazu, maybe some of you understand it, and those who do understand it not from the words "a frog in a well", but because you have learnt their meaning.
+// So if I say you to you all I no naka no kawazu, maybe some of you understand it, and those who do understand it not from the words "a frog in a well", but because you have learnt their meaning.
 
-# You have to understand the meaning to understand the proverb.
+// You have to understand the meaning to understand the proverb.
 
-* Go proverbs
+== Go proverbs
 
 https://www.youtube.com/watch?v=PAAkCSZUG1c
 
 Last year Rob Pike gave a talked entitled "Go Proverbs", inspired by the english translation of this famous book by Segoe Kensaku
 
-http://senseis.xmp.net/?SegoeKensaku
+// http://senseis.xmp.net/?SegoeKensaku
 
 In his talk, Sensei Pike asked
 
@@ -155,49 +140,28 @@ https://go-proverbs.github.io/
 
 The answer is yes, there are Go Proverbs, you may recognise some of them already
 
-Don't communicate by sharing memory, share memory by communicating.
+.Go proverbs
+* Don't communicate by sharing memory, share memory by communicating.
+* Concurrency is not parallelism.
+* Channels orchestrate; mutexes serialize.
+* The bigger the interface, the weaker the abstraction.
+* Make the zero value useful.
+* `interface{}` says nothing.
+* `gofmt`'s style is no one's favorite, yet gofmt is everyone's favorite.
+* A little copying is better than a little dependency.
+* Syscall must always be guarded with build tags.
+* Cgo must always be guarded with build tags.
+* Cgo is not Go.
+* With the unsafe package there are no guarantees.
+* Clear is better than clever.
+* Reflection is never clear.
+* Errors are values.
+* Don't just check errors, handle them gracefully.
+* Design the architecture, name the components, document the details.
+* Documentation is for users.
+* Don't panic.
 
-Concurrency is not parallelism.
-
-Channels orchestrate; mutexes serialize.
-
-The bigger the interface, the weaker the abstraction.
-
-Make the zero value useful.
-
-interface{} says nothing.
-
-Gofmt's style is no one's favorite, yet gofmt is everyone's favorite.
-
-A little copying is better than a little dependency.
-
-Syscall must always be guarded with build tags.
-
-Cgo must always be guarded with build tags.
-
-Cgo is not Go.
-
-With the unsafe package there are no guarantees.
-
-Clear is better than clever.
-
-Reflection is never clear.
-
-Errors are values.
-
-Don't just check errors, handle them gracefully.
-
-Design the architecture, name the components, document the details.
-
-Documentation is for users.
-
-Don't panic.
-
-[ read list ]
-
-But just like the parable about the Frog
-
-Rules are written down, but principals must be learnt
+But just like the parable about the frog, rules are written down, but principals must be learnt
 
 So how do we learn the principal's of software development? How do we gain the experience to judge ours designs with the eye of a master?
 
@@ -205,7 +169,7 @@ So today I want to talk about some of the proverbs, and explain what they mean t
 
 Simply, by study.
 
-* Documentation is for users
+ Documentation is for users
 
 Rob Pike is a great fan of documentation, you can see his influence in the language.
 
@@ -217,7 +181,7 @@ I'm sure we've all experienced that, and have read documentation from other prod
 
 The readability of programs is immeasurably more important their writeability. -- C. A. R. Hoare
 
-http://i.stanford.edu/pub/cstr/reports/cs/tr/73/403/CS-TR-73-403.pdf
+// http://i.stanford.edu/pub/cstr/reports/cs/tr/73/403/CS-TR-73-403.pdf
 
 - documentation is for users, explain documentation, comments and the different kind of comments.
 - errors are just values, explain the three heriarchies of error handling
@@ -235,7 +199,73 @@ It will be read many more times than it is written
 
 * Errors are just values
 
-* Error handling 
+== Error handling 
+
+Over the last 5 years of this blog I've written a lot about error handling. Because, error handling is important.
+
+I've spent a long time thinking about the best way to handle errors in Go programs, but, probably unsurprisingly, have decided that there is no one true way to handle errors.
+By the same token, error handling is not a spectrum of possibility.
+Error handling techniques can be roughly classified into the three core strategies, which I will illustrate in this post.
+
+With that proviso, I present, with apologies to Abraham Maslow, Cheney's hierarchy of error handling.
+// [ image Cheney's hierarchy of error handling ]
+
+Before continuing, I want to reiterate that I do not believe there is no one true error handling strategy that works for all conditions.
+As the diagram, and this post will hopefully show, each error handling strategy involves a set of tradeoffs that you, the author, must manage.
+
+=== Sentinel values
+
+The first category of error handling is using sentinel values like io.EOF, or go/build.NoGoError. Low level errors like the syscall.Errno type also fall into this category. These sentinel values are compared by value, eg:
+
+ n, err := r.Read(buf)
+ buf = buf[:n]
+ if err == io.EOF {
+      return buf, nil
+ }
+ return buf, err
+
+Using sentinel values is the least flexible of error handling strategy as client code is looking for equality with an exact value.
+You cannot wrap a sentinel value with extra context, even a simple
+
+ return fmt.Errorf("unexpected error: %v", err)
+
+will defeat your caller's equality test.
+
+Sentinel values are often associated with helper functions that inspect them, replete with complicated platform specific code to normalise cross platform differences.
+A good example is this is the os.IsNotExist helper which is intimately aware of the ways a sentinel error value can be wrapped or smuggled inside another type.
+
+If your public function or method returns an error of a particular value, it must be documented, and of course the value's definition must be exported.
+This adds to the surface area of your API and counts against the complexity budget for using the package.
+
+If your code implements an interface who's signature defines a specific sentinel value, all implementors need to import the package that sentinel value is defined.
+More perniciously, if the interface method is defined to return a specific error value, all implementations are restricted to the vocabulary defined in the interface.
+
+Sentinel values present a problem when you want to provide more context as they must not be annotated or wrapped by other error types.
+
+=== Error types
+
+Error types, as distinct from the previous error values, are more flexible. Error types, usually struct types, but of course any user defined type can implement error
+
+Callers of a function or method can use a type assertion to check if the error value is a particular type, or preferably, the error value exposes specific behaviour by implementing a particular interface.
+
+Returning an error of a particular type, rather than a value is more flexible. You can extend the information returned to the caller by adding fields to the type over time without.
+
+The most important improvement of error types over error values is their ability to wrap an underlying error to provide more context in a programatic way.
+An excellent example of this is the os.PathError type
+
+Error types can also host methods unlocking the more powerful technique of asserting an error to an interface, rather than with a type assertion.
+A counterexample to the previous os.PathError type, is the net.Error interface type, which defines behaviours that error values that types satisfying the other interfaces in the net package, like net.Listener and net.Conn.
+
+=== Opaque errors
+
+The most flexible error handling strategy, providing the least coupling between code and caller, is to treat the error value from a function or method as opaque. As the caller, all you know about the result of the function is that it worked, or it didn't.
+
+If you can adopt this position, then error handling becomes significantly more useful as a debugging aid. You can now freely wrap or annotate errors with additional context
+
+Opaque errors enable gift wrapping, which is a general version of the previous error type's methodology--except in this case you do not know the type you are asserting to.
+
+Errors are part of your package's public API, treat them with as much care as you would any other part of your public API. Choosing how errors are communicated is the responsibility of the package's author and your decision impacts the usability of your package. Choose wisely.
+
 
 - you shouldn't be using sentinal values
 - you shouldn't be making up your own sentinals 
@@ -256,7 +286,8 @@ So, I will do my best to untagle it, and explain each of the meanings.
 
 The first, and most obvious meaning of
 
-> Don't communicate by sharing memory, share memory by communicating.
+[quote]
+Don't communicate by sharing memory, share memory by communicating.
 
 Is rather than sending signs between goroutines, send the data itself.
 
@@ -280,7 +311,7 @@ So this is one of the lessons of
 
 That using channels to communicate between goroutines is much simpler, much easier to understand and reason about, than using locks, and shared memory.
 
-* Ownership
+== Ownership
 
 But there are also other lessons that  
 
@@ -298,7 +329,7 @@ The second lesson is about ownership of resources. There are many kinds of resou
 And other types that you create in your own programs. But really it's the ownership of memory that is the most important, and this is because we live 
 in a world where modern computers have 
 
-* Channel ownership
+=== Channel ownership
 
 Channel ownership, who owns the channel, only the owner may close it.
 
@@ -310,11 +341,10 @@ But the two are related, because most consumers wait for channel to be closed, a
 
 From this we draw two recommendations
 
-> Only the owner of a chanel may close the chabel
+. Only the owner of a chanel may close the chabel
+. Never start a goroutine without knowing how it will stop.
 
-> Never start a goroutine without knowing how it will stop.
-
-* Conclusion
+== Conclusion
 
 I hope that this has been informative for you.
 
@@ -326,13 +356,14 @@ I hope that my explanations have been informative, and I will leave you to consi
 
 And I will leave you with a proverb of sorts, not of my own, but one I think is appropriate
 
-http://english.stackexchange.com/questions/38837/where-does-this-translation-of-saint-exuperys-quote-on-design-come-from
+// http://english.stackexchange.com/questions/38837/where-does-this-translation-of-saint-exuperys-quote-on-design-come-from
 
-* Simplicity is the ultimate form of sophistication —Leonardo da Vinci
+[quote, Leonardo da Vinci]
+Simplicity is the ultimate form of sophistication —Leonardo da Vinci
 
 Thank you.
 
-https://en.wikipedia.org/wiki/Shibui
+// https://en.wikipedia.org/wiki/Shibui
 
 Shibui  渋い
 

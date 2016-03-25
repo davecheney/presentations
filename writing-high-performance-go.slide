@@ -317,6 +317,14 @@ benchvis if you want to produce nice graphs for your boss. TODO(dfc) does this w
 
 Show how inlining works with examples
 
+Before we move on to the last section of the talk, I want to take some time to discuss inlining.
+
+Inlining is _the_ critical optimisation that enables many other optimisations.
+
+In the current Go compiler, 
+
+* Inlining (cont.)
+
 * Memory management and GC tuning
 
 * Memory management and GC tuning
@@ -571,7 +579,24 @@ All the optimisations going into the Go compiler are targeting _normal_ code.
 
 .code writing-high-performance-go/copy/copy_test.go /START OMIT/,/END OMIT/
 
-Which is faster ? Turns out they are the same in performance. 
+Which is faster ? 
+
+* The compiler is optimised for normal code (cont.)
+
+	% go test -bench=.
+	testing: warning: no tests to run
+	BenchmarkCopy-4         20000000                96.3 ns/op
+	BenchmarkAppend-4       20000000                95.9 ns/op
+
+	% go test -bench=. -count=100 > out.txt
+	% benchstat {out,out}.txt 
+	name      old time/op  new time/op  delta
+	Copy-4    97.1ns ± 3%  97.1ns ± 3%   ~     (p=1.000 n=200+200)
+	Append-4  95.0ns ± 3%  95.0ns ± 3%   ~     (p=1.000 n=198+198)
+
+`±3%` is 2.91ns.
+
+Both function are within the margin of error, they have the same performance.
 
 Which is more understandable ?
 
