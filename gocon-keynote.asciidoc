@@ -165,39 +165,44 @@ But just like the parable about the frog, rules are written down, but principals
 
 So how do we learn the principal's of software development? How do we gain the experience to judge ours designs with the eye of a master?
 
-So today I want to talk about some of the proverbs, and explain what they mean to me, while talking about the features of go design that are important to me
-
 Simply, by study.
 
- Documentation is for users
+So today I want to talk about some of the proverbs, and explain what they mean to me, while talking about the features of go design that are important to me
+
+My goal today is not to repeat Sensei Pike's words, I cannot do them justice.
+Instead I want to talk about some aspects of the design of Go programs that are important to me and, where possible, relate these ideas to a Go proverb as I understand it.
+
+==  Documentation is for users
 
 Rob Pike is a great fan of documentation, you can see his influence in the language.
-
-Have you ever had to write a manual for a program, maybe for a user, or for someone else using your library ?
-
+Have you ever had to write a manual for a program, maybe for a user, or for someone else using your library?
 How long did it take before that document was wrong, because you'd changed something, or added a new feature, or the product made it to version 2.0 and you wrote a new user interface. 
-
 I'm sure we've all experienced that, and have read documentation from other products that was out of date.
 
-The readability of programs is immeasurably more important their writeability. -- C. A. R. Hoare
+[quote, C. A. R. Hoare]
+The readability of programs is immeasurably more important their writeability.
+
+The source code is meant to be read, it will be read many more times than it is written
 
 // http://i.stanford.edu/pub/cstr/reports/cs/tr/73/403/CS-TR-73-403.pdf
 
-- documentation is for users, explain documentation, comments and the different kind of comments.
-- errors are just values, explain the three heriarchies of error handling
-- interfcaes, when to use them, how to write them, when to use a method rather than a function -- to implement an interface.
+Documentation is more than the set of instructions that comes with your product. 
+Who are the users of your code - everyone, you contributors, your libraries users, you API's users, your coworkers, even yourself. 
+Documentation flows through everything, everything you write and how you write it should be descriptive and if possible self describing.
 
-Who are the users of your code? 
+Functions should be commented to explain what they do, not how they do it.
 
-Naming and comment ary
+Names of variables, should receive what they represent, not how they represent it.
+A comment on a constant should not describe what the constant represents now how it should be used. 
 
-The source code is meant to be read
+A type should describe aht it provides, not how it provides.
+And it should be placed into a file with a name that describes the purpose of if not contents of the file, not simply a manifest. 
 
-It will be read many more times than it is written
+So, avoid one type per file, because the name of the file ismply repeates the name of it's contents, that adds nothing, and overall detracts from the readability of your code. 
 
-* If you cannot document it, do you understand it ?
+A package should describe what it provides, ot what it contains. 
 
-* Errors are just values
+In closing, if you cannot document it, do you understand it?
 
 == Error handling 
 
@@ -272,7 +277,36 @@ Errors are part of your package's public API, treat them with as much care as yo
 - you shouldn't use a sentinal in more than on place, because then you won't be able to track down where it came from 
 - so, if you shouldn't use sentinals, and you shouldn't use them more than once, then you're better off treating the error as opaque and using errors.New("exact problem") every time.
 
-* communicate via sharing memory, is about ownership, talk about ownership, channels, rust and const
+=== Don't just check errors, handle them
+
+Only handle an error once.
+
+Handling an error means inspecting the error value, and making a decision.
+You should always make one decision.
+If you make less than one, you're ignoring the error.
+This is clear.
+But making more than one decision in response to an error is also a bad thing.
+
+- annotate the error and return it, or
+- log the error.
+
+Do not do both.
+
+=== Annotating errors
+
+I'm going to talk a bit about how I add context to errors, and to do that I'm going to use a very simple `error` type.
+This is example code, but libraries exist that do this properly.
+
+The code is online at NNN, I'll just recap the API
+
+    // Wrap returns an error value wrapping the 
+    func Wrap(err error, msg string) error
+
+    // Cause unwraps err, if possible, and returns the unwrapped error
+    func Cause(err error) error
+
+
+== communicate via sharing memory, is about ownership, talk about ownership, channels, rust and const
 
 Even thought this was the first proverb we ever learnt about Go, published way back in 2009 [ link to blog ] I have chosen to leave it til last.
 
@@ -282,7 +316,9 @@ Part of the difficulty I believe is that this proverb has mutliple meanings, it 
 
 So, I will do my best to untagle it, and explain each of the meanings.
 
-* Communicate with data, not with messages
+
+
+=== Communicate with data, not with messages
 
 The first, and most obvious meaning of
 
@@ -343,6 +379,21 @@ From this we draw two recommendations
 
 . Only the owner of a chanel may close the chabel
 . Never start a goroutine without knowing how it will stop.
+
+== Interfaces
+
+- interfcaes, when to use them, how to write them, when to use a method rather than a function -- to implement an interface.
+
+== Proverbs are not rules
+
+I've spoken a lot today about proverbs, and principals.
+But I want to reinforce that this are just my opinions, and likely proverbs and not rules, principals are not rules.
+Rules are like the laws of nature, the laws of physics.
+You cannot disagree with the law of gravity.
+You cannot disagree with the sign in the elevator that explains the maximum weight the elevator can safely carry.
+You cannot disagree with the compiler about the syntax of a program, those rules are absolute.
+But you can disagree with me, and you can choose at times when to disregard my advice
+And in fact I encourage it, you sohuld
 
 == Conclusion
 

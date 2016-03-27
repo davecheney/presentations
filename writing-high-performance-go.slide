@@ -13,7 +13,7 @@ http://dave.cheney.net/
 
 * About me
 
-Hello
+您好!
 
 My name is David. I'm a Go programmer from Sydney, Australia.
 
@@ -23,7 +23,9 @@ I'm also a contributor to the Go project and I run the Sydney Go Users' group.
 
 * Agenda
 
-This talk is aimed at development teams who are developing production Go applications intended for high scale deployment.
+This talk is aimed at development teams who are building production Go applications intended for high scale deployment.
+
+Today we are going to cover five main areas:
 
 - What does performance mean, what is possible?
 - Performance measurement and profiling
@@ -43,25 +45,25 @@ I'm going to be around for the entire conference, please come and ask me your qu
 
 * What does performance mean?
 
-What do we mean when we say performance ?
+What do we mean when we say performance?
 
-How do we know when we are fast ?
+How do we know when we are fast?
 
-Before we start to talk about writing high performance code, we must establish an understanding of the current trends in computing hardware and outline the issues facing server software development.
+Before we start to talk about writing high performance code, we must establish an understanding of the current trends in computing hardware and outline the issues facing high scale software development.
 
-From these factors we can draw a map of the areas where application performance can be won and lost.
+From these factors we can draw a map of the areas where application performance can be won or lost.
 
 * The hardware
 
 Before we talk about writing high performance code, we need to talk about the hardware that will execute this code.
 
-What are it's properties, how has to changed over time ?
+What are its properties, how has they changed over time?
 
-As software authors we have benefitted from Moore's Law, the doubling of the number of availble transitors on a chip every 18 months for 50 years now.
+As software authors we have benefitted from Moore's Law, the doubling of the number of availble transitors on a chip every 18 months, for 50 years.
 
-No other industry has experienced 4, sometimes 5 order of magnitude improvement in their tools in the space of less than a lifetime.
+No other industry has experienced a 4, sometimes 5, order of magnitude improvement in their tools in the space of less than a lifetime.
 
-But that is all changing
+But that is all changing.
 
 * The CPU
 
@@ -73,7 +75,7 @@ Clock speeds have not increased in a decade.
 
 .image writing-high-performance-go/Nehalem_Die_Shot_3.jpg _ 600
 
-Over the last decade performance, especially on the server is dictated by multi core performance.
+Over the last decade performance, especially on the server, has been dictated by adding more CPU cores.
 
 * Memory
 
@@ -89,13 +91,13 @@ But, in terms of processor cycles lost, physical memory is still as far away as 
 
 Cache rules everything around it, but it is small, and will remain small because the speed of light determines how large a cache can been at a certain latency.
 
-You can have a larger cache, but it will be slower, because in a universe where electricity travels a foot every nano second, distance equals latency.
-
 We already have three caches:
 
 - *L1*, per CPU core, 64 kilobytes
 - *L2*, per set of cores, usually 2-4 cores, 256 kilobytes - 1 megabyte
 - *L3*, per CPU package, 4 - 32 megabytes
+
+You can have a larger cache, but it will be slower because, in a universe where electricity travels a foot every nano second, distance equals latency.
 
 * Network I/O and disk I/O are still expensive
 
@@ -105,9 +107,9 @@ Network I/O and disk I/O are still expensive, so expensive that the Go runtime w
 
 * The free lunch is over
 
-In 2005, Herb Sutter, the C++ committee leader wrote an article entitled [[http://www.gotw.ca/publications/concurrency-ddj.htm][_The_free_lunch_is_over_]].
+In 2005 Herb Sutter, the C++ committee leader, wrote an article entitled [[http://www.gotw.ca/publications/concurrency-ddj.htm][_The_free_lunch_is_over_]].
 
-In the articled Sutter discussed all the points I have just made and drew the attention of programmers to the fact that they could not simply rely on faster hardware to solve problems of slow programs—or slow programming languages.
+In the articled Sutter discussed all the points I have just made and drew the attention of programmers to the fact that they could not rely on faster hardware to solve problems of slow programs—or slow programming languages.
 
 Now, a decade later, there is no doubt that Herb Sutter was right. Memory is slow, caches are too small, CPU clock speeds are going backwards, and the simple world of a single threaded CPU is long gone.
 
@@ -115,16 +117,16 @@ Now, a decade later, there is no doubt that Herb Sutter was right. Memory is slo
 
 So, it's time, for the software to come to the party.
 
-As Rick Hudson spoke in at GopherCon in 2015, it's time for a programming language that works _with_ the limitations of today's hardware, rather than continue to ignore the reality that CPU designers find themselves.
+As [[https://www.youtube.com/watch?v=aiv1JOfMjm0][Rick Hudson noted at GopherCon]] in 2015, it's time for a programming language that works _with_ the limitations of today's hardware, rather than continue to ignore the reality that CPU designers find themselves.
 
-So, for best performance on todays hardware in todays world, you need a programming language which:
+So, for best performance on today's hardware in today's world, you need a programming language which:
 
 - Is compiled, not interpreted.
-- Has a good compiler that produces efficient code, it has to be small code as well, because cache.
 - Has to permit efficient code to be written.
 - Has to let programmers talk about memory effectively, think structs vs java objects
+- Has a compiler that produces efficient code, it has to be small code as well, because cache.
 
-Obviously, the language I'm talking about is the one we're here to discuss, Go.
+Obviously the language I'm talking about is the one we're here to discuss: Go.
 
 * Performance measurement and profiling
  
@@ -134,23 +136,24 @@ There is a common saying in Australia, I'm sure you have your own version of it.
 
 _"Measure_twice,_cut_once"_
 
-Before we can begin to tune your application, we must first know how to tell if what we are doing is making things better, or worse. We must first establish a reliable baseline to measure the impact of your change.
+Before you can begin to tune your application, you must first know how to tell if it is making things better, or worse.
+
+You must first establish a reliable baseline to measure the impact of your change.
 
 In other words, _"Don't_guess,_measure"_
 
 * Profiling basics
 
-Before you profile, you have to have a stable environment to get repeatable results
+Before you profile, you have to have a stable environment to get repeatable results.
 
-- The machine must be idle—don't profile on shared hardware.
-- Don't browse the web while waiting for a long benchmark to run.
+- The machine must be idle—don't profile on shared hardware, don't browse the web while waiting for a long benchmark to run.
 - Watch out for power saving and thermal scaling.
 - Avoid virtual machines and shared cloud hosting; they are too noisy for consistent measurements.
 - There is a kernel bug on OS X versions less than El Capitan; upgrade or avoid profiling on OS X.
 
 If you can afford it, buy dedicate performance test hardware. Rack them, disable all the power management and thermal scaling and never update the software on those machines.
 
-For everyone else, have a before and after sample and run them both multiple times to get consistent results.
+For everyone else, have a before and after sample and run them multiple times to get consistent results.
 
 * pprof
 
@@ -162,29 +165,35 @@ pprof profiling is built into the Go runtime.
 
 pprof supports three types of profiling:
 
-- cpu
-- memory
-- block
+- CPU profiling.
+- Memory profiling.
+- Block (or blocking) profiling.
+
+We'll discuss each of these in detail.
 
 * CPU profiling
 
 CPU profiling is the most common type of profile, and the most obvious. 
 
-When enabled the runtime will interrupt itself every 10ms and record the stack trace of the goroutines were running at the time.
+When CPU profiling is enabled the runtime will interrupt itself every 10ms and record the stack trace of the currently running goroutines.
 
-The more times a fuction appears in the profile, the more time it takes.
+Once the profile is complete we can analyse it to determine the hottest code paths.
+
+The more times a function appears in the profile, the more time it is taking as a percentage of the total runtime.
 
 * Memory profilng
 
 Memory profiling records the stack trace when a _heap_ allocation is made.
 
-Stack allocate is assumed to be free and is _not_tracked_ in the memory profile. We'll talk more about this when we discuss escape analysis.
+Stack allocatons are assumed to be free and are _not_tracked_ in the memory profile. We'll talk more about this when we discuss escape analysis.
 
 Memory profiling, like CPU profiling is sample based, by default memory profiling samples 1 in every 1000 allocations. This rate can be changed.
 
 Because of sampling, and because this tracks _allocations_ not _use_, using a memory profile to determine overall memory usage is very difficult.
 
-_Note:_Personal_Opinion:_ Personally I do not find memory profiling useful for finding memory leaks. There are better ways to determine how much memory your application is using. We will discuss these later in the presentation.
+_Personal_Opinion:_ I do not find memory profiling useful for finding memory leaks. There are better ways to determine how much memory your application is using. We will discuss these later in the presentation.
+
+TODO: DISCUSS ESCAPE ANALYSIS
 
 * Block profiling
 
@@ -192,9 +201,15 @@ Block profiling is quite unique.
 
 A block profile is similar to a CPU profile, but it records the amount of time a goroutine spent waiting for a shared resource.
 
+This can be useful for determining _concurrency_ bottlenecks in your application.
+
+However, block profiling is a very specialised tool, it should not be used until you believe you have eliminated all your CPU and memory usage bottlenecks.
+
 * Using pprof
 
-pprof should always be invoked with _two_ arguments
+Now that I've talked about what pprof can measure, I will talk about how to use pprof to analyse a profile.
+
+pprof should always be invoked with _two_ arguments.
 
     go tool pprof /path/to/your/binary /path/to/your/profile
 
@@ -202,15 +217,15 @@ The `binary` argument *must* be the binary that produced this profile.
 
 The `profile` argument *must* be the profile generated by this binary.
 
-*Warning*: Because pprof also supports an online mode where it can fetch profiles from a running application over http, the pprof tool can be invoked without the name of your binary:
+*Warning*: Because pprof also supports an online mode where it can fetch profiles from a running application over http, the pprof tool can be invoked without the name of your binary ([[https://github.com/golang/go/issues/10863][issue 10863]]):
 
     go tool pprof /tmp/c.pprof
 
-*Do*not*do*this*or**pprof*will*report*your*profile*is*empty.*
+*Do*not*do*this*or*pprof*will*report*your*profile*is*empty.*
 
 * Using pprof (cont.)
 
-	% go tool pprof application /tmp/c.p
+	% go tool pprof $BINARY /tmp/c.p
 	Entering interactive mode (type "help" for commands)
 	(pprof) top
 	Showing top 15 nodes out of 63 (cum >= 4.85s)
@@ -235,7 +250,7 @@ Often this output is hard to understand.
 
 * Using pprof (cont.)
 
-pprof also supports these modes in a non interactive form with flags like `-svg`, `-pdf`, etc. See `go tool pprof --help` for more details.
+A better way to understand your profile is to visualise it.
 
 	% go tool pprof application /tmp/c.p
 	Entering interactive mode (type "help" for commands)
@@ -245,23 +260,29 @@ Opens a web page with a graphical display of the profile.
 
 .link writing-high-performance-go/profile.svg
 
+I find this method to be superior to the text mode, I strongly recommend you try it.
+
+pprof also supports these modes in a non interactive form with flags like `-svg`, `-pdf`, etc. See `go`tool`pprof`-help` for more details.
+
 * One profile at at time
 
-Profiling is not free, it has a moderate, but messurable impact on program performance—especially if you increase the memory profile sample rate.
+Profiling is not free.
 
-Most tools will not stop you from enabling multiple profiles at once, do not do this.
+Profiling has a moderate, but messurable impact on program performance—especially if you increase the memory profile sample rate.
+
+Most tools will not stop you from enabling multiple profiles at once.
 
 If you enable multiple profile's at the same time, they will observe their own interactions and throw off your results.
 
 *Do*not*enable*more*than*one*kind*of*profile*at*a*time.*
 
-* How to profile
+* How pprof works
 
-Profiling is controlled by the `runtime/pprof` package.
+The Go runtime's profiling interface is in the `runtime/pprof` package.
 
-`runtime/pprof` is a very low level tool, and for historic reasons the interfaces to each kind of profile are not uniform.
+`runtime/pprof` is a very low level tool, and for historic reasons the interfaces to the different kinds of profile are not uniform.
 
-You should use a higher level 
+To make it easier to profile your code you should use a higher level interface.
 
 For profiling `testing` package benchmarks, the `go`test` command has integrated support for profiling the code under test:
 
@@ -279,6 +300,10 @@ Now that we discussed what profiling is, and how to use `pprof`, we're going to 
 
 This section focuses on how to construct useful benchmarks using the Go testing framework, and gives practical tips for avoiding the many pitfalls of this task.
 
+We'll also touch on how to profile a complete application using the [[https://github.com/pkg/profile][github.com/pkg/profile]] package.
+
+TODO DISCUSSS PKG/PROFILE
+
 * Using the testing package for benchmarking
 
 fib.go:
@@ -288,6 +313,16 @@ fib_test.go:
 .code writing-high-performance-go/fib/fib_test.go /STARTBENCH OMIT/,/ENDBENCH OMIT/
 
 .link http://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go
+
+* Comparing benchmarks
+
+Determining performance improvements when there are more than one benchmark in a package can be overwhelming.
+
+You should always run your benchmarks multiple times to eliminate background noise.
+
+Tools like [[https://godoc.org/rsc.io/benchstat][rsc.io/benchstat]] are useful for comparing before and after comparisons.
+
+DEMO: benchmarking and benchstat
 
 * Beware the compiler
 
@@ -299,9 +334,11 @@ How fast will this benchmark run ?
 
 `popcnt` is a leaf function, so the compiler can inline it.
 
-Because the function is inlined, the compiler can see it has no side effects; it is a _pure_function_.
+Because the function is inlined, the compiler can see it has no side effects, so the call is eliminated.
 
-This is only going to get stronger. Because the same optimisations that make real code fast, by removing unnecessary computation are the same ones that remove benchmarks that have no observable side effects.
+This is only going to get stronger. Because the same optimisations that make real code fast, by removing unnecessary computation, are the same ones that remove benchmarks that have no observable side effects.
+
+DEMO: show how to fix popcnt
 
 * Profiling applications
 
@@ -345,33 +382,67 @@ The design of the Go GC has changed over the years
 - Go 1.2, precise collector, wouldn't mistake big numbers (or big strings of text) for pointers
 - Go 1.3, now fully precise tracking of all stack values.
 - Go 1.4, mark and sweep now parallel, but still stop the world.
-- Go 1.5, new gc design, focusing on _latency_ over _throughput_.
-- GO 1.6, gc improvements, handling larger heaps with lower latency.
+- Go 1.5, new GC design, focusing on _latency_ over _throughput_.
+- Go 1.6, GC improvements, handling larger heaps with lower latency.
+
+TODO CHECK THESE DATES AND VERSIONS
 
 * Garbage collector design (cont.)
 
-Stop the world mark sweap is the most efficient GC in terms of total run time; scientific job, simulation, etc.
+A stop the world, mark sweep GC is the most efficient in terms of total run time; good for batch processing, simulation, etc.
 
-The Go GC is designed to favor lower latency over maximum throughput; it moves some of the cost of allocation to the mutator to reduce the cost of cleanup later.
+The Go GC is designed to favor lower latency over maximum throughput; it moves some of the allocation cost to the mutator to reduce the cost of cleanup later.
 
-This is designed for low latency applications, servers and (hopefully) interactive applications.
+This is designed for low latency applications, servers, and interactive applications.
 
-* Garbage collector measurement
+* Garbage collector monitoring
 
-Show
+A simple way to obtain a general idea of how hard the garbage collector is working is to enable the output of GC logging.
 
-GODEBUG=gogctrace=1
+These stats are always collected, but normally supressed, you can enable their display by setting the `GODEBUG` environment variable.
 
-Show gcvis
+    GODEBUG=gctrace=1
+
+_Demo:_show_godoc_with_gctrace_enabled_
+
+	% env GODEBUG=gctrace=1 godoc -http=:8080
+	gc 1 @0.017s 8%: 0.021+3.2+0.10+0.15+0.86 ms clock, 0.043+3.2+0+2.2/0.002/0.009+1.7 ms cpu, 5->6->1 MB, 4 MB goal, 4 P
+	gc 2 @0.026s 12%: 0.11+4.9+0.12+1.6+0.54 ms clock, 0.23+4.9+0+3.0/0.50/0+1.0 ms cpu, 4->6->3 MB, 6 MB goal, 4 P
+	gc 3 @0.035s 14%: 0.031+3.3+0.76+0.17+0.28 ms clock, 0.093+3.3+0+2.7/0.012/0+0.84 ms cpu, 4->5->3 MB, 3 MB goal, 4 P
+	gc 4 @0.042s 17%: 0.067+5.1+0.15+0.29+0.95 ms clock, 0.20+5.1+0+3.0/0/0.070+2.8 ms cpu, 4->5->4 MB, 4 MB goal, 4 P
+	gc 5 @0.051s 21%: 0.029+5.6+0.33+0.62+1.5 ms clock, 0.11+5.6+0+3.3/0.006/0.002+6.0 ms cpu, 5->6->4 MB, 5 MB goal, 4 P
+	gc 6 @0.061s 23%: 0.080+7.6+0.17+0.22+0.45 ms clock, 0.32+7.6+0+5.4/0.001/0.11+1.8 ms cpu, 6->6->5 MB, 7 MB goal, 4 P
+	gc 7 @0.071s 25%: 0.59+5.9+0.017+0.15+0.96 ms clock, 2.3+5.9+0+3.8/0.004/0.042+3.8 ms cpu, 6->8->6 MB, 8 MB goal, 4 P
+
+The trace output gives a general measure of GC activity.
+
+* Garbage collector monitoring (cont.)
+
+
 
 Show /debug/pprof/heap
 
+* Garbage collector monitoring (cont.)
+
+Show gcvis
+
 * Garbage collector tuning
 
-The Go runtime provides one variable to tune the GC, `GOGC`
+The Go runtime provides exactly one environment variable to tune the GC, `GOGC`.
+
+The formula for GOGC is as follows.
 
     goal = reachable * (1 + GOGC/100)
 
+For example, if we currently have a 256mb heap, and `GOGC=100` (the default), when the heap fills up it will grow to
+
+    512mb = 256mb * (1 + 100/100)
+
+Values of `GOGC` larger than 100 causes the heap to grow faster, reducing the pressure on the GC.
+
+Values of `GOGC` less than 100 cause the heap to grow slowly, increasing the pressure on the GC.
+
+The default value of 100 is only a guide, you should choose your own value _after_profiling_your_application_with_production_loads_.
 
 * Reduce allocations
 
@@ -404,7 +475,31 @@ val, ok := m[key]
 
 * Use bytes.Buffer to build strings
 
+* Preallocate slices if the length is known
 
+what is the difference between these two pieces of code
+
+    var s []string 
+    for _, v := range m {
+
+
+Append is convenient, but wasteful.
+
+The former is possibly more efficient, certainly no less efficient if m is frequently empty
+
+The latter is more efficient, if m is frequently not empty, and 
+
+Slices grow by powers of two, zero, four, eight, sixteen, thirty two.
+
+If you use the append pattern you will be copying a lot of data and creating a lot of garbage.
+
+If know know the length of the slice beforehand, then preallocate the target to avoid copying and to make sure the target is exactly the right size. 
+
+1025 values in a slice takes the same space as 2048.
+
+Stops doubling after 1 million elements
+
+TODO CHECK THE GROWTH HEURISTIC
 
 * Using sync.Pool
 
@@ -422,17 +517,17 @@ Escape analysis cannot see through interfaces
 
 * Concurrency
 
+* Concurrency
+
 Go's signature feature is its lightweight concurrency model.
 
 While cheap, these features are not free, and their overuse often leads to unexpected performance problems.
 
-This final section concludes with a set of do's and don't's for efficient use of Go's concurrency primitives, including management of native operating system resources and avoiding memory leaks associated with lost goroutines. 
+This final section concludes with a set of do's and don't's for efficient use of Go's concurrency primitives
 
 * Goroutines
 
 The key feature of Go that makes it great for server applications is goroutines.
-
-No java.util.ThreadPoolExecutor, no node.js function() callbacks, just write simple goroutines and let the Go runtime take care of multiplexing them onto the hardware.
 
 Gorountines are so easy to use, and so cheap to create, you could think of them as almost _free_. 
 
@@ -446,92 +541,27 @@ However, each goroutine does consume a minimum amount of memory in runtime table
 
 * Know when to stop a goroutine
 
-Goroutines are cheap to start and cheap to run, but they do have a finite cost in terms of memory footprint; you cannot create an infinite number of them. So I present to you a rule
+Goroutines are cheap to start and cheap to run, but they do have a finite cost in terms of memory footprint; you cannot create an infinite number of them.
 
-> Never start a goroutine without knowing how it will stop.
+Every time you use the `go` keyword in your program to launch a goroutine, you must know how and when that goroutine will exit. If you don't know the answer, that's a potential memory leak.
 
-Channel ownership, who owns the channel, only the owner may close it. 
+In your design, some goroutines may run until the program exits. These goroutines are rare enough to not become an exception to the rule.
 
-You do not need to close a channel for it to be garbage collected, that will happen once every reference to your channel has been discarded. 
-
-Closing the channel is a signal, soem metadata apart from the channel values themselves
-
-But the two are related, because most consumers wait for channel to be closed, and won't exit, thus drop their reference to this channel.until it is closed. 
-
-From this we draw three recommendations
-
-Only the owner of a chanel may close the chabel / A channel may only be closed by its owner
-
-> and a channel must have at most one owner
-
-Never start a goroutine until you know how it will stop. 
-
-* Input / Output
-
-> The UNIX kernel is an I/O multiplexer more than a
-complete operating system. This is as it should be.”
-
-Ken Thompson. Unix implementation. Bell System Technical Journal, 57(6, Part 2):1931–1946, July/August 1978.
-
-* IO
-
-As you're writing a server process, its primary job is to be an intermediary between clients connecting over the network, and data stored in your application.
-
-If memory is slow, relatively speaking, then IO is so slow that you should avoid doing it at all costs. 
-
-Most importantly avoid doing IO in the context of a request -- don't make the user wait for your disk subsystem to write to disk, or even read. That is a sure recipe for overload.
-
-* IO numbers
-
-Here are the numbers to pay attention to
-
-- The amount of IO requests per incoming request; how many IO events does a single client request generate. It might be on average 1, or possibly less than one if many requests are served out of a cache
-
-- The amount of reads required to service a query; is it fixed, linear (N+1), or exponential (reading the whole table to generate the last page of results).
-
-* Use streaming IO interfaces
-
-Whereever possible use io.Reader and io.Writer; avoid reading into a []byte and passing that around
-
-For efficiency, consider implementing io.ReaderFrom / WriterTo if you use a lot of io.Copy, these are more efficient and avoid copying memory into a temporary buffer.
-
-* Copying
-
-Is copying bad ?
-
-If your servers' job is to read from one place and write to another, then you want to limit the amount of handling of that data as possile to reduce. So yes, in this case unnecessary copying is bad.
-
-BUT, I do not believe you can say all copying is bad, for example, this piece of code
-
-    type T struct {
-           A int
-           B int
-           C int
-    }
-
-    func fn(t T) // takes a copy of t, not a pointer
-
-Is this bad ? Would you rewrite this code to pass the T in as a pointer ?
-
-[ take show of hands ]
-
-What about this code
-
-    func fn(t []string) 
-
-A slice value is the same size as T; three machine words, and we don't think anything of passing slices into functions.
-
-Clearly there is a limit below which copying is not a problem, and intel CPU's are _very_ good at doing bulk memory copy, so please don't go passing around every parameter as a pointer because you think it will avoid copying.
+Never start a goroutine without knowing how it will stop.
 
 * Go uses efficient network polling for some requests
 
 For network IO, things that implement the net.Conn interfaces that you get from the net package are handled efficiently by the runtime using kqueue, epoll, or windows IOCP.
 
+The Go runtime handles network IO using an efficient operating system polling mechanism. Many waiting goroutines will be serviced by a single operating system thread.
+
 This is all transpant to you as the user.
 
-However, for disk IO, Go does not implement any io polling -- each os.File operation will consume one OS thread during operation.
+However, for local file IO, Go does not implement any IO polling, each operation on a `*os.File` consumes one operating system thread while in progress.
 
-Your disk subsystem does not expect to be able to handle hundreds or thousands of concurrent IO requests. It will be very slow and that will cause your go program to spawn hunderds or thousands of threads to service those blocked IO routines.
+Heavy use of local file IO can caues your program to spawn hundreds or thousands of threads; possibly more than your operating system allows.
+
+Your disk subsystem does not expect to be able to handle hundreds or thousands of concurrent IO requests.
 
 * io.Reader and io.Writer are not buffered
 
@@ -542,6 +572,23 @@ This includes `net.Conn` and `os.Stdout`.
 Use `bufio.NewReader(r)` and `bufio.NewWriter(w)` to get a buffered reader and writer.
 
 Don't forget to `Flush` or `Close` your buffered writers to flush the buffer to the underlying `Writer`.
+
+* Watch out for IO multipliers in your application
+
+Most server programs take a request, do some processing, then return a result. This sounds simple, but depending on the amount of processing and the size of the result can let the client consume a large (possibly unbounded) amount of resources on your server. Here are the numbers to pay attention to:
+
+- The amount of IO requests per incoming request; how many IO events does a single client request generate. It might be on average 1, or possibly less than one if many requests are served out of a cache.
+- The amount of reads required to service a query; is it fixed, linear (N+1), or exponential (reading the whole table to generate the last page of results).
+
+As you're writing a server process, its primary job is to be an intermediary between clients connecting over the network, and data stored in your application.
+
+If memory is slow, relatively speaking, then IO is so slow that you should avoid doing it at all costs. Most importantly avoid doing IO in the context of a request -- don't make the user wait for your disk subsystem to write to disk, or even read. That is a sure recipe for overload.
+
+* Use streaming IO interfaces
+
+Whereever possible use io.Reader and io.Writer; avoid reading into a []byte and passing that around
+
+For efficiency, consider implementing io.ReaderFrom / WriterTo if you use a lot of io.Copy, these are more efficient and avoid copying memory into a temporary buffer.
 
 * Timeouts, timeouts, timeouts
 
@@ -555,10 +602,6 @@ You need to limit the amount of blocking IO requests in progress as not portable
 
 .link http://dave.cheney.net/2016/01/18/cgo-is-not-go
 
-* TODO
-
-- Singleflight
-
 * Conclusion
 
 * Always write the simplest code you can
@@ -571,7 +614,7 @@ If performance is good, then _stop_, you don't need to optimise everything, only
 
 As you application grows, or your traffic pattern evolves, the performance hot spots will change.
 
-- Don't leave complex code that is not perfromance critical, rewrite it with simpler operationgs
+Don't leave complex code that is not performance critical, rewrite it with simpler operations if the bottleneck moves elsewhere.
 
 * The compiler is optimised for normal code
 
@@ -602,7 +645,9 @@ Which is more understandable ?
 
 * Don't trade performance for reliability
 
-Most of these tips are about performance, but some of them are about reliability, becsuse I see little value in having a very fast server that panics, deadlocks or blows it's memory cap on a regular basis.
+Most of these tips are about performance, but some of them are about reliability.
+
+I see little value in having a very fast server that panics, deadlocks or OOMs on a regular basis.
 
 Performance and reliability are equally important. 
 
@@ -628,63 +673,15 @@ I'm sorry about Go 1.5 and Go 1.6 compile speed, believe me, nobody is happy wit
 
 You in this room are going to be pushing Go hard.
 
-* In general
+* In conclusion
 
-Shorter code is faster code.
+Profile your code to identify the bottlenecks, _do_not_guess_.
+
+Shorter code is faster code; Go is not C++, do not expect the compiler to unravel complicated code.
 
 Shorter code is _smaller_ code; which is important from L1-D$.
 
-Avoid assignment, avoid jumps, avoid loops, avoid branches.
+Avoid allocation whereever possible.
 
 Eliminating a statement with a smarter algorithm will pay off
-
-Show owner, newer example
-
-* When to optimise
-
-> “We should forget about small efficiencies, say about 97% of the time; premature optimization is the root of all evil” – Donald E. Knuth,
-
-https://www.cs.sjsu.edu/~mak/CS185C/KnuthStructuredProgrammingGoTo.pdf
-
-.image knuth
-
-Don't do it.
-
-Don't do it, _yet_.
-
-Always, start by writing the simplest, easiest to understand; easiest to read code, then optimise.
-
-# now, I know that you run big servers here in china, that’s why you’re interested in go -- it’s a language for servers. So for the rest of this talk, don’t worry about the man in the chair, we’re going to talk about how to get the most out of your servers.
-
- ---
-
-show benchmarks
-show net/http/pprof
-talk about -benchmem, allocs/op and bytes/op, allocs per op is the cost to allocate the memory, bytes/op is the cost to clean it up -- sort of, you want both to be low.
-benchmarking means running something small hundreds of thousands of times
-
----
-
-memory, 
-where does it come from; storage classes - global, stack heap
-in order of flexiblity and order of cost
-memory has a cost to allocate and a cost to free, if you want to avoid paying the cost, don’t free it
-writing code the compiler can compile
-pointers are expensive
-prefer slices to maps or linked lists
-a little copying is less bad than always pointer chasing. copying has a fixed cost relative to the size of the thing you copy, pointer chasing gets more expensive the larger your heap because the cache becomes less effective.
-talk about goroutine management
-dont’ start a goroutine unless you know how to stop it
-maybe that is when the program exits, but usualy if this goroutine is for a client, you need to have some rasonable ways to killing it after a certain time
-http.esrver, use timeouts
-
----
-
-* Memory numbers
-
-If you are writing a server measure and know the memory footprint
-
-- Per record stored or retrieve
-- Per incoming request
-- Per concurrent connection
 
