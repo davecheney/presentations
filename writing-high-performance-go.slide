@@ -185,15 +185,13 @@ The more times a function appears in the profile, the more time it is taking as 
 
 Memory profiling records the stack trace when a _heap_ allocation is made.
 
-Stack allocations are assumed to be free and are _not_tracked_ in the memory profile. We'll talk more about this when we discuss escape analysis.
+Stack allocations are assumed to be free and are _not_tracked_ in the memory profile.
 
 Memory profiling, like CPU profiling is sample based, by default memory profiling samples 1 in every 1000 allocations. This rate can be changed.
 
 Because of sampling, and because this tracks _allocations_ not _use_, using a memory profile to determine overall memory usage is very difficult.
 
 _Personal_Opinion:_ I do not find memory profiling useful for finding memory leaks. There are better ways to determine how much memory your application is using. We will discuss these later in the presentation.
-
-TODO DISCUSS ESCAPE ANALYSIS
 
 * Block profiling
 
@@ -480,12 +478,22 @@ The default value of 100 is only a guide, you should choose your own value _afte
 
 * Reduce allocations
 
+Make sure your APIs allow the caller to reduce the amount of garbage generated.
 
+Consider these two Read methods
 
-Show how to pass data in to a function
-Show how to reuse arrays as buffers
+    func (r *Reader) Read() ([]byte, error)
+    func (r *Reader) Read(buf []byte) (int, error)
 
-Show a simple loop that does a make([]byte, 4096) and then decodes
+The first Read method takes no arguments and returns some data as a `[]byte`. The second takes a `[]byte` buffer and returns the amount of bytes read.
+
+The first Read method will _always_ allocate a buffer, putting pressure on the GC. The second fills the buffer provided then returns.
+
+* Reduce allocations (cont.)
+
+In this example, `Conn.Loop` can run forever without generating garbage.
+
+.code writing-high-performance-go/ioloop.go /START OMIT/,/END OMIT/
 
 * strings and []bytes
 
@@ -538,17 +546,13 @@ This might look like more work for the CPU, but this is work _local_ to one spec
 
 Append is convenient, but wasteful.
 
-Slices grow by powers of two, zero, four, eight, sixteen, thirty two.
+Slices grow by doubling up to 1024 elements, then by approximately 25% after that.
 
-If you use the append pattern you will be copying a lot of data and creating a lot of garbage.
+.play writing-high-performance-go/grow.go /START OMIT/,/END OMIT/
+
+If you use the append pattern you could be copying a lot of data and creating a lot of garbage.
 
 If know know the length of the slice beforehand, then pre-allocate the target to avoid copying and to make sure the target is exactly the right size. 
-
-1025 values in a slice takes the same space as 2048.
-
-Stops doubling after 1 million elements
-
-TODO CHECK THE GROWTH HEURISTIC
 
 * Preallocate slices if the length is known (cont.)
 
@@ -573,17 +577,17 @@ TODO FIND A BETTER EXAMPLE
 
 * Using sync.Pool
 
-The `sync` package comes with a `sync.Pool` type.
-
-TODO SHOW HOW TO USE SYNC.POOL
+The `sync` package comes with a `sync.Pool` type which is used to reuse common objects.
 
 `sync.Pool` has no fixed size or maximum capacity. You add to and take from it until a GC happens, then it is emptied unconditionally. 
+
+.code writing-high-performance-go/pool.go /START OMIT/,/END OMIT/
 
 *Warning*: `sync.Pool` is not a cache. It can and will be emptied _at_any_time_.
 
 Do not place important items in a `sync.Pool`, they will be discarded.
 
-_Personal_opinion_: Don't use `sync.Pool`.
+_Personal_opinion_: `sync.Pool` is hard to use safely. Don't use `sync.Pool`.
 
 * Concurrency
 
@@ -599,9 +603,9 @@ This final section concludes with a set of do's and don't's for efficient use of
 
 The key feature of Go that makes it great for server applications is goroutines.
 
-Gorountines are so easy to use, and so cheap to create, you could think of them as almost _free_. 
+Gorountines are so easy to use, and so cheap to create, you could think of them as _almost_ free. 
 
-Indeed the Go runtime has been written for tens of thousands of goroutines as the norm, hundreds of thousands are not unexpected.
+The Go runtime has been written for tens of thousands of goroutines as the norm, hundreds of thousands are not unexpected.
 
 However, each goroutine does consume a minimum amount of memory in runtime tables and in the goroutines' stack which is at least 2k.
 
@@ -623,9 +627,7 @@ Never start a goroutine without knowing how it will stop.
 
 * Go uses efficient network polling for some requests
 
-For network IO, things that implement the `net.Conn` interface are handled efficiently by the runtime using kqueue, epoll, windows IOCP, etc.
-
-The Go runtime handles network IO using an efficient operating system polling mechanism. Many waiting goroutines will be serviced by a single operating system thread.
+The Go runtime handles network IO using an efficient operating system polling mechanism (kqueue, epoll, windows IOCP, etc). Many waiting goroutines will be serviced by a single operating system thread.
 
 However, for local file IO, Go does not implement any IO polling. Each operation on a `*os.File` consumes one operating system thread while in progress.
 
@@ -650,13 +652,13 @@ If you're writing a server process, its primary job is to multiplex clients conn
 Most server programs take a request, do some processing, then return a result. This sounds simple, but depending on the result it can let the client consume a large (possibly unbounded) amount of resources on your server. Here are the things to pay attention to:
 
 - The amount of IO requests per incoming request; how many IO events does a single client request generate? It might be on average 1, or possibly less than one if many requests are served out of a cache.
-- The amount of reads required to service a query; is it fixed, linear (N+1), or exponential (reading the whole table to generate the last page of results).
+- The amount of reads required to service a query; is it fixed, N+1, or linear (reading the whole table to generate the last page of results).
 
 If memory is slow, relatively speaking, then IO is so slow that you should avoid doing it at all costs. Most importantly avoid doing IO in the context of a request—don't make the user wait for your disk subsystem to write to disk, or even read.
 
 * Use streaming IO interfaces
 
-Where-ever possible avoid reading data into a `[]byte` and passing that around. 
+Where-ever possible avoid reading data into a `[]byte` and passing it around. 
 
 Depending on the request you may end up reading megabytes (or more!) of data into memory. This places huge pressure on the GC, which will increase the average latency of your application.
 
@@ -671,6 +673,8 @@ Never start an IO operating without knowing the maximum time it will take.
 You need to set a timeout on every network request you make with `SetDeadline`, `SetReadDeadline`, `SetWriteDeadline`.
 
 You need to limit the amount of blocking IO you issue. Use a pool of worker goroutines, or a buffered channel as a semaphore.
+
+.code writing-high-performance-go/semaphore.go /START OMIT/,/END OMIT/
 
 * Minimise CGO
 
