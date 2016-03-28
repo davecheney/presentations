@@ -37,7 +37,7 @@ Today I am going to cover five main areas:
 
 This presentation will be available after the talk. It contains lots of examples and links to other material.
 
-I have a lot of material to cover in 50 minutes, so I ask that you hold your questions til the end.
+I have a lot of material to cover, so I ask that you hold your questions til the end.
 
 I'm going to be around for the entire conference, please come and ask me your questions after the talk.
 
@@ -59,7 +59,7 @@ Before we talk about writing high performance code, we need to talk about the ha
 
 What are its properties, how has they changed over time?
 
-As software authors we have benefitted from Moore's Law, the doubling of the number of availble transitors on a chip every 18 months, for 50 years.
+As software authors we have benefited from Moore's Law, the doubling of the number of available transistors on a chip every 18 months, for 50 years.
 
 No other industry has experienced a 4, sometimes 5, order of magnitude improvement in their tools in the space of a lifetime.
 
@@ -113,7 +113,7 @@ In the articled Sutter discussed all the points I have just made and drew the at
 
 Now, a decade later, there is no doubt that Herb Sutter was right. Memory is slow, caches are too small, CPU clock speeds are going backwards, and the simple world of a single threaded CPU is long gone.
 
-* A fast programming langauge
+* A fast programming language
 
 So, it's time, for the software to come to the party.
 
@@ -159,7 +159,7 @@ For everyone else, have a before and after sample and run them multiple times to
 
 The primary tool we're going to be talking about today is _pprof_.
 
-pprof decends from the Google Perf Tools suite of tools.
+pprof descends from the Google Perf Tools suite of tools.
 
 pprof profiling is built into the Go runtime.
 
@@ -181,17 +181,19 @@ Once the profile is complete we can analyse it to determine the hottest code pat
 
 The more times a function appears in the profile, the more time it is taking as a percentage of the total runtime.
 
-* Memory profilng
+* Memory profiling
 
 Memory profiling records the stack trace when a _heap_ allocation is made.
 
-Stack allocatons are assumed to be free and are _not_tracked_ in the memory profile. We'll talk more about this when we discuss escape analysis.
+Stack allocations are assumed to be free and are _not_tracked_ in the memory profile. We'll talk more about this when we discuss escape analysis.
 
 Memory profiling, like CPU profiling is sample based, by default memory profiling samples 1 in every 1000 allocations. This rate can be changed.
 
 Because of sampling, and because this tracks _allocations_ not _use_, using a memory profile to determine overall memory usage is very difficult.
 
 _Personal_Opinion:_ I do not find memory profiling useful for finding memory leaks. There are better ways to determine how much memory your application is using. We will discuss these later in the presentation.
+
+TODO DISCUSS ESCAPE ANALYSIS
 
 * Block profiling
 
@@ -275,7 +277,7 @@ pprof also supports these modes in a non interactive form with flags like `-svg`
 
 Profiling is not free.
 
-Profiling has a moderate, but messurable impact on program performance—especially if you increase the memory profile sample rate.
+Profiling has a moderate, but measurable impact on program performance—especially if you increase the memory profile sample rate.
 
 Most tools will not stop you from enabling multiple profiles at once.
 
@@ -396,7 +398,7 @@ DEMO: Show profiling `cmd/godoc` with `pkg/profile`
 
 As a garbage collected language, the performance of Go programs is often determined by their interaction with the garbage collector.
 
-Next to your choice of algorythms, memory consumption is the most important factor that determines the performance and scalability of your application.
+Next to your choice of algorithms, memory consumption is the most important factor that determines the performance and scalability of your application.
 
 This section discusses the operation of the garbage collector, how to measure the memory usage of your program and strategies for lowering memory usage if garbage collector performance is a bottleneck.
 
@@ -491,8 +493,8 @@ strings are immutable, []bytes are not.
 
 This means most IO is done with []byte, and but most programs prefer to work with strings.
 
-- Avoid slice to string conversions wherever possible, this normally means picking one represetation, either a string or a []byte for a value. Often this will be []byte
-- The bytes package contains many of the same operations, substring, split, prefix, trim, as the strings package. Under the hood `strings` uses same assembly primatives as the `bytes` package.
+- Avoid slice to string conversions wherever possible, this normally means picking one representation, either a string or a []byte for a value. Often this will be []byte
+- The bytes package contains many of the same operations, substring, split, prefix, trim, as the strings package. Under the hood `strings` uses same assembly primitives as the `bytes` package.
 
 * Using []byte as a map key
 
@@ -540,7 +542,7 @@ Slices grow by powers of two, zero, four, eight, sixteen, thirty two.
 
 If you use the append pattern you will be copying a lot of data and creating a lot of garbage.
 
-If know know the length of the slice beforehand, then preallocate the target to avoid copying and to make sure the target is exactly the right size. 
+If know know the length of the slice beforehand, then pre-allocate the target to avoid copying and to make sure the target is exactly the right size. 
 
 1025 values in a slice takes the same space as 2048.
 
@@ -627,7 +629,7 @@ The Go runtime handles network IO using an efficient operating system polling me
 
 However, for local file IO, Go does not implement any IO polling. Each operation on a `*os.File` consumes one operating system thread while in progress.
 
-Heavy use of local file IO can caues your program to spawn hundreds or thousands of threads; possibly more than your operating system allows.
+Heavy use of local file IO can cause your program to spawn hundreds or thousands of threads; possibly more than your operating system allows.
 
 Your disk subsystem does not expect to be able to handle hundreds or thousands of concurrent IO requests.
 
@@ -654,7 +656,7 @@ If memory is slow, relatively speaking, then IO is so slow that you should avoid
 
 * Use streaming IO interfaces
 
-Whereever possible avoid reading data into a `[]byte` and passing that around. 
+Where-ever possible avoid reading data into a `[]byte` and passing that around. 
 
 Depending on the request you may end up reading megabytes (or more!) of data into memory. This places huge pressure on the GC, which will increase the average latency of your application.
 
