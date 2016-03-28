@@ -1,0 +1,22 @@
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       238 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       238 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	10000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	10000000	       237 ns/op
+BenchmarkFib-4   	10000000	       238 ns/op
+BenchmarkFib-4   	10000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       238 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	10000000	       237 ns/op
+BenchmarkFib-4   	 5000000	       237 ns/op
+BenchmarkFib-4   	10000000	       237 ns/op
+PASS
+ok  	github.com/davecheney/presentations/writing-high-performance-go/fib	35.817s
