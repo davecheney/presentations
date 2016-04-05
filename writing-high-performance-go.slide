@@ -406,10 +406,9 @@ Go is a garbage collected language. This is a design principal, it will not chan
 
 The design of the Go GC has changed over the years
 
-- Go 1.0, stop the world mark sweep collector based heavily on tcmalloc
-- Go 1.2, precise collector, wouldn't mistake big numbers (or big strings of text) for pointers
-- Go 1.3, now fully precise tracking of all stack values.
-- Go 1.4, mark and sweep now parallel, but still stop the world.
+- Go 1.0, stop the world mark sweep collector based heavily on tcmalloc.
+- Go 1.3, precise collector, wouldn't mistake big numbers (or big strings of text) for pointers.
+- Go 1.4, now fully precise tracking of all stack values.
 - Go 1.5, new GC design, focusing on _latency_ over _throughput_.
 - Go 1.6, GC improvements, handling larger heaps with lower latency.
 
@@ -537,10 +536,10 @@ _Before:_
 _After:_
 
     var b bytes.Buffer
-    fmt.Fprintf("%s %v %v", request.ID, client.Address(), time.Now())
+    fmt.Fprintf(&b, "%s %v %v", request.ID, client.Address(), time.Now())
     return b.String()
 
-This might look like more work for the CPU, but this is work _local_ to one specific goroutine. Generating garbage slows the whole program.
+This might look like more work for tpphe CPU, but this is work _local_ to one specific goroutine. Generating garbage slows the whole program.
 
 * Preallocate slices if the length is known
 

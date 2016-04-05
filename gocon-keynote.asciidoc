@@ -116,6 +116,12 @@ So, today I'm going to talk about the Go proverbs, not all of them, we don't hav
 
 https://en.wikibooks.org/wiki/Chinese_Stories/The_frog_of_the_well
 
+The parable of the Frog in the well is told in many countries, and many cultures. 
+In Mao's China, the frog was a tyrant of the well.
+In California they frog parable is referred to as the Blub Paradox. 
+
+What are they all telling us; don't stop learning. Question your environment, question your assumptions, don't assume your right just because nobody has yet convinced you that you are wrong. 
+
 * 井の中の蛙
 
 // So if I say you to you all I no naka no kawazu, maybe some of you understand it, and those who do understand it not from the words "a frog in a well", but because you have learnt their meaning.
@@ -201,6 +207,11 @@ And it should be placed into a file with a name that describes the purpose of if
 So, avoid one type per file, because the name of the file ismply repeates the name of it's contents, that adds nothing, and overall detracts from the readability of your code. 
 
 A package should describe what it provides, ot what it contains. 
+
+Talk about example packages.
+Good practice is to document each public symbol; method, function, constant, and type.
+What if this practice was extended to document how to use the public types with examples.
+Go gives us a great way to do this, with the testing helper, and integration into `godoc`.
 
 In closing, if you cannot document it, do you understand it?
 

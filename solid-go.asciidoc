@@ -1,0 +1,113 @@
+= SOLID Go design
+Dave Cheney <dave@cheney.net>
+v1.0, 4th May, 2016
+
+== Introduction
+
+Good morning and thank you for coming to my talks
+
+My name is David, and I'm delighted for the opportunity to speak to you today.
+
+I am delighted to be here for three reasons
+
+The first reason is, although I run the local Go meetup in Sydney, and have spoken at meetups along the east coast, I have never had the opportunity to speak about Go on the west coast. And more importantly, I have never had the opporutnity
+
+As a citizen of our little coutrny, I'm delighted for both these reasons 
+
+And finally, I'm deligh
+
+I work on two large Go programs, the first is the Go distribution itself, and the second, and more capacious project is the Juju project, from Canoniical, who I am grateful for sponsoring me to attend today. 
+
+// image of go project LOC, Juju LOC
+
+Go is a language that is explicitly designed for programming _in the large_. So the fact that day to day I traverse two projects of non trivial size should not be considered exceptional within the parameters of the langauge's design. 
+
+However, one aspect of dealing with a projects of this size is, holisitically there is more to debate than the mineutia of variable names, file layout. Not that these are not subjects of crucial, and heated debate.
+
+But, when maintaining products of this size, you must consider their design.
+
+And, this is not to say that design is not important for smaller programs. Personally I think we should aim to write smaller, less coupled, programs, but the realities of commercial software development sometimes interfears with this idealistic view. Design is important for programs of all size, but as the size, and age of a program grows, design becomes paramount. It is both your map to guide you, and your rubrick to interpret your footsteps.
+
+So, as authors like Sandi Metz, Robert Martin, and the late Jim Wiyrich remind us, the only constant in software development is change--to believe in a world where software is done in perpetuity, is to belive in a fantasy.
+
+// dave thomas book, talk about four bad words for bad design.
+
+And so, as authors of software that will be successful, and in that success, grow, develop, and change, a guiding architectural principal must be to construct software that is amenable to change.
+
+My interest in Go started back in 2009 in response to the language's fresh approach to the problems of large scale software development. I'm certainly not alone in this respect and without a doubt Go, as a language and a proposition to development teams, has been a huge success.
+
+However, too often when I see people talking about Go, their justifications and descriptions of the language descend to a schoolyard debate of language feature top trumps and unproductive dissing of other languages, and by extension, their designers and users.
+
+I believe that now is the appropriate time in Go's advocacy cycle to stop talking about what other languages cannot do, or what you cannot do in Go. Instead what I want to see is people talking about how to use the language we have today, whatever its choices and limitations, to design solutions and solve problems. 
+
+This keynote proposal is an attempt to set the standard by which I want to see Go programmers describe our language and its application to the world of agile software development that we find ourselves.
+
+Rather than a mechanical recitation of the use of a particular language feature, I want to talk to the audience, as peers in this profession, about how to design software that is well engineered, decoupled, reusable, and above all responsive to changing requirements.
+
+== SOLID Go design
+
+Now that the introductions have been dispensend with, permit me to move to the topic of this talk.
+
+The title of my talk is SOLID Go design. That is, the interpretation of Go progams according to the SOLID design principals.
+
+== Martin's SOLID principals
+
+In his book, Agile design patterns (Pearson, 2002), Robert C Martin introduces the SOLID design principals as cornerstones for the construction of software that amenable to change. Martin later codified these principals with an article entitled Principals of Object Oriented Design (http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod).
+
+Part of a larger set of design principals (http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod), the SOLID principals are closely associated with object oriented languages like C++, Java, C#, and more recently Ruby. And although they span different eras, all these languages share the same class structured, inheritance based foundations. 
+
+Go is one of a set of new languages that eschew inheritance, instead preferring the mantra of composition. Does this mean that Go programs do not follow the SOLID design principals, or even that Go is not an object oriented language?
+
+In this talk I will explore the five core SOLID design patterns, discuss their applicability to Go programmers, and explain that while Go programs are not inheritance or class based, they adhere strongly to Martin's principals. The audience will learn how well structured Go applications naturally follow the SOLID principals, leading to code which is loosely coupled, highly reusable, and inherently maintainable. 
+
+== Introducing Go
+
+
+== Single responsibility principal
+
+[quote, Robert C. Martin]
+Functions should do one thing. They should do it well. They should do it only
+
+But not just functions--methods, types, and even packages should do one thing, and only one thing.
+
+// Doug McIroy, small sharp toolsA person who never made a mistake never tried anything new.
+
+== Open / Closed principal
+
+== Liskov substitution principal
+
+== Interface segregation principal
+
+== Dependency inversion principal
+
+== A theme
+
+On refletion, SRP and OCP are really the same thing in Go; embedding. And LSP, ISP and DIP are facets of the way your design your program using interfaces.
+
+Kevlin 's observation that they are all prinicpals about designing to reduce coupling.
+
+== One more thing
+
+Talk about Martin's _other_ principals of design.
+
+Before I close, I want to mention one thing which is generally overlooked by speakers, like myself, prostelitising SOLID principals, that Martin actually had more.
+
+The solid principals only describe class design and class relationship. Possibly this is because, applied to the OO langauges deregure at the time, they were
+
+== In Closing
+
+On thing that software development, as an indistry, does poorly, is develop a sense of history (need better word).
+
+Language design, and those who advocate new languages, is particularly succeptable to this effect.
+It seems that in the bussle of discarding old code for new, overarching ideas of design and (somethign else about design) are also discarded, only to be rediscovered later.
+
+Our industry is not an old one, the oldest commercial company selling hardware and programing services is barely 104 years old (check IBM date), and for the first YYY of those years wrote not programs at all.
+Programming as an industry is barely a generation old. My father and mother both worked for our countries own CSIRO, but before them, my father's father worked as a sawmill operator, then ran a corner store. My mother's father was a veternerian. I suspect that for many of you in the audience, the story of parents with a background in software or hardware development is not uncommon. But equally as uncommon would be a lineage in software development that extends only to your parents.
+
+Our industry is too small, and to young, to have developed this degree of senility.
+
+As NNN noted during his keynote at NNN if you were a physist, 
+
+- design fundamentals
+
+You must develop your own sense of wonder, and cultivate a desire to question not just the beliefs that you have been taught, but the ones you believe yourself.
