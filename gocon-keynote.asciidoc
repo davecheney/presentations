@@ -5,7 +5,7 @@ v1.0, 24th April, 2016
 == Preface
 
 Before I begin my talk, I want to express my gratitude to Ueda-san and the organisers of GoCon for inviting me to speak today.
-I also want to acknoledge the generous sponsorshop of CyberAgent for providing the venue for today.
+I also want to acknoledge the generous sponsorshop of our hosts, CyberAgent, for providing the venue for today.
 
 This is my third time visiting 東京 and the second time I have had to honor of speaking at GoCon.
 I was in China last week giving a technical talk about Go, but as I was given the honor of being the first speaker today I wanted to prepare something special for you.
@@ -216,6 +216,12 @@ Go gives us a great way to do this, with the testing helper, and integration int
 In closing, if you cannot document it, do you understand it?
 
 == Error handling 
+
+Error handling is as important.
+Error handling is as important as the rest of your code.
+It's as important as checking a loop index for the exit condition, or checking the result of a shift operation, or testing the result of a multiplication is within the expected bounds, that's how fundamental error handling is to Go.
+And, just like shifting or comparisions or multiplication, error handling is a first class responsibility of all Go programmers.
+Because, you have to plan for failure.
 
 Over the last 5 years of this blog I've written a lot about error handling. Because, error handling is important.
 
