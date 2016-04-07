@@ -67,7 +67,7 @@ But this is all changing.
 
 * The CPU
 
-.html writing-high-performance-go/cpu.svg
+.image writing-high-performance-go/cpu.svg _ 700
 
 Clock speeds have not increased in a decade.
 
