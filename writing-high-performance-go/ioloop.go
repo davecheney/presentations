@@ -19,8 +19,7 @@ func (c *Conn) Loop() {
 		n, err := c.r.Read(b)
 
 		for b = b[:n]; len(b) != 0; b = b[4:] {
-			n := binary.BigEndian.Uint32(b)
-			ch <- n
+			ch <- binary.BigEndian.Uint32(b)
 		}
 
 		if err != nil {
