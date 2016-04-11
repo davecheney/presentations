@@ -67,7 +67,7 @@ What are they all telling us; don't stop learning. Question your environment, qu
 
 井の中の蛙 (i no naka no kawazu)
 
-So if I say to you _i no naka no kawazu_, maybe some of you understand it, and those who do understand it not from the words _a frog in a well_, but because you have learnt their meaning.
+So if I say to you _I no naka no kawazu_, maybe some of you understand what I'm trying to say, and those who do understand it not from the words _a frog in a well_, but because you have learnt their meaning.
 You understand the lesson the story of the frog in his well is teaching you.
 
 Part of the challenge of a proverb is that there is a difference between knowing the proverb and understanding it's meaning.
@@ -100,6 +100,9 @@ In his talk, Sensei Pike asked, "Are there Go proverbs?", and answer is yes, the
 * Documentation is for users.
 * Don't panic.
 
+Saying "errors are just values" to someone who is still a student of Go is not useful.
+You need to understand the underlying message of he proverb to appreciate it.
+
 But just like the parable about the frog, to understand these proverbs, you must understand the meaning they try to teach.
 
 My goal today is not to repeat Sensei Pike's words, I cannot do them justice.
@@ -120,7 +123,9 @@ Who are the users of your code - everyone, you contributors, your libraries user
 Documentation is more than the set of instructions that comes with your product. 
 Documentation flows through everything, everything you write and how you write it should be descriptive and ideally self describing.
 
+The accuracy and correctness of documentation decreases in inverse proportion to its distance from the thing it describes.
 Rob Pike is a great fan of documentation, you can see his influence in the language.
+As such, by tradition, go programs are documented in the source.
 
 === Comments
 
@@ -199,6 +204,17 @@ var drivers = make(map[string]*sql.Driver)
 Comments should describe what a function does, not how it does it. Similarly they should describe the inputs and outputs of a function, but not be overly perscriptive of how those should be used.
 ////
 
+A good rule of thumb, when documenting a function, is if you have to use the words _and_ or _or_ to describe what it does, or how it is used, that is a sign that the function is doing to much.
+A function should do one thing and one thing only.
+
+And this goes for other pieces of code that you want to document as well.
+
+A type should do one thing and one thing only.
+
+A variable should track the state of one thing, and one thing only.
+
+A constant should signify one thing and one thing only.
+
 // https://twitter.com/kytrinyx/status/667041939787661312
 === Reserve inline comments for the parenthetical
 
@@ -217,19 +233,11 @@ A comment on a constant should not describe what the constant represents now how
 There are only two hard things in Computer Science: cache invalidation and naming things.
 
 The names of identifiers in your program is critical.
+Well chosen names contribute to a program that is self documenting.
 Poorly chosen names contribute to a program that is harder to comprehend and modify.
 Although not defined by +go fmt+, the canonical Go style for naming things descends from its authors and can be roughly summarised as
 
 The length of an identifier should be proportional to the distance between where it is declared and where it is used.
-
-Tradition counts for a lot for Go programmers.
-If in doubt, avoid inventing your own conventions for naming identifiers, especially functions and methods.
-Consider instead these suggestions
-* Functions or methods that being with +Print+ are traditional used to take +string+, or things that can be converted to +string+s and print them as text.
-* The `f` suffix, +Printf+, +Logf+, etc, indicate the function takes a format string and a variable number of arguments to format according to the rule.
-  This has the nice side effect that the +f+ functions work well with a single +string+ argument.
-* Functions or methods that begin with +Write+ traditonally take non +string+ values and write them out as binary data.
-
 Names of variables, should receive what they represent, not how they represent it.
 
 === Reduce repetition
@@ -241,17 +249,13 @@ Avoid stuttering
     x.L.Lock() vs
 
     c.Lock.Lock() // stuttering
+
 A symbol's name includes the name of its package.
 metadata.Metadata vs backups.Metadata
 if there is only one type in your package, call it md5.Md5, and md5.New. However this style is quite unique and not the norm
 When the std lib was being developed new hashes are added, but they are really small packages, and you shouldn't use that approach for everything, no server.Server,
 hashs, md5, sha1 are things that stand on their own right, but this is a limited set, don't try to fit the descriptiont of your problem so you can fit this model. Ideally, if the set of hashes was fixed, the packages would be hash.NewMd5, hash.md5, etc
 Package http;/const get = "GET" doesn't add anything, the string isn't going to change, and now you need to look up the value of http.Get rather than it being declared in code. Think ruby :symbols
-
-[NOTE]
-====
-Colloqually repetition is known as _stuttering_. I appreciate the sentiment this implies, but feel it's unkind to those who suffer from this speach impediment (myself included), so I prefer instead to say _repetition_.
-====
 
 A symbol's name, to its caller, includes the name of the symbols package.
 
@@ -274,22 +278,22 @@ Methods describe _what_ to do, functions describe _how_ to do it.
 === Package names
 
 Each Go package is in effect it’s own small Go program.
+It should be able to do something useful by itself.
 You have access to all the symbols in this package, public and private, and can use the all the features of the language on all parts of this package.
 
 This is a profoundly different approach to modular software design to many contemporary languages; some which share the ideas of modules, but these are mixed up with notions of private, protected, friend, access rules.
-You can declare methods, only on types you declare in your package, not ones you’ve imported elsewhere even though those types are by necessity public.
+You can declare methods, only on types you declare in your package, not ones you’ve imported elsewhere even though those types are, by necessity, public.
+If you've split the functions of a package across several packages, meaning the package cannot
+
+Procedure names should reflect what they do; function names should reflect what they return.
 
 A package's name should describe the function of the package, not the contents.
 +http+ is a good package name, it describes that this package provides something to do with HTTP.
-[source,go]
-    package utils
+`utils` is a not a good name because it does not describe what this package provides.
+Providing "utility" functions is of no value to the reader, especially if every package author were to follow this trend.
 
-is not a good name because it does not describe what this package provides. Providing "utility" functions is of no value to the reader, especially if every package author were to follow this trend.
-
-
-A type should describe aht it provides, not how it provides.
+A type should describe what it provides, not how it provides.
 And it should be placed into a file with a name that describes the purpose of if not contents of the file, not simply a manifest. 
-
 So, avoid one type per file, because the name of the file ismply repeates the name of it's contents, that adds nothing, and overall detracts from the readability of your code. 
 
 === Examples
@@ -486,6 +490,10 @@ If after you've logged the error, your program cannot continue, then logging the
 
 === Annotating errors
 
+Errors have string methods to return a representation of that can be printed, usually to the console or some long file. 
+But this does not mean that errors are strings.
+Errors are value, with the sole contract that they implment the `error` interface by posessing an `Error() string` method.
+
 I'm going to talk a bit about how I add context to errors, and to do that I'm going to use a very simple `errors` package.
 
 The code is online at NNN, I'll just recap the API
@@ -553,61 +561,65 @@ Using channels to communicate between goroutines is much simpler, much easier to
 
 == Ownership
 
-But there are also other lessons that the _Don't Communicate_ proverb teaches us, and that is a lesson about ownership, specifically the ownership of data, of values.
+But there are also other lessons that the _Don't Communicate_ proverb teaches us, and that is a lesson about ownership, specifically the ownership of data.
 
+Why is ownership important?
+After all, people have been programming for decades in C, Java, Python, Ruby without giving much thought to ownership.
+Why do we need to start talking about ownership now?
 
-Why is ownership important? After all, people have been programming for decades in C, Java, Python, Ruby without giving much thought to ownership. Why do we need to start talking about ownership now?
-
-It turns out that ownership was _always_ important, but for a long time it was hidden by the semantics of the langauges we used, and the environments they ran in. Languages like Ruby, Python, and Perl, don't permit. And although languages like Java made threading a first class citizen, when they were first written two decades ago the hardware that Java programs we deployed on was not capable of much parallelism.
+It turns out that ownership has _always_ been important, but for a long time it was hidden by the semantics of the langauges we used, and the environments they ran in.
+Languages like Ruby, Python, and Perl, don't permit parallism.
+Although languages like Java presciently made threading a first class citizen, when those languages were being developed, two decades ago, the hardware that Java programs we deployed on was not capable of much parallelism.
 
 Today, things have changed, the simple world of single threaded programs and single cpu machines is long gone.
+Instead, programmers must expolit the parallism present in todays hardware, and that means to avoid data races, we must be thinking about ownership constantly.
+
+Another aspect of ownership is safety.
+The world has no appetite for programming languages that are not memory safe.
+This leaves us with two options, garbage collected languages like Go, or a borrowing system like Rust.
+
+Let's be clear, no modern language will let programmers manage their own memory. Some, like rust make it a compile time error to be less that precise with a memory refeerce, othrss like Go, will silently move ESCAP BG allocation s to a garbage collected heap, which turn a potential correctness problem, into a potential performance problem. Note I said potential, I am not asserting that all manual memory usage is unsafe, any more than I am.saying garbage collected n introduces performance problems. 
+
+Many modern laguages address the issue of memroy safety. 
+
+manual memory management too risky
+left with two options, gc and borrowing
+borrowing is all or nothing
+gc, always correct, sometimes less performant
+arguments of getting the program running before making it correct hack back to the ideas of dynamic languages which argued for the flexibility of dynamic typing to be able to test parts of the program in abstract.
+skilled usage of a powerful feature does not make it safe for the general.community. the requirements of c to use raw pointers and dubiously stack automatic memory as part of the programmers day to day toolkit have not been seen in a modern language since the arrival of Java in the 90's
+D is the standout exception
+So, if the conclusion that manual memory management is not a viable solution for general purpose what compromise does that leave programmers.
+
+So, ownership as it relates to communication is talking about sending a refernce over a channel.
+Just like sending a letter in the post, once you put it in the post box, you don't have the letter any more.
+Some time in the future, it will pop throuh the letter box of the recipient.
+
+Now, obviously you could keep a copy of the poitner to the item, once you pass it to the channel, the language will not prevent this.
+But, assuming you don't do this, then you don't need to worry about the lifetime of the object, or the channel, or anyone who reads from the channel, and all the other complicated things that force themselves to the front when programming in rust.
 
 
+I happen to think that there is no one solution to this problem. Memory safety is a constraint that can no longer be optional for langauge designers, but that does not imply they have no leighway in 
 
-Talk about multi core. Talk about threadded becoming the norm. Talk about servers. Talk about concurrency being a first class feature of a language.
+Memoy safety is one of many constraints that language designed integrate into their designs. I happen to think that it's no longer an optional constraint, given the world we live in and the importance of software in that world.
 
-
-
-The second lesson is about ownership of resources. There are many kinds of resources
-
-- a value in memory
-- a channel
-- a file
-- a network socket
-
-And other types that you create in your own programs. But really it's the ownership of memory that is the most important, and this is because we live 
-in a world where modern computers have 
-
-=== Channel ownership
-
-Channel ownership, who owns the channel, only the owner may close it.
-
-You do not need to close a channel for it to be garbage collected, that will happen once every reference to your channel has been discarded.
-
-Closing the channel is a signal, soem metadata apart from the channel values themselves
-
-But the two are related, because most consumers wait for channel to be closed, and won't exit, thus drop their reference to this channel.until it is closed.
-
-From this we draw two recommendations
-
-. Only the owner of a chanel may close the chabel
-. Never start a goroutine without knowing how it will stop.
+I happen to think that Go's approach is sound and a valid solution.
+A solution which is in tune with the development of modern silicon. Multicore CPUs are here to stay, in fact, unless you're designing an embdeed solution, it is increasingly hard not to buy a CPU that exhibits some form of hardware parallism. 
 
 == Conclusion
+
+Proverbs aren't rules, they aren't laws, they're just stories and how well you understand the story defines how well you understand their lesson.
 
 // == Proverbs are not rules
 
 I've spoken a lot today about proverbs, and principals.
-But I want to reinforce that this are just my opinions, and likely proverbs and not rules, principals are not rules.
+But I want to reinforce that this are just my opinions, and like proverbs, they are stories meant to illustrate a message.
 Rules are like the laws of nature, the laws of physics.
 You cannot disagree with the law of gravity.
 You cannot disagree with the sign in the elevator that explains the maximum weight the elevator can safely carry.
 You cannot disagree with the compiler about the syntax of a program, those rules are absolute.
-But you can disagree with me, and you can choose at times when to disregard my advice
-And in fact I encourage it, you sohuld
-
-
-I hope that this has been informative for you.
+But you can disagree with me, and you can choose at times when to disregard my advice.
+And in fact I encourage it, you should question my understanding of design, just as you question your own.
 
 Proverbs are a great way of encapsulating information; capturing the essence of a story or teaching a moral. But they can equally be bewildering to newcomers who do not know the story behind the proverb.
 
@@ -622,6 +634,6 @@ I want to close, not on a proverb, but on a beautiful Japanese word that I disco
 
 And I like this word, because if there is a word which I think perfectly describes my feelings about Go, it is Shibui. 
 
-A restrained design, a functional design, a simple design.
+A functional design, a restrained design, a simple design.
 
 Thank you.
