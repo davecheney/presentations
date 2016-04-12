@@ -25,9 +25,8 @@ I'm also a contributor to the Go project and I run the Sydney Go Users' group.
 
 This talk is aimed at development teams who are building production Go applications intended for high scale deployment.
 
-Today I am going to cover five main areas:
+Today I am going to cover four main areas:
 
-- What does performance mean, what is possible?
 - Performance measurement and profiling
 - Benchmarking
 - Memory management and GC tuning
@@ -40,78 +39,6 @@ This presentation will be available after the talk. It contains lots of examples
 I have a lot of material to cover, so I ask that you hold your questions til the end.
 
 I'm going to be around for the entire conference, please come and ask me your questions after the talk.
-
-* What does performance mean, what is possible?
-
-* What does performance mean?
-
-What do we mean when we say performance?
-
-How do we know when we our code is fast?
-
-Before we start to talk about writing high performance code, we must understand the hardware that runs our programs.
-
-As software authors we have benefited from Moore's Law, the doubling of the number of available transistors on a chip every 18 months, for 50 years.
-
-No other industry has experienced a 4, sometimes 5, order of magnitude improvement in their tools in the space of a lifetime.
-
-But this is all changing.
-
-* The CPU
-
-.image writing-high-performance-go/cpu.svg _ 700
-
-Clock speeds have not increased in a decade.
-
-* More cores
-
-.image writing-high-performance-go/Nehalem_Die_Shot_3.jpg _ 600
-
-Over the last decade performance, especially on the server, has been dictated by adding more CPU cores.
-
-* Memory
-
-Physical memory attached to a server has increased geometrically.
-
-.image writing-high-performance-go/latency.png _ 600
-
-But, in terms of processor cycles lost, physical memory is still as far away as ever.
-
-# memory is physically distant from the CPU.
-
-* Cache rules everything around it
-
-Cache rules everything around it, but it is small, and will remain small because the speed of light determines how large a cache can been at a certain latency.
-
-We already have three caches:
-
-- *L1*, per CPU core, 32/32 kilobytes, 2–4 cycle latency
-- *L2*, per set of cores, 256 kilobytes, 7–10 cycle latency
-- *L3*, per CPU package, 4–32 megabytes, 40–60 cycle latency
-
-You can have a larger cache, but it will be slower because, in a universe where electricity travels a foot every nano second, distance equals latency.
-
-* Network and disk I/O are still expensive
-
-We have networks that have greater bandwidth, 10Gb, 25G, 40Gb, 100Gb, but they are made by bonding multiple channels together. They have greater bandwidth, but the latency is fixed.
-
-Network and disk I/O are still expensive, so expensive that the Go runtime will schedule something else while those operations are in progress.
-
-.image writing-high-performance-go/numbers.png _ 600
-
-* A fast programming language
-
-Memory is slow, caches are too small, CPU clock speeds are going backwards, and the simple world of a single threaded CPU is long gone. So, it's time, for the software to come to the party.
-
-As [[https://www.youtube.com/watch?v=aiv1JOfMjm0][Rick Hudson noted at GopherCon]] in 2015, it's time for a programming language that works _with_ the limitations of today's hardware, rather than continue to ignore the reality that CPU designers find themselves.
-
-So, for best performance on today's hardware in today's world, you need a programming language which:
-
-- Is compiled, not interpreted.
-- Lets programmers talk about memory effectively, think structs vs java objects
-- Permits efficient code to be written and has a compiler that produces efficient code.
-
-Obviously the language I'm talking about is the one we're here to discuss: Go.
 
 * Performance measurement and profiling
  
