@@ -21,6 +21,14 @@ I work for Canonical, where I've been writing software in Go for the last four y
 
 I'm also a contributor to the Go project and I run the Sydney Go Users' group.
 
+* Questions
+
+This presentation will be available after the talk. It contains lots of examples and links to other material.
+
+I have a lot of material to cover, so I ask that you hold your questions til the end.
+
+I'm going to be around for the entire conference, please come and ask me your questions after the talk.
+
 * Agenda
 
 This talk is aimed at development teams who are building production Go applications intended for high scale deployment.
@@ -32,19 +40,11 @@ Today I am going to cover four main areas:
 - Memory management and GC tuning
 - Concurrency
 
-* Questions
-
-This presentation will be available after the talk. It contains lots of examples and links to other material.
-
-I have a lot of material to cover, so I ask that you hold your questions til the end.
-
-I'm going to be around for the entire conference, please come and ask me your questions after the talk.
-
 * Performance measurement and profiling
  
 * Performance measurement and profiling
 
-There is a common saying in Australia, I'm sure there is a Chinese version.
+There is a common saying in Australia.
 
 _"Measure_twice,_cut_once"_
 
@@ -63,7 +63,7 @@ Before you profile, you must have a stable environment to get repeatable results
 - Avoid virtual machines and shared cloud hosting; they are too noisy for consistent measurements.
 - There is a kernel bug on OS X versions less than El Capitan; upgrade or avoid profiling on OS X.
 
-If you can afford it, buy dedicate performance test hardware. Rack them, disable all the power management and thermal scaling and never update the software on those machines.
+If you can afford it, buy dedicated performance test hardware. Rack them, disable all the power management and thermal scaling and never update the software on those machines.
 
 For everyone else, have a before and after sample and run them multiple times to get consistent results.
 
@@ -97,9 +97,9 @@ The more times a function appears in the profile, the more time that code path i
 
 Memory profiling records the stack trace when a _heap_ allocation is made.
 
-Stack allocations are assumed to be free and are _not_tracked_ in the memory profile.
+Memory profiling, like CPU profiling is sample based. By default memory profiling samples 1 in every 1000 allocations. This rate can be changed.
 
-Memory profiling, like CPU profiling is sample based, by default memory profiling samples 1 in every 1000 allocations. This rate can be changed.
+Stack allocations are assumed to be free and are _not_tracked_ in the memory profile.
 
 Because of memory profiling is sample based and because it tracks _allocations_ not _use_, using memory profiling to determine your application's overall memory usage is difficult.
 
@@ -220,22 +220,6 @@ Here is a visualise of a block profile:
 
 .link writing-high-performance-go/block.svg 
 
-* How pprof works
-
-The Go runtime's profiling interface is in the `runtime/pprof` package.
-
-`runtime/pprof` is a very low level tool, and for historic reasons the interfaces to the different kinds of profile are not uniform.
-
-To make it easier to profile your code you should use a higher level interface.
-
-For profiling `testing` package benchmarks, the `go`test` command has integrated support for profiling the code under test:
-
-    go test -run=XXX -bench=. -cpuprofile=/tmp/c.p
-
-For profiling an application, I recommend the [[https://github.com/pkg/profile][github.com/pkg/profile]] package.
-
-We'll look at both of these in more detail in the next section.
-
 * Benchmarking
 
 * Benchmarking
@@ -244,7 +228,12 @@ Now that we discussed what profiling is, and how to use `pprof`, we're going to 
 
 This section focuses on how to construct useful benchmarks using the Go testing framework, and gives practical tips for avoiding the pitfalls.
 
-We'll also touch on how to profile a complete application using the [[https://github.com/pkg/profile][github.com/pkg/profile]] package.
+The Go runtime's profiling interface, `runtime/pprof`, is a very low level tool, and for historic reasons the interfaces to the different kinds of profile are not uniform.
+
+To make it easier to profile your code you should use a higher level interface.
+
+- For profiling `testing` package benchmarks, the `go`test` command has integrated support for profiling the code under test:
+- For profiling an application, I recommend the [[https://github.com/pkg/profile][github.com/pkg/profile]] package.
 
 * Using the testing package for benchmarking
 
@@ -254,21 +243,21 @@ fib.go:
 fib_test.go:
 .code writing-high-performance-go/fib/fib_test.go /STARTBENCH OMIT/,/ENDBENCH OMIT/
 
-DEMO: `go`test`-bench=.`
+DEMO: `go`test`-bench=.`./fib`
 
 * Comparing benchmarks
 
 Determining performance improvements when there are more than one benchmark in a package can be overwhelming.
 
-You should always run your benchmarks multiple times to eliminate background noise.
-
 Tools like [[https://godoc.org/rsc.io/benchstat][rsc.io/benchstat]] are useful for comparing before and after comparisons.
 
-	% go test -bench=. -count=10 > old.txt
+	% go test -bench=. -count=5 > old.txt
+
+(Always run your benchmarks multiple times to eliminate background noise.)
 
 DEMO: Improve `Fib`
 
-	% go test -bench=. -count=10 > new.txt
+	% go test -bench=. -count=5 > new.txt
 	% benchstat old.txt new.txt                                                             
 	name   old time/op  new time/op  delta
 	Fib-4   378ns ± 0%   237ns ± 0%  -37.30%  (p=0.000 n=14+16)
@@ -291,11 +280,13 @@ Because the function is inlined, the compiler can see it has no side effects, so
 
 .code writing-high-performance-go/popcnt/popcnt2_test.go /START OMIT/,/END OMIT/
 
-The same optimisations that make real code fast, by removing unnecessary computation, are the same ones that remove benchmarks that have no observable side effects.
+The same optimisations that make code fast, by removing unnecessary computation, are the same ones that remove benchmarks that have no observable side effects.
 
 This is only going to get more common as the Go compiler improves.
 
 DEMO: show how to fix popcnt
+
+.link http://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go Further reading: How to write benchmarks in Go
 
 * Profiling benchmarks
 
@@ -307,7 +298,7 @@ The `testing` package has built in support for generating CPU, memory, and block
 
 Using any of these flags also preserves the binary.
 
-    % go test -run=XXX -bench=. -cpuprofile=c.p bytes
+    % go test -run=XXX -bench=IndexByte -cpuprofile=c.p bytes
     % go tool pprof bytes.test c.p
 
 _Note:_ use `-run=XXX` to disable tests, you only want to profile benchmarks.
@@ -316,9 +307,9 @@ _Note:_ use `-run=XXX` to disable tests, you only want to profile benchmarks.
 
 Profiling `testing` benchmarks is useful for _microbenchmarks_, but what if you want to profile a complete application?
 
-As I mentioned in the previous section, to profile an application, you must use the `runtime/pprof` package, but that is fiddly and low level.
+To profile an application, you must use the `runtime/pprof` package, but that is fiddly and low level.
 
-To make this easier, a few years ago I wrote a small package, [[https://github.com/pkg/profile][github.com/pkg/profile]], to make it easier to profile an application.
+A few years ago I wrote a small package, [[https://github.com/pkg/profile][github.com/pkg/profile]], to make it easier to profile an application.
 
      import "github.com/pkg/profile"
 
@@ -421,9 +412,9 @@ In this example, `Conn.Loop` can run forever without generating garbage.
 
 * strings and []bytes
 
-In Go `string` values are immutable, `[]byte` are mutable.
-
 Most programs prefer to work `string`, but most IO is done with `[]byte`.
+
+In Go `string` values are immutable, `[]byte` are mutable. Converting between the two generates garbage.
 
 Avoid `[]byte` to string conversions wherever possible, this normally means picking one representation, either a `string` or a `[]byte` for a value. Often this will be `[]byte` if you read the data from the network or disk.
 
@@ -502,20 +493,6 @@ _After:_
      return s
 
 TODO FIND A BETTER EXAMPLE
-
-* Using sync.Pool
-
-The `sync` package comes with a `sync.Pool` type which is used to reuse common objects.
-
-`sync.Pool` has no fixed size or maximum capacity. You add to it and take from it until a GC happens, then it is emptied unconditionally. 
-
-.code writing-high-performance-go/pool.go /START OMIT/,/END OMIT/
-
-*Warning*: `sync.Pool` is not a cache. It can and will be emptied _at_any_time_.
-
-Do not place important items in a `sync.Pool`, they will be discarded.
-
-_Personal_opinion_: `sync.Pool` is hard to use safely. Don't use `sync.Pool`.
 
 * Concurrency
 
