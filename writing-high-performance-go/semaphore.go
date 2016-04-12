@@ -3,13 +3,11 @@ package p
 type Work int
 
 // START OMIT
-const LIMIT = 10
+var semaphore = make(chan struct{}, 10)
 
-var semaphore = make(chan struct{}, LIMIT)
-
-func doWork(work *Work) {
+func processRequest(work *Work) {
 	semaphore <- struct{}{} // acquire semaphore
-	// do work
+	// process request
 	<-semaphore // release semaphore
 }
 
