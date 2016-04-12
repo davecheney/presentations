@@ -4,32 +4,22 @@ v1.0, 4th May, 2016
 
 == Introduction
 
-Good morning and thank you for coming to my talks
+Good morning and thank you for coming to my talk.
 
-My name is David, and I'm delighted for the opportunity to speak to you today.
+My name is David, I'm a Go programmer from Sydney and I'm delighted to have been given the opportunity to speak to you today.
 
-I am delighted to be here for three reasons
+I am delighted to be able to talk about Go at a technical conference here in Australia. 
 
-The first reason is, although I run the local Go meetup in Sydney, and have spoken at meetups along the east coast, I have never had the opportunity to speak about Go on the west coast. And more importantly, I have never had the opporutnity
-
-As a citizen of our little coutrny, I'm delighted for both these reasons 
-
-And finally, I'm deligh
-
-I work on two large Go programs, the first is the Go distribution itself, and the second, and more capacious project is the Juju project, from Canoniical, who I am grateful for sponsoring me to attend today. 
+I work on two large Go projects, the first is the Go language itself, and the second, and more capacious project is the Juju project, from Canoniical, who I am grateful for sponsoring me to attend today. 
 
 // image of go project LOC, Juju LOC
 
-Also, I must note that I feel like somewhat of an interloper at this conference.
-My fellow speakers have decades of experience. My own career, until recently was focused on what we now call operations. 
+Before I being, I must note that I feel like somewhat of an interloper at this conference.
+My fellow speakers have decades of experience.
+My own career, until recently was focused on what we now call operations, but back in the day we just called it systems' adminstration.
 Although a keen amature since childhood, I arrived in the software development profession late in life.
 So, I ask that you do not view me as an expert, merely a peer.
 
-I'm also going to focus on Martin's representation of the SOLID principals. Kevlin Henney spoke at this conference's namesake in 2013 and presented a wonderful deconstruction of the development of the SOLID ideas, but for this presentation I'm going to focus on their application in the field.
-I'll ask you to assume that they are, for the moment, a good thing.
-
-Go is not an academic langauge.
-Its own design is influenced heaviliy by the needs of its patron, Google. Go is a langauge which 
 
 // discuss market forces behind the language in 2007
 
@@ -72,23 +62,78 @@ Rather than a mechanical recitation of the use of a particular language feature,
 
 == SOLID Go design
 
-Now that the introductions have been dispensend with, permit me to move to the topic of this talk.
-
-The title of my talk is SOLID Go design. That is, the interpretation of Go progams according to the SOLID design principals.
+With the introductions dispensend with permit me to move to the topic of my talk.
+The title of this talk is "SOLID Go design".
+That is, the interpretation of Go progams according to the SOLID design principals.
 
 == Martin's SOLID principals
 
-In his book, Agile design patterns (Pearson, 2002), Robert C Martin introduces the SOLID design principals as cornerstones for the construction of software that amenable to change. Martin later codified these principals with an article entitled Principals of Object Oriented Design (http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod).
+In his book, Agile design patterns,footnote:[Pearson, 2002] Robert Martin introduces the SOLID design principals as cornerstones for the construction of software that is amenable to change.
+Martin later codified these principals with an article entitled Principals of Object Oriented Design.footnote[http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod]
 
-Part of a larger set of design principals (http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod), the SOLID principals are closely associated with object oriented languages like C++, Java, C#, and more recently Ruby. And although they span different eras, all these languages share the same class structured, inheritance based foundations. 
-
-Go is one of a set of new languages that eschew inheritance, instead preferring the mantra of composition. Does this mean that Go programs do not follow the SOLID design principals, or even that Go is not an object oriented language?
+Part of a larger set of design principals, the SOLID principals are closely associated with object oriented languages like C++, Java, C#, and more recently Ruby.
+Although they span different eras, all these languages share the same class structured, inheritance based foundations. 
 
 In this talk I will explore the five core SOLID design patterns, discuss their applicability to Go programmers, and explain that while Go programs are not inheritance or class based, they adhere strongly to Martin's principals. The audience will learn how well structured Go applications naturally follow the SOLID principals, leading to code which is loosely coupled, highly reusable, and inherently maintainable. 
 
+As I was preparing for this talk I came across Kevlin Henney's spirited deconstruction at this conference's namesake in 2013.
+//  and presented a wonderful deconstruction of the development of the SOLID ideas, but for this presentation I'm going to focus on their application in the field.
+I'm also going to focus on Martin's representation of the SOLID principals.
+I'll ask you to assume that they are, for the moment, a good thing.
+
+This talk will focus on the application of these principals to the design of Go programs, rather than a theological deconstruction of the principal's themselves.
+In effect, I hold them to be self evident, as hopefully you do as well, by your presence here today.
+
 == Introducing Go
 
-// will it blend.
+[quote, Alan Donnovan and Brian Kernighan]
+“The Go project includes the language itself, its tools and standard libraries, and last but not least, a cultural agenda of radical simplicity”
+
+Go is not an academic langauge.
+Its design is influenced heaviliy by the needs of its patron, Google.
+Go is a langauge which 
+
+Designed for progamming productivity
+Designed for the entire software development lifecycle.
+
+- gofmt
+
+The hallmark of Go's design asthetic is simplicity. In the choice between
+
+One of the visible signs of this drive towards simplicity is Go's abandonment of a traditional class based inheritence.
+Not only did this side step questions about multiple inheritence, it comitted the language to the paradigm of composition.
+After the inital excitement of C++, and the cold reality of deep inheritence in commercial C# and Java programming, Go's abandonment of inheritence apprears prescient.
+
+If you come from a background of class based langauges
+
+In Go a variable and the method set of that variables type are orthogonal. Methods may declared on any type, and any type that you own, that you declare in your package, you may place methods on. 
+
+In the context of this discussion as the author you have more flexibility to use a method or a function than you may previosuoy have been used to. 
+
+In truth, methods in Go are little more than syntactic sugar around calling a function with a predeclared formal parameter, the method's reciever. 
+
+Show logic of the expression x which returns a variable who's type is func ...
+
+Then show invoking a function
+
+Where you would place a helper method on an abstract super type, consider using a function.  
+
+Functions are easier to test. Especially if there are pure. 
+
+
+Here is a rule of thumb that may guide you in deciding to use a method or a function. 
+
+Methods for what they do, functions for what they return. 
+
+
+
+
+
+== Will it blend?
+
+Go is one of a set of new languages that eschew inheritance, instead preferring the mantra of composition. Does this mean that Go programs do not follow the SOLID design principals, or even that Go is not an object oriented language?
+
+As a 
 
 == Single responsibility principal
 
@@ -97,9 +142,12 @@ Originally coined by Tom DeMarco and NNN to describe software cohesion.
 
 Cohesion, in the context of software, is the property of software that is 
 
-A function which performs some kind of control of a bank balance _and_ updates performance counters is _not_ cohesive. Maintaining a bank balance, and recording metrics about how frequent or how long a request took are seprate concerns.
+A function which performs some kind of control of a bank balance _and_ updates performance counters is _not_ cohesive.
+Maintaining a bank balance, and recording metrics about how frequent or how long a request took are seprate concerns.
 
-Alternatively a group of methods on a Complex datatype, providing addition, division and so on _are_ indeed cohesive, they all relate to the 
+If a function does two things, say make an rpc request and loop on retry then split that out into two functions, one the makes the call, and one that wraps it retrying. 
+
+Alternatively a group of methods on a Complex datatype, providing addition, division and so on _are_ indeed cohesive, they all relate to the maintanence of that type.
 
 [quote, Robert C. Martin]
 Functions should do one thing. They should do it well. They should do it only
@@ -107,7 +155,11 @@ Functions should do one thing. They should do it well. They should do it only
 And why is this important, why should a programmer care about this level of taxonomy?
 Because change. A code that does one thing has less reason to change. And when it does change, it will be in response to a direct stimuli, it shouldn't be a victim of collatoral damage.
 
-// fragile base class problem.
+coupling == things that move together, a change in one, is a change in another
+
+trees bend in the wind because the are all coupled to the energy of the wind
+
+=== The fragile base class problem.
 
 But not just functions--methods, types, and even packages should do one thing, and only one thing.
 
@@ -121,7 +173,10 @@ If a single method should only do one thing, and a single type should only repre
 
 Which is good,
 
-Go functions are not Pure, not FP, but you should do it anyway. 
+=== Pure functions
+
+Go functions are not pure, not in a functional programming sense of the world, but you should act as if they are anyway.
+Eschew global state, pass all the values requred into the function.
 
 Ultimately, taking this principal to it's conclusion, you should aim to write programs, or at least libraries that do one thing and 
 The idea behind both is to write small programs (functional “building blocks”) that are easy to reason about, and build more complex systems out of them, while retaining the ability to piecewise debug simple components in event of failure.
@@ -181,13 +236,54 @@ And this rings me to error are just values. Rob showed last year how errors can 
 [quote, Bertrand Meyer]
 Software entites should be open for extension, but closed for modification.
 
-The Open closed principal states that classes should be open for extension, but closed for modification.
-
+The open closed principal states that classes should be open for extension, but closed for modification.
 But Go does not have classes.
+
+Here is an example
+
+type A struct {
+	v int
+}
+
+func (a *A) Value() int { return a.v }
+
+type B A
+
+The type `A` has a method `value` which returns the contents of `v`.
+This is a not a partcilarly useful piece of code.
+
+We also have a type `B` which is derrived from `A`. TODO: check derrived is the right word.
+However, the method set of `B` is indepdenant.
+`B`'s method set is distrinct from `A`, in fact in this example it's empty.
+`B` does not inhert from `A`.
+
+If we want B to have A's methods, we can instead do this, which is called Embeddeding in Go.
+
+Type A struct {
+     v int
+}
+
+Type B struct {
+     A
+}
+
+It's called embedding because, as you see, A is embedded, as a field, within B.
+You'll not that A does not have a
 
 - talk about adding methods to any type that you own
 - talk about public and private symbols
 - As an ahead of time compiled langauge, there are no facilities for monkey patching running code, and modifying an existing type requires the ability to modify its source code -- with the coressponding maintainence burden.
+
+This is a not a wacky way of doing inheretence in Go.
+B is not substitutable for A.
+
+And this is because method's are just syntactic sygar for functions.
+
+There is no _this_ in Go. The recevier is exactly what you pass into it, the first parameter of the function. 
+
+And because funcions are _not_ polymorphic, B is not substitituable for A.
+
+And this brings us to the next principal.
 
 == Liskov substitution principal
 
@@ -197,11 +293,31 @@ In class baesd languages, this is commonly interpreted as a specification for an
 
 But Go does not have classes, or inheritance.
 
+So substitution cannot be done with an abstract class. And while you can extract an embedded part of a larger type and pass it to a fucntion that expects it, that embedded field is unaware that it is part of a larger type.
+
+Subtituion in Go is the pervue of interfaces.
+
+Interface background. dynamism, polymorphic dispatch, design by contract, substituion.
+
+Describe _behaviour_, not data.
+
+Let's take the idea of writer.
+
 However we do have interfaces.
 
 - LSP anti patterns, using type assertions to verify that 
 - require interfaces, return unexported concrete types.
 - focus on depending only on behaviour.
+
+=== Design by contract
+
+Go does not have anything like Eifel's design by contract, but we do have a tradition of guard clauses and early returns.
+
+[quote, Jim Weirich]
+Require no more, promise no less
+
+So the pull quote for LSP could be summarised by this lovely aphorism from Jim Weirich.
+And this is a great segue into the next SOLID principal.
 
 == Interface segregation principal
 
@@ -227,9 +343,24 @@ Show the net.Conn interface as an example of both a good, and bad interface.
 
 The ideal interface has exactly one method, and that ties back to SRP.
 
+Talk about interface / func duality.
+
+Go has first class functions, so consider instead
+
+thinger.thing(), pass in func(), which is still compatible with method's because they close over the receiver of the method -- implicitly.
+
+Some behaviour s are not shared, they are not.common to a number of implementation s or objects. 
+
+We call those functions. Don't fight them 
+
 == Dependency inversion principal
 
+The last, and probably longest section. 
+
+[quote]
 Depend on abstractions, do not depend on cocretions
+
+Give example from http class that takes bufio.Reader, talks about how that limits us.
 
 To avoid dependencies your code should be
 
@@ -242,11 +373,61 @@ you want to depend on things that cannot change, and those are the _interfaces_ 
 
 Talk about software layering
 
+Talk about direct dependency, with uml, talk about depedning on an interface instead, breaking the direct depdenency.
+
+Show Java
+
+Show Go, note that there is no _implements_ keyword. 
+
+Talk about implicit interfaces
+
+Show the var _ (InterfaceType) = (concreteType)(nil)
+
+Talk about interface equality, and that the consumer of a type defines the interface it expects. 
+
+This breaks the source level dependncy on the _interface_.
+
+Use the thermostate example from herei https://youtu.be/dKRbsE061u4?t=1373
+
+Talk about returning _concrete_ types, not interface types. Show standard lib examples.
+
+Talk about type switches on interface values, talk a little about errors
+
+Talk about behaviour vs implementation.
+
+Packages should interact using interface values, rarely concrete types. Those interface values can be defined by the caller, or the callee.
+
 == A theme
 
 On refletion, SRP and OCP are really the same thing in Go; embedding. And LSP, ISP and DIP are facets of the way your design your program using interfaces.
 
-Kevlin 's observation that they are all prinicpals about designing to reduce coupling.
+Kevlin's observation that they are all prinicpals about designing to reduce coupling.
+
+Matrin's observication is that all five of the solid principals relate to dependenies, the dependencies between software units.
+The dependencies between functions, the dependcies between types, and the dependnecies between packages.
+
+And this is indeed the goal, because software that is loosely coupled is software that is easier to change.
+You want to write your code such that it has a few source level dependencies as possible, you want to depend on things that do not change.
+Change can be compartmentalised, making changes more targeted, and as a result, limiting the blast area.
+
+LSP encourages you to move the declaration of the things your code expects from the source level, in go we see this with a reduction in the `import` statements for a package, to the runtime. And this is crucial because if the code is written to expect _anything_ that implements a certain interface, a certain behavoiur, behaviour that the code defines, not imports from somewhere else. Somewhere shared, then _any_ conforming implementation should work.
+
+How can we e more sure that any implementation will work? By making the interface smaller. This is ISP. And in Go the strong desire is to create interfaces that expose a single behaviour.
+
+If your type only needs to implement a single interface method, then it visible has only one resposnibility.
+
+And lastly, just as you can compose types, you can compose interfaces, and while the implementations that conform to this larger interface my be more complex, the code that uses them, by virtue of _requiring_ only the behavoiur it cares about can do something _awesome?_.
+
+In effect, each Go package is it's own program. It has some things that it provides, and some things it requires to operate.
+
+Go was explicitly built to control source level depenendenices.
+And you can visualise this yourself by looking at your dependency graph.
+A tall thin dependency graph is poorly designed software -- or depends on poorly designed software.
+That depenency graph is brittle, change propogates through it in an uncontrolled manner
+
+A short, wide, dependency graph is the opposite, individual modules live in isolating, each doing one thing and doing it well.
+Software depenedncies are stitched together at the top of the program, what we call main, the main package.
+
 
 use interfaces,
 
@@ -254,14 +435,18 @@ don't just declare them
 
 but design your program around them
 
-BUT - and this is crucial, do not _substitute_ interfaces for concrete tyoes, do not creat the interface so you can mock the concrete type, use and interface to _describe_ the behaviour, describe the contract between two compoents
-
-and, if you do it right, those interfaces will be small
-
-and when I say small, i mean one method, because each type should have only a single responsibility -- a singe purpose -- a single behavoiur
-
+But—and this is crucial—do not merely _substitute_ an interface for concrete types, do not create an interface so you can mock the concrete type, use and interface to _describe_ the behaviour the code expects.
+Use and interface to describe the contract between two compoents.
+And, if you do it right, those interfaces will naturally be small.
+And when I say small, i mean one method, because each type should have only a single responsibility -- a singe purpose -- a single behavoiur
 
 == One more thing
+
+So the TL;DR of this talk, is interfaces let you apply SOLID principals to Go programs, and apply them well.
+
+And this shouldn't really be a suprise, because interfaces provide polymorphic dispatch, which is really the core of OO; albeit most classical OO langauges implement polymorphic dispatch via inheretence and abstract methods.
+
+but there is more
 
 Talk about Martin's _other_ principals of design.
 
@@ -271,25 +456,35 @@ The solid principals only describe class design and class relationship. Possibly
 
 == In Closing
 
+[quote,Sandi Metz]
+Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
+
 // When I doubt parameterize, data should flow through the call graph
 
-On thing that software development, as an indistry, does poorly, is develop a sense of history (need better word).
+On thing that software development, as an indistry, does poorly, is develop to a sense of history (need better word).
 
 Language design, and those who advocate new languages, is particularly succeptable to this effect.
-It seems that in the bussle of discarding old code for new, overarching ideas of design and (somethign else about design) are also discarded, only to be rediscovered later.
+It seems that in the bussle of discarding old code for new, overarching ideas of design and (somethign else about design) are often discarded, only to be rediscovered later.
 
 Our industry is not an old one, the oldest commercial company selling hardware and programing services is barely 104 years old (check IBM date), and for the first YYY of those years wrote not programs at all.
-Programming as an industry is barely a generation old. My father and mother both worked for our countries own CSIRO, but before them, my father's father worked as a sawmill operator, then ran a corner store. My mother's father was a veternerian. I suspect that for many of you in the audience, the story of parents with a background in software or hardware development is not uncommon. But equally as uncommon would be a lineage in software development that extends only to your parents.
+Programming as an industry is barely a generation old.
+My father and mother both worked for our countries own CSIRO, but before them, my father's father worked as a sawmill operator, then ran a corner store.
+My mother's father was a veternerian.
+I suspect that for many of you in the audience mu story of parents with a background in software or hardware development is not uncommon.
+But equally as uncommon would be a lineage in software development that extends only to your parents.
 
-Our industry is too small, and to young, to have developed this degree of senility.
+And the SOLID principals are a tool to talk about design. They arne't rules, like the rule or law, or the law or gravity, but they are good guidelines, like (somethign from architecture)
+
+Don't forget, the goal is to write software that is amenable to change.
+A design that is so perfect that it cannot be changed is obsolete before you've finished implementing it.
+
+Our industry is too small, and to young, to have developed this degree of myopia or senility.
 
 As NNN noted during his keynote at NNN if you were a physist, 
 
 - design fundamentals
 
 You must develop your own sense of wonder, and cultivate a desire to question not just the beliefs that you have been taught, but the ones you believe yourself.
-
-* Introduction
 
 * Decoupling
 
@@ -327,13 +522,6 @@ No unused variables
 No unused imports
 ...etc
 
-* In conclusion
-
-So the TL;DR of this talk, is interfaces let you apply SOLID principals to Go programs, and apply them well.
-
-And this shouldn't really be a suprise, because interfaces provide polymorphic dispatch, which is really the core of OO; albeit most classical OO langauges implement polymorphic dispatch via inheretence and abstract methods.
-
-but there is more
 
 http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod
 
@@ -353,11 +541,6 @@ How can we talk about good software design
 Well, just like you have principals for how to live a knoble life, there are principals of software design. Solid principals
 
 ---
-
-Thanks Bill. The TL;DR for 4 out of the 5 (and probably actually 5 out
-of 5) is "use interfaces", like I said last year in NYC I think the
-way interfaces are implemented in Go is going to be one of its
-defining traits in years to come.
 
 New languages won't be complete unless they come with a gofmt, some
 kind of concurrency story, and an approach to composition that looks a
