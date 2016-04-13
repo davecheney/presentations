@@ -75,13 +75,11 @@ pprof descends from the Google Perf Tools suite of tools.
 
 pprof profiling is built into the Go runtime.
 
-pprof supports several types of profiling.
+We're going to discuss CPU and Memory profiling today.
 
-We'll discuss three of these today: 
+pprof supports several other types of profiling
 
-- CPU profiling.
-- Memory profiling.
-- Block (or blocking) profiling.
+.link https://golang.org/pkg/runtime/pprof Further reading: runtime/pprof
 
 * CPU profiling
 
@@ -104,22 +102,6 @@ Stack allocations are assumed to be free and are _not_tracked_ in the memory pro
 Because of memory profiling is sample based and because it tracks _allocations_ not _use_, using memory profiling to determine your application's overall memory usage is difficult.
 
 _Personal_Opinion:_ I do not find memory profiling useful for finding memory leaks. There are better ways to determine how much memory your application is using. We will discuss these later in the presentation.
-
-* Block profiling
-
-Block profiling is quite unique. 
-
-A block profile is similar to a CPU profile, but it records the amount of time a goroutine spent waiting for a shared resource.
-
-This can be useful for determining _concurrency_ bottlenecks in your application.
-
-Block profiling can show you when a large number of goroutines _could_ make progress, but were _blocked_. Blocking includes:
-
-- Sending or receiving on a channel.
-- Waiting in a select.
-- Trying to `Lock` a `sync.Mutex` that is locked by another goroutine.
-
-Block profiling is a very specialised tool, it should not be used until you believe you have eliminated all your CPU and memory usage bottlenecks.
 
 * One profile at at time
 
@@ -206,17 +188,15 @@ Here is a visualisation of a memory profile:
     % go tool pprof --alloc_objects -svg $(go tool -n compile) /tmp/m.p > alloc_objects.svg
     % go tool pprof --inuse_objects -svg $(go tool -n compile) /tmp/m.p > alloc_objects.svg
 
+Allocation profile
+
 .link writing-high-performance-go/alloc_objects.svg
+
+In use profile
+
 .link writing-high-performance-go/inuse_objects.svg
 
 TODO: DESCRIBE THE DIFFERENCE BETWEEN INUSE AND ALLOC
-
-Here is a visualise of a block profile:
-
-    % go test -run=XXX -bench=ClientServer -blockprofile=/tmp/b.p net/http
-    % go tool pprof -svg http.test /tmp/b.p > block.svg
-
-.link writing-high-performance-go/block.svg 
 
 * Benchmarking
 
