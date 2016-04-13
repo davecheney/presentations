@@ -7,13 +7,13 @@ dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
-# Thank organisers
-
-# Thank audience for coming to my talk
-
-* About me
+* Welcome
 
 您好!
+
+Thank you for coming to my talk. 
+
+Thank you also to the GopherChina organisers for inviting me to speak.
 
 My name is David. I'm a Go programmer from Sydney, Australia.
 
@@ -23,9 +23,9 @@ I'm also a contributor to the Go project and I run the Sydney Go Users' group.
 
 * Questions
 
-This presentation will be available after the talk. It contains lots of examples and links to other material.
-
 I have a lot of material to cover, so I ask that you hold your questions til the end.
+
+This presentation will be available after the talk. It contains lots of examples and links to other material.
 
 I'm going to be around for the entire conference, please come and ask me your questions after the talk.
 
@@ -85,9 +85,9 @@ We'll discuss three of these today:
 
 * CPU profiling
 
-CPU profiling is the most common type of profile, and the most obvious. 
+CPU profiling is the most common type of profile. 
 
-When CPU profiling is enabled the runtime will interrupt itself every 10ms and record the stack trace of the currently running goroutines.
+When CPU profiling is enabled, the runtime will interrupt itself every 10ms and record the stack trace of the currently running goroutines.
 
 Once the profile is complete we can analyse it to determine the hottest code paths.
 
@@ -105,8 +105,6 @@ Because of memory profiling is sample based and because it tracks _allocations_ 
 
 _Personal_Opinion:_ I do not find memory profiling useful for finding memory leaks. There are better ways to determine how much memory your application is using. We will discuss these later in the presentation.
 
-TODO: MAKE SURE YOU COVER MEMORY LEAKS LATER
-
 * Block profiling
 
 Block profiling is quite unique. 
@@ -117,8 +115,8 @@ This can be useful for determining _concurrency_ bottlenecks in your application
 
 Block profiling can show you when a large number of goroutines _could_ make progress, but were _blocked_. Blocking includes:
 
-- Sending or receiving on a unbuffered channel.
-- Sending to a full channel, receiving from an empty one.
+- Sending or receiving on a channel.
+- Waiting in a select.
 - Trying to `Lock` a `sync.Mutex` that is locked by another goroutine.
 
 Block profiling is a very specialised tool, it should not be used until you believe you have eliminated all your CPU and memory usage bottlenecks.
@@ -404,12 +402,6 @@ The first Read method will _always_ allocate a buffer, putting pressure on the G
 
 TODO FIND EXAMPLES IN THE STDLIB
 
-* Reduce allocations (cont.)
-
-In this example, `Conn.Loop` can run forever without generating garbage.
-
-.code writing-high-performance-go/ioloop.go /START OMIT/,/END OMIT/
-
 * strings and []bytes
 
 Most programs prefer to work `string`, but most IO is done with `[]byte`.
@@ -550,13 +542,11 @@ Never start an IO operating without knowing the maximum time it will take.
 
 You need to set a timeout on every network request you make with `SetDeadline`, `SetReadDeadline`, `SetWriteDeadline`.
 
-You need to limit the amount of blocking IO you issue. Use a pool of worker goroutines, or a buffered channel as a semaphore.
-
-.code writing-high-performance-go/semaphore.go /START OMIT/,/END OMIT/
+TODO ADD EXAMPLE CODE FOR READ AND WRITE
 
 * Go uses efficient network polling for some requests
 
-The Go runtime handles network IO using an efficient operating system polling mechanism (kqueue, epoll, windows IOCP, etc). Many waiting goroutines will be serviced by a single operating system thread.
+The Go runtime handles network IO using an operating system polling mechanism. Many waiting goroutines will be serviced by a single operating system thread.
 
 However, for local file IO, Go does not implement any IO polling. Each operation on a `*os.File` consumes one operating system thread while in progress.
 
@@ -564,17 +554,9 @@ Heavy use of local file IO can cause your program to spawn hundreds or thousands
 
 Your disk subsystem does not expect to be able to handle hundreds or thousands of concurrent IO requests.
 
+You need to limit the amount of blocking IO you issue. Use a pool of worker goroutines, or a buffered channel as a semaphore.
 
-* Watch out for IO multipliers in your application
-
-If you're writing a server process, its primary job is to multiplex access to data stored in your application.
-
-Most server programs take a request, do some processing, then return a result. This sounds simple, but depending on the result it can let the client consume a large (possibly unbounded) amount of resources on your server. Here are some things to pay attention to:
-
-- The amount of IO requests per incoming request; how many IO events does a single client request generate? It might be on average 1, or possibly less than one if many requests are served out of a cache.
-- The amount of reads required to service a query; is it fixed, N+1, or linear (reading the whole table to generate the last page of results).
-
-If memory is slow, relatively speaking, then IO is so slow that you should avoid doing it at all costs. Most importantly avoid doing IO in the context of a request—don't make the user wait for your disk subsystem to write to disk, or even read.
+# .code writing-high-performance-go/semaphore.go /START OMIT/,/END OMIT/
 
 * Minimise CGO
 
