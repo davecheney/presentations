@@ -50,7 +50,7 @@ _"Measure_twice,_cut_once"_
 
 Before you can begin to tune your application, you must first know how to tell if your changes are making things better, or worse.
 
-You must first establish a reliable baseline to measure the impact of your change.
+You must establish a reliable baseline to measure the impact of your change.
 
 In other words, _"Don't_guess,_measure"_
 
@@ -71,15 +71,14 @@ For everyone else, have a before and after sample and run them multiple times to
 
 The primary tool we're going to be talking about today is _pprof_.
 
-pprof descends from the Google Perf Tools suite of tools.
+pprof descends from the Google Performance Tools suite.
 
 pprof profiling is built into the Go runtime.
 
 We're going to discuss CPU and Memory profiling today.
 
-pprof supports several other types of profiling
-
 .link https://golang.org/pkg/runtime/pprof Further reading: runtime/pprof
+.link https://github.com/gperftools/gperftools Further reader: Google Perf Tools
 
 * CPU profiling
 
@@ -101,7 +100,7 @@ Stack allocations are assumed to be free and are _not_tracked_ in the memory pro
 
 Because of memory profiling is sample based and because it tracks _allocations_ not _use_, using memory profiling to determine your application's overall memory usage is difficult.
 
-_Personal_Opinion:_ I do not find memory profiling useful for finding memory leaks. There are better ways to determine how much memory your application is using. We will discuss these later in the presentation.
+We'll talk more about measuring memory usage later.
 
 * One profile at at time
 
@@ -111,7 +110,7 @@ Profiling has a moderate, but measurable impact on program performance—especia
 
 Most tools will not stop you from enabling multiple profiles at once.
 
-If you enable multiple profile's at the same time, they will observe their own interactions and throw off your results.
+If you enable multiple profiles at the same time, they will observe their own interactions and skew your results.
 
 *Do*not*enable*more*than*one*kind*of*profile*at*a*time.*
 
@@ -169,34 +168,30 @@ A better way to understand your profile is to visualise it.
 
 Opens a web page with a graphical display of the profile.
 
-.link writing-high-performance-go/profile.svg 
-
 I find this method to be superior to the text mode, I strongly recommend you try it.
 
-pprof also supports these modes in a non interactive form with flags like `-svg`, `-pdf`, etc. See `go`tool`pprof`-help` for more details.
+.link writing-high-performance-go/profile.svg 
+
+`pprof` supports a non interactive form with flags like `-svg`, `-pdf`, etc. See `go`tool`pprof`-help` for more details.
 
 .link http://blog.golang.org/profiling-go-programs Further reading: Profiling Go programs
 .link https://software.intel.com/en-us/blogs/2014/05/10/debugging-performance-issues-in-go-programs Further reading: Debugging performance issues in Go programs
 
 * Using pprof (cont.) 
 
-Let's cover the other two profile type.
-
-Here is a visualisation of a memory profile:
+We can visualise memory profiles in the same way.
 
     % go build -gcflags='-memprofile=/tmp/m.p'
     % go tool pprof --alloc_objects -svg $(go tool -n compile) /tmp/m.p > alloc_objects.svg
     % go tool pprof --inuse_objects -svg $(go tool -n compile) /tmp/m.p > alloc_objects.svg
 
-Allocation profile
+The allocation profile reports the location of where every allocation was made.
 
 .link writing-high-performance-go/alloc_objects.svg
 
-In use profile
+In use profile reports the location of an allocation that are live at the end of the profile.
 
 .link writing-high-performance-go/inuse_objects.svg
-
-TODO: DESCRIBE THE DIFFERENCE BETWEEN INUSE AND ALLOC
 
 * Benchmarking
 
@@ -204,14 +199,14 @@ TODO: DESCRIBE THE DIFFERENCE BETWEEN INUSE AND ALLOC
 
 Now that we discussed what profiling is, and how to use `pprof`, we're going to look at writing benchmarks and interpreting their results.
 
-This section focuses on how to construct useful benchmarks using the Go testing framework, and gives practical tips for avoiding the pitfalls.
-
-The Go runtime's profiling interface, `runtime/pprof`, is a very low level tool, and for historic reasons the interfaces to the different kinds of profile are not uniform.
+The Go runtime's profiling interface, `runtime/pprof`, is a very low level tool. For historic reasons the interfaces to the different kinds of profile are not uniform.
 
 To make it easier to profile your code you should use a higher level interface.
 
 - For profiling `testing` package benchmarks, the `go`test` command has integrated support for profiling the code under test:
 - For profiling an application, I recommend the [[https://github.com/pkg/profile][github.com/pkg/profile]] package.
+
+This section focuses on how to construct useful benchmarks using the Go testing framework, and gives practical tips for avoiding the pitfalls.
 
 * Using the testing package for benchmarking
 
@@ -225,13 +220,15 @@ DEMO: `go`test`-bench=.`./fib`
 
 * Comparing benchmarks
 
-Determining performance improvements when there are more than one benchmark in a package can be overwhelming.
+For repeatable results, you should run benchmarks multiple times.
 
-Tools like [[https://godoc.org/rsc.io/benchstat][rsc.io/benchstat]] are useful for comparing before and after comparisons.
+You can do this manually, or use the `-count=` flag.
+
+Determining the performance delta between two sets of benchmarks can be tedious and error prone.
+
+Tools like [[https://godoc.org/rsc.io/benchstat][rsc.io/benchstat]] are useful for comparing results.
 
 	% go test -bench=. -count=5 > old.txt
-
-(Always run your benchmarks multiple times to eliminate background noise.)
 
 DEMO: Improve `Fib`
 
@@ -240,7 +237,7 @@ DEMO: Improve `Fib`
 	name   old time/op  new time/op  delta
 	Fib-4   378ns ± 0%   237ns ± 0%  -37.30%  (p=0.000 n=14+16)
 
-DEMO: `benchstat`
+DEMO: `benchstat`{old,new}.txt`
 
 * Watch out for compiler optimisations
 
@@ -258,9 +255,9 @@ Because the function is inlined, the compiler can see it has no side effects, so
 
 .code writing-high-performance-go/popcnt/popcnt2_test.go /START OMIT/,/END OMIT/
 
-The same optimisations that make code fast, by removing unnecessary computation, are the same ones that remove benchmarks that have no observable side effects.
+This is _not_ a bug.
 
-This is only going to get more common as the Go compiler improves.
+The same optimisations that make code fast, by removing unnecessary computation, are the same ones that remove benchmarks that have no observable side effects.
 
 DEMO: show how to fix popcnt
 
@@ -285,9 +282,9 @@ _Note:_ use `-run=XXX` to disable tests, you only want to profile benchmarks.
 
 Profiling `testing` benchmarks is useful for _microbenchmarks_, but what if you want to profile a complete application?
 
-To profile an application, you must use the `runtime/pprof` package, but that is fiddly and low level.
+To profile an application, you could use the `runtime/pprof` package, but that is fiddly and low level.
 
-A few years ago I wrote a small package, [[https://github.com/pkg/profile][github.com/pkg/profile]], to make it easier to profile an application.
+A few years ago I wrote a small package, [[https://godoc.org/github.com/pkg/profile][github.com/pkg/profile]], to make it easier to profile an application.
 
      import "github.com/pkg/profile"
 
@@ -304,9 +301,9 @@ DEMO: Show profiling `cmd/godoc` with `pkg/profile`
 
 Go is a garbage collected language. This is a design principal, it will not change.
 
-The Go GC favors _lower_latency_ over _maximum_throughput_; it moves some of the allocation cost to the mutator to reduce the cost of cleanup later.
-
 The Go GC is designed for low latency servers and interactive applications.
+
+The Go GC favors _lower_latency_ over _maximum_throughput_; it moves some of the allocation cost to the mutator to reduce the cost of cleanup later.
 
 As a garbage collected language, the performance of Go programs is often determined by their interaction with the garbage collector.
 
@@ -335,7 +332,7 @@ DEMO: Show `godoc` with `GODEBUG=gctrace=1` enabled
 
 * Garbage collector monitoring (cont.)
 
-Using `GODEBUG=gctrace=1` is good when you _know_ there is a problem, but for general telemetry on your Go application I recommend the `net/http/pprof` interface.
+Using `GODEBUG=gctrace=1` is good when you _know_ there is a problem, but for general telemetry I recommend the `net/http/pprof` interface.
 
     import _ "net/http/pprof"
 
@@ -380,8 +377,6 @@ The first Read method takes no arguments and returns some data as a `[]byte`. Th
 
 The first Read method will _always_ allocate a buffer, putting pressure on the GC. The second fills the buffer it was given.
 
-TODO FIND EXAMPLES IN THE STDLIB
-
 * strings and []bytes
 
 Most programs prefer to work `string`, but most IO is done with `[]byte`.
@@ -408,10 +403,6 @@ This will avoid the conversion of the byte slice to a string for the map lookup.
      key := string(bytes)
      val, ok := m[key] 
 
-# * -benchallocs and reportallocs
-#
-# TODO show benchmarking of allocations.
-
 * Use bytes.Buffer to build strings
 
 Go strings are immutable. Concatenating two strings generates a third.
@@ -437,34 +428,15 @@ This might look like more work for the CPU, but this is work _local_ to one spec
 
 Append is convenient, but wasteful.
 
-Slices grow by doubling up to 1024 elements, then by approximately 25% after that. What is the capacity of `b` after we append one more item to it?
+What is the capacity of `b` after we append one more item to it?
 
 .play writing-high-performance-go/grow.go /START OMIT/,/END OMIT/
+
+Slices grow by doubling up to 1024 elements, then by approximately 25% after that. What is the capacity of `b` after we append one more item to it?
 
 If you use the append pattern you could be copying a lot of data and creating a lot of garbage.
 
 If know know the length of the slice beforehand, then pre-allocate the target to avoid copying and to make sure the target is exactly the right size. 
-
-* Preallocate slices if the length is known (cont.)
-
-_Before:_
-
-     var s []string
-     for _, v := range fn() {
-            s = append(s, v)
-     }
-     return s
-
-_After:_
-
-     vals := fn()
-     s := make([]string, len(vals))
-     for i, v := range vals {
-            s[i] = v           
-     }
-     return s
-
-TODO FIND A BETTER EXAMPLE
 
 * Concurrency
 
@@ -472,11 +444,11 @@ TODO FIND A BETTER EXAMPLE
 
 Go's signature feature is its lightweight concurrency model.
 
-Gorountines are so easy to use, and so cheap to create, you could think of them as _almost_ free. 
+Goroutines are so cheap to create, and so easy to use, you could think of them as _almost_ free. 
 
 The Go runtime has been written for programs with tens of thousands of goroutines as the norm, hundreds of thousands are not unexpected.
 
-While cheap, these features are not free, and their overuse often leads to unexpected performance problems.
+While cheap, these features are not free, and overuse often leads to unexpected performance problems.
 
 This final section concludes with a set of do's and don't's for efficient use of Go's concurrency primitives.
 
@@ -537,6 +509,20 @@ Your disk subsystem does not expect to be able to handle hundreds or thousands o
 You need to limit the amount of blocking IO you issue. Use a pool of worker goroutines, or a buffered channel as a semaphore.
 
 # .code writing-high-performance-go/semaphore.go /START OMIT/,/END OMIT/
+
+* Watch out for IO multipliers in your application
+
+Most server programs take a request, do some processing, then return a result.
+
+This sounds simple, but depending on the result it can let the client consume a large (possibly unbounded) amount of resources on your server.
+
+How many IO events does a single client request generate?
+
+It might be on average 1, or possibly less than one if many requests are served out of a cache.
+
+The amount of reads required to service a query; is it fixed, N+1, or linear (reading the whole table to generate the last page of results).
+
+If memory is slow, relatively speaking, then IO is so slow that you should avoid doing it at all costs. Most importantly avoid doing IO in the context of a request—don't make the user wait for your disk subsystem to write to disk, or even read.
 
 * Minimise CGO
 

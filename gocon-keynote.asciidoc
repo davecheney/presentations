@@ -532,22 +532,22 @@ So, I will do my best to untagle it, and explain each of the meanings as I see t
 
 === Communicate with data, not with signals
 
-The first, and most obvious meaning of the _Don't communicate_ proverb is rather than sending signs between goroutines, send the data itself.
+The first, and most obvious, meaning of the _Don't communicate_ proverb is rather than sending signals between goroutines, send the data itself.
 
-As an example, imagine if the postal system worked like this.
+As an example, imagine if the postal system worked like this:
+
 I wanted to send you a letter by mail.
 I would give the letter to the post office, who would then go to your house and leave a note in your letterbox telling you that there is a letter for you and you should come to collect it from your post office.
 
-This would be quite annoying, they already came to your house, but instead of leaving the letter, all they left was a message for you to come and get the letter. 
+This would be quite annoying, postmap already came to your house, but instead of leaving the letter, all they left was a message for you to come and get the letter. 
 
 So you go to the post office and show them the note that was left for you, but you have arrived to quickly, the letter is still in transit, so you have to come back later, which your letter is ready.
-
 
 Ironically this is how to the postal service in Australia works if I send you a letter that is larger than a certain size.
 
 This is the sort of using locks and shared memory.
 
-Rather than just send you the value, one goroutine told another that it was 
+Rather than just send you the value, one goroutine told another that 
 
 Talking about letters and post offices again, you can imagine how complicated this would be if I wanted to send everyone in my family a letter.
 Not only would each of my family have to take the note to their post office to receive their copy of the letter, but some will arrive to early, and others may accidentally be given several copies of the letter by mistake, so other family members, no matter how many times they ask, will never receive their copy of the letter.

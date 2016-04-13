@@ -342,6 +342,8 @@ fib_test.go:
 
 DEMO: `go`test`-bench=.`
 
+TODO: DISCUSS -benchallocs, DISCUSS b.ReportAllocs, b.Reset, ....
+
 * Comparing benchmarks
 
 Determining performance improvements when there are more than one benchmark in a package can be overwhelming.
