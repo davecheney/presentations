@@ -1,67 +1,36 @@
-= Go Proverbs
+= Errors are just values
 Dave Cheney <dave@cheney.net>
 v1.0, 24th April, 2016
 
 == Preface
 
 Before I begin my talk, I want to express my gratitude to Ueda-san and the organisers of GoCon for inviting me to speak today.
-Also, I want to acknowledge the generous sponsorshop of our hosts, Cyberi Agent, for providing the venue for today.
+Also, I want to acknowledge the generous sponsorshop of our hosts, Cyber Agent, for providing the venue for today.
 
 This is my third time visiting 東京 and the second time I have had to honor of speaking at GoCon.
-I was in China last week giving a technical talk about Go, but as I was given the privildge of being the first speaker today I wanted to prepare something special for you.
+I was in China last week giving a technical talk about Go, but as I was given the privilidge of being the first speaker today I wanted to prepare something special for you.
 If you are intersted, I'll post post my GopherChina talk online in a few days, so make sure you follow me on twitter for the link.
-
-== Introduction
-
-I want to start my talk today with a little background.
-
-It is so common for us as programmers for us to ask questions like,
-"What is the _right_ way to do something"?
-"When should I do X, and when should I do Y?"
-"When should I use and interface, when should I use a concrete type?"
-"When should I use a function and when should I use a method?"
-"What is the right way to handle errors?"
-
-Over the last few years I've been collecting notes on Go topics; things to speak about, ideas from talking with friends, online conversations, and so on.
-Originally I wanted to write them up as blog posts, but I quickly realised that I had so many topics that it would have become a huge undertaking. 
-Looking at my stack of notes I said to myself, "I think I can answer these questions, I'm going to write a book with the answers to these questions for Go programmers".
-I felt it must be possible.
-If Scott Meyers can write books about this kind of thing for C++ then Go, a much simpler language, should be easy -- right ?
-
-To make a long story short, after months of writing and thinking and talking to people, I realised that I had made a mistake.
-And that mistake was, there are no hard rules that I can give to explain how I think Go programs should best be written.
-
-In fact, the only rule I could come up with, after months of writing was, "It depends".
-"It depends" is something that as an engineer I say a lot, maybe you do as well.
-It's not that I'm being non comittal, or difficult, "it depends" is always a prelude to asking questions about how you would _use_ the thing that you have asked me to build.
-
-And this is the _essence_ of design.
-Design is about creating a solution that works within the constraints of the environment which it will be used.footnote:[http://www.infoq.com/presentations/Design-Composition-Performance]
-
-In the end what I realised is that the reader of this book is not looking for rules or patterns, but advice and experience.
-
-// https://en.m.wikipedia.org/wiki/Japanese_proverbs
 
 == ことわざ (kotowaza; proverb)
 
+[quote]
 井の中の蛙大海を知らず (i no naka no kawazu taikai o shirazu)
 
 Loosely translated into english, this proverb reads
 
 [quote]
-A frog in a well does not know the great ocean
+A frog in a well does not know the great ocean.
+
+The parable of the Frog in the well is told in many cultures. 
+In Mao's China, apparently the frog was a tyrant of the well.
+In California, the frog parable is commonly known as the Blub Paradox.footnote:[http://www.paulgraham.com/avg.html]
 
 What is the moral of story of the frog in the well?
 What does it teach us ?
-
 If you are the frog in the well you may think you know it all, you know your small surrondings intimately, there are few who understand what it is to live in this well like you do.
 But, the world outside your well is vast in comparison, and your knowledge very limited.
 
 // https://en.wikibooks.org/wiki/Chinese_Stories/The_frog_of_the_well
-
-The parable of the Frog in the well is told in many countries, and many cultures. 
-In Mao's China, the frog was a tyrant of the well.
-In California they frog parable is referred to as the Blub Paradox. 
 
 What are they all telling us; don't stop learning. Question your environment, question your assumptions, don't assume your right just because nobody has yet convinced you that you are wrong. 
 
@@ -77,7 +46,7 @@ To understand a proverb, you have to understand its meaning.
 
 Last year Rob Pike gave a talked entitled "Go Proverbs",footnote:[https://go-proverbs.github.io/] inspired by the english translation of this famous book by Segoe Kensaku.footnote:[http://senseis.xmp.net/?SegoeKensaku]
 
-In his talk, Sensei Pike asked, "Are there Go proverbs?", and answer is yes, there are Go proverbs, you may recognise some of them.
+In his talk, Sensei Pike asked, "Are there Go proverbs?", and answer is yes, there are indeed Go proverbs, you may recognise some of them.
 
 .Go proverbs
 * Don't communicate by sharing memory, share memory by communicating.
@@ -100,223 +69,41 @@ In his talk, Sensei Pike asked, "Are there Go proverbs?", and answer is yes, the
 * Documentation is for users.
 * Don't panic.
 
-Saying "errors are just values" to someone who is still a student of Go is not useful.
-You need to understand the underlying message of he proverb to appreciate it.
-
-But just like the parable about the frog, to understand these proverbs, you must understand the meaning they try to teach.
+Just like the story of the frog, to understand these proverbs, you must understand the lesson they try to teach.
 
 My goal today is not to repeat Sensei Pike's words, I cannot do them justice.
-Instead I want to talk about some aspects of the design of Go programs that are important to me and, where possible, relate these ideas to a Go proverb as I understand them.
+Instead I want to talk about just one aspect of Go's design, and relate these ideas to a Go proverb as I understand them.
 
-== Documentation is for users
-
-Have you ever had to write a manual for a program, or for someone else using your library?
-How long did it take before that document was out of date, because you'd changed something, or added a new feature, or the product made it to version 2.0 and you wrote a new user interface. 
-I'm sure we've all experienced this, and have read documentation from other products that were similarly out of date.
-
-[quote, C. A. R. Hoare]footnote:[http://i.stanford.edu/pub/cstr/reports/cs/tr/73/403/CS-TR-73-403.pdf]
-The readability of programs is immeasurably more important their writeability.
-
-The source code is meant to be read, it will be read many more times than it is written.
-
-Who are the users of your code - everyone, you contributors, your libraries users, you API's users, your coworkers, even yourself. 
-Documentation is more than the set of instructions that comes with your product. 
-Documentation flows through everything, everything you write and how you write it should be descriptive and ideally self describing.
-
-The accuracy and correctness of documentation decreases in inverse proportion to its distance from the thing it describes.
-Rob Pike is a great fan of documentation, you can see his influence in the language.
-As such, by tradition, go programs are documented in the source.
-
-=== Comments
-
-[quote, Dave Thomas and Andrew Hunt, The pragmatic programmer]
-Good code has lots of comments, bad code _requires_ lots of comments.
-
-Good documentation starts with good comments.
-Comments are very important to the readability of a Go program.
-Comments are crucial to helping a unfamilar reader understand the operation of the code they are reading.
-Comments, through convention are also the method for documenting the public API of a package.
-So they aren't just for people working on the source of a package, but everyone downstream who must consume it.
-
-A commment should do one of three things.
-
-* They should explain _what_ the thing does.
-* They should explain _how_ the thing does what it does.
-* They should explain _why_ the thing is why it is.
-
-The first form is ideal for commentary on public symbols: +F+ does +Y+ and returns +Z+, +const Q+ controls the operation of +C+.
-
-The second form is ideal for commentary inside a method.
-
-The third form is unique as it must not displace the other two, but at the same time is netiher appropriate as a replacement for the what, or the how, but instead should be appended to one or btoh of these, to explain, after reading the commend and comprehening the code, which the approach does not appear to be logical.
-
-The _why_ style of commentary exists to explain the external factors that drove the code you read on the page.
-Frequently those factors rarely make sense taken out of context, the comment exists to provide that context.
-
-==== Good code needs fewer comments
-
-The accuracy of documentation is inversely proportional to its distance from the thing that it describes, and this is no more true than with source code comments.
-Similar to other languages, Go code is traditionally documented with comments in the source code itself.
-As you would expect, this system, more a convention, is reduced to its most fundamental.
-If code is well factored, has godoc style comments at the package, file and symbol level, the need for additional commentary within the file may be reduced.
-Consider large functions or methods with large comment blocks a code smell, a sign that the procedure should be split apart, or rewritten.
-
-.Don't comment bad code, rewrite it
-
-Comments highlighting the grossness of a particular piece of code are not sufficient.
-If you encounter one of these comments, you should raise an issue as a reminder to refactor it later.
-It is ok to live with technical debt, as long as the amount of debt is known.
-
-The tradition in the standard library is to annotate a todo style comment with the username of the person who noticed it.
-
-   // TODO(dfc) this is O(N^2), find a faster way to do this
-
-The username is not a promise that that person has comitted to fixing the issue, but they may be the best person to ask when the time comes to address it.
-
-
-But it isn't simply enough to comment everything by rote.
-Comments, like many things, are best used in moderation.
-They should help the reader understand the context of a piece of code, not simply reiterate what the reader has just read.
-
-commenting on code
-
-comments on a method or function should describe the purpose of the function and potentially the arguments, the comment should be updated when the argumenst change, or the purpiose of the function changes, win whch case so will its name, both of which directly follow the comment.
-
-comments inside a function or method should be diretly fllowed by the line or block they are associated with, again, when the block changes, the comments should be reviewed
-
-this is the comment associativity rule
-
-=== Comments on variables and constants should describe their contents
-// not their purpose
-[source,go]
-----
-const random = 6 // determined from an unbiased die
-----
-For variables without an initial value, the comment should describe the contents of the variable.
-[source,go]
-----
-// registry of SQL drivers
-var drivers = make(map[string]*sql.Driver)
-----
-
-=== Comments on functions and methods should describe their purpose
-////
-Comments should describe what a function does, not how it does it. Similarly they should describe the inputs and outputs of a function, but not be overly perscriptive of how those should be used.
-////
-
-A good rule of thumb, when documenting a function, is if you have to use the words _and_ or _or_ to describe what it does, or how it is used, that is a sign that the function is doing to much.
-A function should do one thing and one thing only.
-
-And this goes for other pieces of code that you want to document as well.
-
-A type should do one thing and one thing only.
-
-A variable should track the state of one thing, and one thing only.
-
-A constant should signify one thing and one thing only.
-
-// https://twitter.com/kytrinyx/status/667041939787661312
-=== Reserve inline comments for the parenthetical
-
-=== Block comments are associative
-////
-http://dave.cheney.net/2014/03/28/associative-commentary
-http://dave.cheney.net/2014/03/30/associative-commentary-follow-up
-
-=== Constants
-
-A comment on a constant should not describe what the constant represents now how it should be used. 
-
-=== Naming things
-
-[quote, Phil Karlton]
-There are only two hard things in Computer Science: cache invalidation and naming things.
-
-The names of identifiers in your program is critical.
-Well chosen names contribute to a program that is self documenting.
-Poorly chosen names contribute to a program that is harder to comprehend and modify.
-Although not defined by +go fmt+, the canonical Go style for naming things descends from its authors and can be roughly summarised as
-
-The length of an identifier should be proportional to the distance between where it is declared and where it is used.
-Names of variables, should receive what they represent, not how they represent it.
-
-=== Reduce repetition
-As we saw above, shorter names reduce cognitive load.
-Avoid stuttering
-    sync.Cond.L leads to
-
-    var x sync.Cond
-    x.L.Lock() vs
-
-    c.Lock.Lock() // stuttering
-
-A symbol's name includes the name of its package.
-metadata.Metadata vs backups.Metadata
-if there is only one type in your package, call it md5.Md5, and md5.New. However this style is quite unique and not the norm
-When the std lib was being developed new hashes are added, but they are really small packages, and you shouldn't use that approach for everything, no server.Server,
-hashs, md5, sha1 are things that stand on their own right, but this is a limited set, don't try to fit the descriptiont of your problem so you can fit this model. Ideally, if the set of hashes was fixed, the packages would be hash.NewMd5, hash.md5, etc
-Package http;/const get = "GET" doesn't add anything, the string isn't going to change, and now you need to look up the value of http.Get rather than it being declared in code. Think ruby :symbols
-
-A symbol's name, to its caller, includes the name of the symbols package.
-
-    var buf bytes.Buffer
-
-While there may be _many_ Buffer implementations, in the scope of this file's imports, there is unlikely to be multiple bytes packages. So the name is unambigious.
-
-=== Type names
-
-=== Function names
-
-=== Method names
-Functions should be commented to explain what they do, not how they do it.
-
-Methods describe _what_ to do, functions describe _how_ to do it.
-
-// in the context of interfaces, this is the differnce between _behaviour_, and _intent_
-
-
-=== Package names
-
-Each Go package is in effect it’s own small Go program.
-It should be able to do something useful by itself.
-You have access to all the symbols in this package, public and private, and can use the all the features of the language on all parts of this package.
-
-This is a profoundly different approach to modular software design to many contemporary languages; some which share the ideas of modules, but these are mixed up with notions of private, protected, friend, access rules.
-You can declare methods, only on types you declare in your package, not ones you’ve imported elsewhere even though those types are, by necessity, public.
-If you've split the functions of a package across several packages, meaning the package cannot
-
-Procedure names should reflect what they do; function names should reflect what they return.
-
-A package's name should describe the function of the package, not the contents.
-+http+ is a good package name, it describes that this package provides something to do with HTTP.
-`utils` is a not a good name because it does not describe what this package provides.
-Providing "utility" functions is of no value to the reader, especially if every package author were to follow this trend.
-
-A type should describe what it provides, not how it provides.
-And it should be placed into a file with a name that describes the purpose of if not contents of the file, not simply a manifest. 
-So, avoid one type per file, because the name of the file ismply repeates the name of it's contents, that adds nothing, and overall detracts from the readability of your code. 
-
-=== Examples
-
-Talk about example packages.
-Good practice is to document each public symbol; method, function, constant, and type.
-What if this practice was extended to document how to use the public types with examples.
-Go gives us a great way to do this, with the testing helper, and integration into `godoc`.
-
-If you can do all these things, you will create source code that is easy for you to work on, easy for your users to use, and beutiful on the page.
-
-In closing, if you cannot document it, do you understand it?
-
-== Error handling 
+== Errors are just values
 
 [quote, Ancient Canadian proverb]
 Errors are just values.
 
 This statement is almost universal in the Go programmer's phrase book, but what do Go programmers mean when they say "errors are just values"?
 
-Firstly, we say "errors are just values", but what we actually mean is, "any value that implements the `error` interface can be an error".
+Saying "errors are just values" to someone who is a student of Go is not useful.
+The student must understand the underlying message of the proverb to appreciate it.
+
+When we say "errors are just values", we actually mean, "any value that implements the `error` interface is an error".
+This is a good place to start the story of errors.
+
+Any type can be an error, it doesn't need to be a structure.
+
+- exploding error
+
+- constant error
+
+- moby error
+
+You 
 
 - Moby Error returns the contents of Moby Dick
+
+You can do anything with an error value that you could with any other value in Go.
+
+- put them slices
+- send them on a channel
+- 
 
 By way of explanation, consider the counter example of panic and recover, often mistaken for exceptions.
 
@@ -340,19 +127,29 @@ I really wanted there to be a single way to do error handling, something that we
 By the same token, error handling is not an unlimited spectrum of possibility.
 Error handling techniques can be roughly classified into the three core strategies, which I will illustrate.
 
+== Programming with errors
+
 // diagram, heirarchy of error handling.
 
 As the diagram, and this post will hopefully show, each error handling strategy involves a set of tradeoffs that you, the author, must manage.
 
-=== Sentinel values
+=== Sentinel errors
 
-The first category of error handling is using sentinel values like io.EOF, or go/build.NoGoError. Low level errors like the syscall.Errno type also fall into this category.
+The first category of errors are what I call _sentinel errors_.
+The name decends from the practice in computer programming of using a specific value to signify that no further processing is possible.footnote:[https://en.wikipedia.org/wiki/Sentinel_value]
+Some examples of this pattern from other languages are the C convention of returning `-1` on error.
+For many languages, returning `null` when no more data is available is a common, by fraught, practice.
+
+And so to with Go, we use specific values to signify an error.
+Examples include values like `io.EOF`, or **TODO NEED EXAMPLE**.
+Low level errors like the `syscall.Errno` type also fall into this category.
+There are even sentinel errors that signify that an error _did not_ occur, like `go/build.NoGoError` and `path/filepath.SkipDir`.
 
 Sentinel errors behave like constants.
 In fact, when using them, you program with them exactly the same as constants.
 For example, consider this piece of C code
 
-[code]
+[source]
 ----
 int n;
 n = read(fd, buf);
@@ -363,7 +160,7 @@ if (n == -1) {
 
 And compare it to some Go code that uses the `io.EOF` sentinel value.
 
-[code]
+[source]
 ----
 n, err := r.Read(buf)
 buf = buf[:n]
@@ -376,12 +173,20 @@ Using sentinel values is the least flexible of error handling strategy as client
 Sentinel values present a problem when you want to provide more context as they must not be annotated or wrapped by other error types.
 You cannot wrap a sentinel value with extra context, even a simple
 
-[code]
+[source]
 ----
 return fmt.Errorf("unexpected error: %v", err)
 ----
 
 will defeat the caller's equality test.
+The caller will be forced to looking at the output of the error's `Error` method to see if it matches a specific string.
+
+****
+As an aside, you should _never_ do this. The `Error` method on the `error` interface exists for humans, not code.
+The contents of that string belong in a log file, or printed out on screen.
+They should not be used for controlling the logic in your program.
+Yes, I know that sometimes this isn't possilbe, but today we're talking about proverbs and lessons.
+****
 
 Sentinel error values create a source code dependency between two packages, rather than a run time dependency via interfaces—to test if an error is equal to `io.EOF` your code must import the `io` package.
 
@@ -449,20 +254,24 @@ Convert sentinal errors to opaque errors as soon as possible to minimise the wei
 
 === Don't just check errors, handle them
 
-[code]
+
+[source]
 ----
 err := doSomething()
 if err != nil {
     return err
 }
 return nil
----
+----
 
 What's wrong with this, very common, piece of Go code?
 
-Firstly, it's too verbose. If `err` is not nil, then we return the error, but if `err` is nil, then we don't need to explicitly `return nil`. We can just return `err`, because we _know_ that it is nil. So this whole stanza can be rewritten to be clearer.
+Firstly, it's too verbose.
+If `err` is not nil, then we return the error, but if `err` is nil, then we don't need to explicitly `return nil`.
+We can just return `err`, because we _know_ that it is nil.
+So this whole stanza can be rewritten to be clearer.
 
-[code]
+[source]
 ----
 return doSomething()
 ----
@@ -487,6 +296,10 @@ But making more than one decision in response to an error is also a bad thing.
 I recommend that you should, either, annotate the error and return it to the caller, or, log the error.
 In logging the error you have handled it, there is no reason to handle the error twice.
 If after you've logged the error, your program cannot continue, then logging the error was the wrong choice.
+
+- error wrappers
+
+
 
 === Annotating errors
 
@@ -515,96 +328,6 @@ If the performance of your error path is a limiting factor, you need to redesign
 
 Does this add boilerplate, yes. But how else do you expect to get these features? Importantly, error handling is composable, you can opt in at every level
 Readable, correct, performant, in that order 
-
-== Don't communicate by sharing memory, share memory by communicating.
-
-[quote, Rob Pike, November 2009]
-Don't communicate by sharing memory, share memory by communicating.
-
-Don't communiate by sharing memory, share memory by communicating is probably the first piece of Go programming advice that anyone every heard.
-It was first metion in 2009 at the announcement of Go, and first written in a blog post in July 2010.footnote:[https://blog.golang.org/share-memory-by-communicating]
-
-I have been studying Go for 6 years now and I must tell you that despite this being the first Go proverb I learnt, it was the one that took me the longest to understand -- and even now I am not entirely sure that I truly understand its meaning.
-
-Part of this difficulty I believe is that this proverb has mutliple meanings, it provides many lessons, hence the confusion.
-
-So, I will do my best to untagle it, and explain each of the meanings as I see them
-
-=== Communicate with data, not with signals
-
-The first, and most obvious, meaning of the _Don't communicate_ proverb is rather than sending signals between goroutines, send the data itself.
-
-As an example, imagine if the postal system worked like this:
-
-I wanted to send you a letter by mail.
-I would give the letter to the post office, who would then go to your house and leave a note in your letterbox telling you that there is a letter for you and you should come to collect it from your post office.
-
-This would be quite annoying, postmap already came to your house, but instead of leaving the letter, all they left was a message for you to come and get the letter. 
-
-So you go to the post office and show them the note that was left for you, but you have arrived to quickly, the letter is still in transit, so you have to come back later, which your letter is ready.
-
-Ironically this is how to the postal service in Australia works if I send you a letter that is larger than a certain size.
-
-This is the sort of using locks and shared memory.
-
-Rather than just send you the value, one goroutine told another that 
-
-Talking about letters and post offices again, you can imagine how complicated this would be if I wanted to send everyone in my family a letter.
-Not only would each of my family have to take the note to their post office to receive their copy of the letter, but some will arrive to early, and others may accidentally be given several copies of the letter by mistake, so other family members, no matter how many times they ask, will never receive their copy of the letter.
-
-Back in the land of Go, this story is simpler.
-We can solve all the problems with locks and polling with channels.
-When a receive operation completes you don't just have the notification that a message is available, you have the actual data.
-
-So this is one of the lessons of the _Don't Communicate_ proverb.
-Using channels to communicate between goroutines is much simpler, much easier to understand and reason about, than using locks, and shared memory.
-
-== Ownership
-
-But there are also other lessons that the _Don't Communicate_ proverb teaches us, and that is a lesson about ownership, specifically the ownership of data.
-
-Why is ownership important?
-After all, people have been programming for decades in C, Java, Python, Ruby without giving much thought to ownership.
-Why do we need to start talking about ownership now?
-
-It turns out that ownership has _always_ been important, but for a long time it was hidden by the semantics of the langauges we used, and the environments they ran in.
-Languages like Ruby, Python, and Perl, don't permit parallism.
-Although languages like Java presciently made threading a first class citizen, when those languages were being developed, two decades ago, the hardware that Java programs we deployed on was not capable of much parallelism.
-
-Today, things have changed, the simple world of single threaded programs and single cpu machines is long gone.
-Instead, programmers must expolit the parallism present in todays hardware, and that means to avoid data races, we must be thinking about ownership constantly.
-
-Another aspect of ownership is safety.
-The world has no appetite for programming languages that are not memory safe.
-This leaves us with two options, garbage collected languages like Go, or a borrowing system like Rust.
-
-Let's be clear, no modern language will let programmers manage their own memory. Some, like rust make it a compile time error to be less that precise with a memory refeerce, othrss like Go, will silently move ESCAP BG allocation s to a garbage collected heap, which turn a potential correctness problem, into a potential performance problem. Note I said potential, I am not asserting that all manual memory usage is unsafe, any more than I am.saying garbage collected n introduces performance problems. 
-
-Many modern laguages address the issue of memroy safety. 
-
-manual memory management too risky
-left with two options, gc and borrowing
-borrowing is all or nothing
-gc, always correct, sometimes less performant
-arguments of getting the program running before making it correct hack back to the ideas of dynamic languages which argued for the flexibility of dynamic typing to be able to test parts of the program in abstract.
-skilled usage of a powerful feature does not make it safe for the general.community. the requirements of c to use raw pointers and dubiously stack automatic memory as part of the programmers day to day toolkit have not been seen in a modern language since the arrival of Java in the 90's
-D is the standout exception
-So, if the conclusion that manual memory management is not a viable solution for general purpose what compromise does that leave programmers.
-
-So, ownership as it relates to communication is talking about sending a refernce over a channel.
-Just like sending a letter in the post, once you put it in the post box, you don't have the letter any more.
-Some time in the future, it will pop throuh the letter box of the recipient.
-
-Now, obviously you could keep a copy of the poitner to the item, once you pass it to the channel, the language will not prevent this.
-But, assuming you don't do this, then you don't need to worry about the lifetime of the object, or the channel, or anyone who reads from the channel, and all the other complicated things that force themselves to the front when programming in rust.
-
-
-I happen to think that there is no one solution to this problem. Memory safety is a constraint that can no longer be optional for langauge designers, but that does not imply they have no leighway in 
-
-Memoy safety is one of many constraints that language designed integrate into their designs. I happen to think that it's no longer an optional constraint, given the world we live in and the importance of software in that world.
-
-I happen to think that Go's approach is sound and a valid solution.
-A solution which is in tune with the development of modern silicon. Multicore CPUs are here to stay, in fact, unless you're designing an embdeed solution, it is increasingly hard not to buy a CPU that exhibits some form of hardware parallism. 
 
 == Conclusion
 
@@ -637,3 +360,71 @@ And I like this word, because if there is a word which I think perfectly describ
 A functional design, a restrained design, a simple design.
 
 Thank you.
+
+== Introduction
+
+I want to start my talk today with a little background.
+
+Over the last few years I've been collecting notes on Go topics; things to speak about, ideas from talking with friends, online conversations, and so on.
+Originally I wanted to write them up as blog posts, but I quickly realised that I had so many topics that it would have become a huge undertaking. 
+Looking at my stack of notes I said to myself, "I think I can answer these questions, I'm going to write a book with the answers to these questions for Go programmers".
+I felt it must be possible.
+If Scott Meyers can write books about this kind of thing for C++ then Go, a much simpler language, should be easy -- right ?
+
+To make a long story short, after months of writing and thinking and talking to people, I realised that I had made a mistake.
+And that mistake was, there are no hard rules that I can give to explain how I think Go programs should best be written.
+
+In fact, the only rule I could come up with, after months of writing was, "It depends".
+"It depends" is something that as an engineer I say a lot, maybe you do as well.
+It's not that I'm being non comittal, or difficult, "it depends" is always a prelude to asking questions about how you would _use_ the thing that you have asked me to build.
+
+And this is the _essence_ of design.
+Design is about creating a solution that works within the constraints of the environment which it will be used.footnote:[http://www.infoq.com/presentations/Design-Composition-Performance]
+
+In the end what I realised is that the reader of this book is not looking for rules or patterns, but advice and experience.
+
+// https://en.m.wikipedia.org/wiki/Japanese_proverbs
+
+== Inspecting errors
+
+The common contract for functions which return a value of the interface type error, is the caller should not presume anything about the state of the other values returned from that call without first checking the error.
+
+In the majority of cases, error values returned from functions should be opaque to the caller. That is to say, a test that error is nil indicates if the call succeeded or failed, and that’s all there is to it.
+
+A small number of cases, generally revolving around interactions with the world outside your process, like network activity, require that the caller investigate the nature of the error to decide if it is reasonable to retry the operation.
+
+A common request for package authors is to return errors of a known public type, so the caller can type assert and inspect them. I believe this practice leads to a number of undesirable outcomes:
+
+Public error types increase the surface area of the package’s API.
+New implementations must only return types specified in the interface’s declaration, even if they are a poor fit.
+The error type cannot be changed or deprecated after introduction without breaking compatibility, making for a brittle API.
+Callers should feel no more comfortable asserting an error is a particular type than they would be asserting the string returned from Error() matches a particular pattern.
+
+Instead I present a suggestion that permits package authors and consumers to communicate about their intention, without having to overly couple their implementation to the caller.
+
+Assert errors for behaviour, not type
+
+Don’t assert an error value is a specific type, but rather assert that the value implements a particular behaviour.
+
+This suggestion fits the has a nature of Go’s implicit interfaces, rather than the is a [subtype of] nature of inheritance based languages. Consider this example:
+
+func isTimeout(err error) bool {
+        type timeout interface {
+                Timeout() bool
+        }
+        te, ok := err.(timeout)
+        return ok && te.Timeout()
+}
+The caller can use isTimeout() to determine if the error is related to a timeout, via its implementation of the timeout interface, and then confirm if the error was timeout related — all without knowing anything about the type, or the original source of the error value.
+
+Gift wrapping errors, usually by libraries that annotate the error path, is enabled by this method; providing that the wrapped error types also implement the interfaces of the error they wrap.
+
+This may seem like an insoluble problem, but in practice there are relatively few interface methods that are in common use, so Timeout() bool and Temporary() bool would cover a large set of the use cases.
+
+In conclusion
+
+Don’t assert errors for type, assert for behaviour.
+
+For package authors, if your package generates errors of a temporary nature, ensure you return error types that implement the respective interface methods. If you wrap error values on the way out, ensure that your wrappers respect the interface(s) that the underlying error value implemented.
+
+For package users, if you need to inspect an error, use interfaces to assert the behaviour you expect, not the error’s type. Don’t ask package authors for public error types; ask that they make their types conform to common interfaces by supplying Timeout() or Temporary() methods as appropriate.
