@@ -17,13 +17,9 @@ Thank you also to the GopherChina organisers for inviting me to speak.
 
 My name is David. I'm a Go programmer from Sydney, Australia.
 
-I work for Canonical, where I've been writing software in Go for the last four years.
-
-I'm also a contributor to the Go project and I run the Sydney Go Users' group.
+I'm a contributor to the Go project and I run the Sydney Go Users' group.
 
 * Questions
-
-I have a lot of material to cover, so I ask that you hold your questions til the end.
 
 This presentation will be available after the talk. It contains lots of examples and links to other material.
 
@@ -234,8 +230,6 @@ DEMO: Improve `Fib`
 
 	% go test -bench=. -count=5 > new.txt
 	% benchstat old.txt new.txt                                                             
-	name   old time/op  new time/op  delta
-	Fib-4   378ns ± 0%   237ns ± 0%  -37.30%  (p=0.000 n=14+16)
 
 DEMO: `benchstat`{old,new}.txt`
 

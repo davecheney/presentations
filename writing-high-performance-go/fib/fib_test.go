@@ -5,7 +5,7 @@ import "testing"
 
 func BenchmarkFib(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		Fib(10) // run the Fib function b.N times
+		Fib(20) // run the Fib function b.N times
 	}
 }
 
@@ -14,23 +14,20 @@ func BenchmarkFib(b *testing.B) {
 // STARTFIB OMIT
 // Fib computes the n'th number in the Fibonacci series.
 func Fib(n int) int {
-	switch n {
-	case 0:
-		return 0
-	case 1:
-		return 1
-	default:
-		return Fib(n-1) + Fib(n-2)
+	if n < 2 {
+		return n
 	}
+	return Fib(n-1) + Fib(n-2)
 }
 
 // ENDFIB OMIT
 
 func Fib2(n int) int {
-	if n > 1 {
-		return Fib(n-1) + Fib(n-2)
+	a, b := 0, 1
+	for i := 0; i < n; i++ {
+		a, b = b, a+b
 	}
-	return n
+	return a
 }
 
 func TestFib(t *testing.T) {
@@ -53,8 +50,18 @@ func TestFib2(t *testing.T) {
 	}
 }
 
+func TestFibFib(t *testing.T) {
+	for n := 0; n < 30; n++ {
+		want := Fib(n)
+		got := Fib2(n)
+		if want != got {
+			t.Errorf("Fib2(%d): want %d, got %d", n, want, got)
+		}
+	}
+}
+
 func _BenchmarkFib2(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		Fib2(10)
+		Fib2(20)
 	}
 }
