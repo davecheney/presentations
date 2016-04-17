@@ -392,11 +392,11 @@ This will avoid the conversion of the byte slice to a string for the map lookup.
      key := string(bytes)
      val, ok := m[key] 
 
-* Use bytes.Buffer to build strings
+* Avoid string concatenation
 
 Go strings are immutable. Concatenating two strings generates a third.
 
-Avoid string concatenation, prefer instead writing to a temporary `bytes.Buffer`.
+Avoid string concatenation, preallocate a `[]byte` buffer.
 
 _Before:_
 
@@ -407,11 +407,15 @@ _Before:_
 
 _After:_
 
-    var b bytes.Buffer
-    fmt.Fprintf(&b, "%s %v %v", request.ID, client.Address(), time.Now())
-    return b.String()
+    b := make(b, 0, 40) // guess
+    b = append(b, request.ID...)
+    b = append(b, ' ')
+    b = append(b, addr.String()...)
+    b = append(b, ' ')
+    b = time.Now().AppendFormat(b, "2006-01-02 15:04:05.999999999 -0700 MST")
+    return string(b)
 
-This might look like more work for the CPU, but this is work _local_ to one specific goroutine. Generating garbage slows the whole program.
+DEMO: `go`test`-bench=.`./concat`
 
 * Preallocate slices if the length is known
 
