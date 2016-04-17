@@ -19,32 +19,30 @@ My name is David. I'm a Go programmer from Sydney, Australia.
 
 I'm a contributor to the Go project and I run the Sydney Go Users' group.
 
-* Questions
-
-This presentation will be available after the talk. It contains lots of examples and links to other material.
-
-I'm going to be around for the entire conference, please come and ask me your questions after the talk.
-
 * Agenda
 
 This talk is aimed at development teams who are building production Go applications intended for high scale deployment.
 
-Today I am going to cover four main areas:
+This presentation will be available after the talk. It contains lots of examples and links to other material.
+
+Today I am going to cover four areas:
 
 - Performance measurement and profiling
 - Benchmarking
 - Memory management and GC tuning
 - Concurrency
 
+I'm going to be here for the entire conference, please come and ask me your questions after the talk.
+
 * Performance measurement and profiling
  
 * Performance measurement and profiling
 
-There is a common saying in Australia.
+There is a old Australian proverb.
 
 _"Measure_twice,_cut_once"_
 
-Before you can begin to tune your application, you must first know how to tell if your changes are making things better, or worse.
+Before you can begin to tune your application, you need to know if your changes are making things better, or worse.
 
 You must establish a reliable baseline to measure the impact of your change.
 
@@ -74,7 +72,7 @@ pprof profiling is built into the Go runtime.
 We're going to discuss CPU and Memory profiling today.
 
 .link https://golang.org/pkg/runtime/pprof Further reading: runtime/pprof
-.link https://github.com/gperftools/gperftools Further reader: Google Perf Tools
+.link https://github.com/gperftools/gperftools Further reading: Google Perf Tools
 
 * CPU profiling
 
@@ -82,7 +80,7 @@ CPU profiling is the most common type of profile.
 
 When CPU profiling is enabled, the runtime will interrupt itself every 10ms and record the stack trace of the currently running goroutines.
 
-Once the profile is complete we can analyse it to determine the hottest code paths.
+Once the profile is saved to disk, we can analyse it to determine the hottest code paths.
 
 The more times a function appears in the profile, the more time that code path is taking as a percentage of the total runtime.
 
@@ -263,12 +261,11 @@ The `testing` package has built in support for generating CPU, memory, and block
 
 - `-cpuprofile=$FILE` writes a CPU profile to `$FILE`. 
 - `-memprofile=$FILE`, writes a memory profile to `$FILE`, `-memprofilerate=N` adjusts the profile rate to `1/N`.
-- `-blockprofile=$FILE`, writes a block profile to `$FILE`.
 
 Using any of these flags also preserves the binary.
 
-    % go test -run=XXX -bench=IndexByte -cpuprofile=c.p bytes
-    % go tool pprof bytes.test c.p
+    % go test -run=XXX -bench=IndexByte -cpuprofile=/tmp/c.p bytes
+    % go tool pprof bytes.test /tmp/c.p
 
 _Note:_ use `-run=XXX` to disable tests, you only want to profile benchmarks.
 
@@ -294,8 +291,6 @@ DEMO: Show profiling `cmd/godoc` with `pkg/profile`
 * Memory management and GC tuning
 
 Go is a garbage collected language. This is a design principal, it will not change.
-
-The Go GC is designed for low latency servers and interactive applications.
 
 The Go GC favors _lower_latency_ over _maximum_throughput_; it moves some of the allocation cost to the mutator to reduce the cost of cleanup later.
 
@@ -369,11 +364,11 @@ Consider these two Read methods
 
 The first Read method takes no arguments and returns some data as a `[]byte`. The second takes a `[]byte` buffer and returns the amount of bytes read.
 
-The first Read method will _always_ allocate a buffer, putting pressure on the GC. The second fills the buffer it was given.
+The first Read method will _always_ allocate a buffer, putting pressure on the GC. The second fills the buffer it was given, allowing the caller to reuse the buffer.
 
 * strings and []bytes
 
-Most programs prefer to work `string`, but most IO is done with `[]byte`.
+Most programs prefer to work with `string`, but most IO is done with `[]byte`.
 
 In Go `string` values are immutable, `[]byte` are mutable. Converting between the two generates garbage.
 
@@ -488,9 +483,9 @@ Never start an IO operating without knowing the maximum time it will take.
 
 You need to set a timeout on every network request you make with `SetDeadline`, `SetReadDeadline`, `SetWriteDeadline`.
 
-TODO ADD EXAMPLE CODE FOR READ AND WRITE
+.code writing-high-performance-go/readwrite.go /START OMIT/,/END OMIT/
 
-* Go uses efficient network polling for some requests
+* Go uses efficient polling, sometimes
 
 The Go runtime handles network IO using an operating system polling mechanism. Many waiting goroutines will be serviced by a single operating system thread.
 
@@ -510,13 +505,11 @@ Most server programs take a request, do some processing, then return a result.
 
 This sounds simple, but depending on the result it can let the client consume a large (possibly unbounded) amount of resources on your server.
 
-How many IO events does a single client request generate?
+How many IO events does a single client request generate? Is it fixed, N+1, or linear (reading the whole table to generate the last page of results).
 
-It might be on average 1, or possibly less than one if many requests are served out of a cache.
+If memory is slow, relatively speaking, then IO is so slow that you should avoid doing it at all costs.
 
-The amount of reads required to service a query; is it fixed, N+1, or linear (reading the whole table to generate the last page of results).
-
-If memory is slow, relatively speaking, then IO is so slow that you should avoid doing it at all costs. Most importantly avoid doing IO in the context of a request—don't make the user wait for your disk subsystem to write to disk, or even read.
+Most importantly avoid doing IO in the context of a request—don't make the user wait for your disk subsystem to write to disk.
 
 * Minimise CGO
 
