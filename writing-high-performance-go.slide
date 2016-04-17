@@ -396,7 +396,7 @@ This will avoid the conversion of the byte slice to a string for the map lookup.
 
 Go strings are immutable. Concatenating two strings generates a third.
 
-Avoid string concatenation, preallocate a `[]byte` buffer.
+Avoid string concatenation by appending into a `[]byte` buffer.
 
 _Before:_
 
