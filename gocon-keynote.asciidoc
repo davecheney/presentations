@@ -6,13 +6,13 @@ v1.0, 24th April, 2016
 
 Good morning! Thank you for coming to my talk.
 
-Before I begin my talk, I want to express my gratitude to Ueda-san and the organisers of GoCon for inviting me to speak today.
+Before I begin, I want to express my gratitude to Ueda-san and the organisers of GoCon for inviting me to speak today.
 I also want to acknowledge the generous sponsorshop of our hosts, Cyber Agent, for providing the venue for today.
 
 This is my third time visiting 東京 and the second time I have had to honor of speaking at GoCon.
 I was in China last week giving a technical talk about Go.
 If you are interested, you can find the link to my GopherChina presentation on my website, or you can follow me on twitter.
-But as I was given the priviledge of being the first speaker today I wanted to prepare something new for you.
+But as I was given the privilege of being the first speaker today I wanted to prepare something new for you.
 
 == ことわざ (kotowaza; proverb)
 
@@ -32,7 +32,7 @@ In California, the frog parable is commonly known as the Blub Paradox.footnote:[
 
 What is the story of the frog in the well trying to teach us ?
 If you are the frog sitting in your well, you may think you know all there is to know.
-You know your small surrondings intimately, yet you are also unaware of just how small your home is compared to the vast world outside, and how limited your knowledge is.
+You know your small surrondings intimately, yet you are also unaware of just how small your home is compared to the world outside, and how limited your knowledge is.
 
 The lesson is; question your environment, question your assumptions, don't assume you are right just because nobody has yet convinced you that you are wrong. 
 
@@ -80,33 +80,27 @@ Instead I want to talk about just one aspect of Go's design, and relate these id
 [quote, Go proverb]
 Errors are just values.
 
-This statement is universal in a Go programmer's phrase book, but what do Go programmers mean when they say "errors are just values"?
+This statement is universal to a Go programmer's phrase book, but what do Go programmers mean when they say "errors are just values"?
 
-When we say "errors are just values", we actually mean "any value that implements the `error` interface is an error".
-Saying "errors are just values" to someone who is a student of Go is not useful.
+When we say "errors are just values", we actually mean "any value that implements the `error` interface is an error", but saying "errors are just values" to someone who is just a student of Go is not useful.
 The student must understand the underlying message of the proverb to appreciate it.
 
-This is a good place to start the discussion on what it truly means to understand Go's error handling philosophy.
+This is a good place to start the discussion on what I think it means to understand Go's error handling philosophy.
 
 == Programming with errors
 
 Error handling is as important as the rest of your code.
 It's as important as checking the loop index for the exit condition, or checking the result of a shift operation for overflow, or testing the result of a multiplication is within the expected bounds, that's how fundamental error handling is to Go.
-And, just like shifting or comparisions or multiplication, error handling is a first class responsibility of all Go programmers.
-Because, you have to plan for failure.
+Just like shifting or comparisions or multiplication, error handling is a first class responsibility of all Go programmers, because you have to plan for failure.
 You have to always write your code with the assumption that sometimes the operation will fail.
-And this is especially important when working with a distrbuted system, because the percentage of failures that occur increase with the number of actors in the system.
+And this is especially important when working with a distrbuted system, because the percentage of failures that occur will increase dramatically.
 
 I've spent a long time thinking about the best way to handle errors in Go programs.
 I really wanted there to be a single way to do error handling, something that we could teach all Go programmers by rote, just as we teach mathematics, or the alphabet.
 But, probably unsurprisingly given the topic of this talk, I have concluded that there is no single way to handle errors.
 By the same token, error handling is not an unbounded spectrum of possibility.
 
-Error handling techniques can be roughly classified into the three core strategies, which I will illustrate.
-
-// diagram, heirarchy of error handling.
-
-As the diagram, and the remainder of this talk will hopefully show, each error handling strategy involves a set of tradeoffs that you, the author, must manage.
+I believe error handling techniques can be broadly classified into the three core strategies.
 
 === Sentinel errors
 
@@ -121,42 +115,37 @@ Low level errors like the `syscall.Errno` type also fall into this category.
 There are even sentinel errors that signify that an error _did not_ occur, like `go/build.NoGoError` and `path/filepath.SkipDir`.
 
 Sentinel errors behave like constants.
-In fact, when using them, you program with them exactly the same as constants.
+In fact, you program with them exactly the same as constants in other languages.
 For example, consider this piece of C code
 
-[source]
-----
-int n;
-n = read(fd, buf);
-if (n == -1) {
-     perror(...);
-}
-----
+	int n;
+	n = read(fd, buf, 100);
+	if (n == -1) {
+		perror("read failed");
+	}
 
-And compare it to some Go code that uses the `io.EOF` sentinel value.
+Now compare it to Go code that uses the `io.EOF` sentinel value.
 
-[source]
-----
-n, err := r.Read(buf)
-buf = buf[:n]
-if err == io.EOF {
-     // handle error
-}
-----
+	buf := make([]byte, 100)
+	n, err := r.Read(buf)
+	buf = buf[:n]
+	if err == io.EOF {
+		log.Fatal("read failed:", err)
+	}
 
-Using sentinel values is the least flexible error handling strategy as client code must compare the result to an expected value using the _equality operator_.
-Sentinel values present a problem when you want to provide more context as wrapping or annotating them with other error types would break equality.
+Using sentinel values is the least flexible error handling strategy as the caller must compare the result to an expected value using the _equality operator_.
+Sentinel values present a problem when you want to provide more context.
+Wrapping or annotating them with other error types will break equality.
 
 Even something as well meaning as this will defeat the caller's equality test.
-[source]
-----
-return fmt.Errorf("unexpected error: %v", err)
-----
+
+	return fmt.Errorf("unexpected error: %v", err)
 
 The caller will be forced to looking at the output of the error's `Error` method to see if it matches a specific string.
 
 ****
-As an aside, you should _never_ do this. The `Error` method on the `error` interface exists for humans, not code.
+As an aside, you should _never_ do this.
+The `Error` method on the `error` interface exists for humans, not code.
 The contents of that string belong in a log file, or displayed on screen.
 They should not be used for controlling the logic in your program.
 Yes, I know that sometimes this isn't possilbe, but today we're talking about proverbs and lessons.
@@ -165,15 +154,12 @@ Yes, I know that sometimes this isn't possilbe, but today we're talking about pr
 Sentinel error values create a source code dependency between two packages.
 To check if an error is equal to `io.EOF`, your code must import the `io` package.
 This specific example does not sound so bad, but imagine the tight coupling that exists when many packages in your project export various error values; you must import each of them to check for specific error conditions.
-Having worked in a large project that toyed briefly with this pattern, the spectre of bad design--an import loop--was never far from our minds.
-
-Sentinel values are often associated with helper functions that inspect them, themselves replete with complicated platform specific code to normalise cross platform differences.
-A good example is this is the `os.IsNotExist` helper which is intimately aware of the ways a sentinel error value can be wrapped or smuggled inside another error type.
+Having worked in a large project that toyed with this pattern, the spectre of bad design--an import loop--was never far from our minds.
 
 If your public function or method returns an error of a particular sentinel value, then the value must be documented, and of course the value's definition must be exported.
 This adds to the surface area of your API and counts against the package's complexity budget.
 
-If your code implements an interface who's signature defines a specific sentinel value, all implementors of that interface need to depend on the package in which that sentinel value is defined, again adding unintentional coupling between packages.
+If your code implements an interface who's contract requires a specific sentinel value, all implementors of that interface need to depend on the package that defines the sentinel value, again adding coupling.
 Perniciously, if the interface method is defined to return a specific error value, all implementations are thereby restricted to the vocabulary defined in the interface, even if they _could_ provide a more useful error.
 
 So, my advice to you is to avoid using sentinal error values.
@@ -181,8 +167,8 @@ Their limited uses within the standard library is not a pattern you should emula
 
 === Error types
 
-Error types are the second form of error handling I want to talk about.
-An error type is not simply the value of calling `errors.New` or `fmt.Errorf`, but a new type that implements the error interface.
+Error types are the second form of error handling I want to discuss.
+An error type is not simply the value of calling `errors.New` or `fmt.Errorf`, instead a new type that implements the error interface.
 
 	type MyError struct {
 		message string
@@ -194,7 +180,7 @@ An error type is not simply the value of calling `errors.New` or `fmt.Errorf`, b
 
 	return &MyError{"Something happened", "file.go", 200}
 
-Because an error is now implemented as a type, not a value, callers can use a type assertion to check, thereby converting the error value into a concrete type which contains more information.
+Because an error is now implemented as a type, not a value, callers can use a type assertion, thereby converting the error value into a concrete type which contains more information.
 
 	err := something()
 	switch err := err.(type) {
@@ -206,11 +192,11 @@ Because an error is now implemented as a type, not a value, callers can use a ty
 		// unknown error
 	}
 
-Returning an error of a particular type, rather than a specific value is more flexible.
+Returning an error of a particular type, rather than a specific value, is more flexible.
 You can extend the information returned to the caller by adding fields to the type over time without breaking the caller.
 
-And by far the most important improvement of error types over error values is their ability to wrap an underlying error in a new type to provide more context.
-An excellent example of this is the os.PathError type
+By far the most important improvement of error types over error values is their ability to wrap an underlying error in a new type to provide more context.
+An excellent example of this is the `os.PathError` type
 
 	type PathError struct {
 	    Op   string
@@ -223,55 +209,45 @@ An excellent example of this is the os.PathError type
 	func (e *PathError) Error() string
 
 However, error types must still be documented in the API, and the error types of your API must be public, so the caller can use a type assertion or type switch.
-Like error values error types increases the surface area of your package, and exibits the same design problems of coupling interface implementations to the source pacakge that defines error types.
+Like error values error types increases the surface area of your package, and exibits the same problems of coupling interface implementations to the source package that defines error types.
 
-New implementations must only return types specified in the interface’s declaration, even if they are a poor fit.
-The error type cannot be changed or deprecated after introduction without breaking compatibility, making for a brittle API.
+Like sentinel values, the error type's type cannot be changed or deprecated after introduction without breaking compatibility, making for a brittle API.
 
-Callers should feel no more comfortable asserting an error is a particular type than they would be asserting the string returned from Error() matches a particular pattern.
+Callers should feel no more comfortable asserting an error is a particular type than they would be asserting the string returned from `Error()` matches a particular pattern.
 
 === Opaque errors
 
 The most flexible error handling strategy, requiring the least coupling between code and caller, is to treat the error value from a function or method as opaque.
+
 As the caller, all you know about the result of the operation is that it worked, or it didn't.
-That is to say, a test that error is nil indicates if the call succeeded or failed, and that’s all there is to it.
+That is to say, a test that error is `nil` indicates if the call succeeded or failed, and that’s all you know.
 
 If you adopt this position, then error handling becomes significantly more useful as a debugging aid.
-For example, as your contract with the caller specifies no particular error type or value, you can now annotate errors with additional context.
+For example, if your contract with the caller specifies no particular error type or value, you can now annotate errors with additional context.
 
-Opaque errors enable _gift wrapping_, which is a general version of the previous error type's methodology--except in this case you do not know the type you are asserting to.
+Opaque errors enable _gift wrapping_, which is a generalisation of the error type pattern--except in this case you do not know the type you are asserting to.
 
-Show net.Error, vs defining your own type.
+=== Assert errors for behaviour, not type
 
-Error types can also host methods unlocking the more powerful technique of asserting an error to an interface, rather than with a type assertion.
-A counterexample to the previous os.PathError type, is the net.Error interface type, which defines behaviours that error values that types satisfying the other interfaces in the net package, like net.Listener and net.Conn.
+In a small number of cases, a binary approach to error handling is not sufficient.
+For example, interactions with the world outside your process, like network activity, require that the caller investigate the nature of the error to decide if it is reasonable to retry the operation.
+In this case rather than asserting the error is a specific type or value, assert that the error implements a particular behaviour.
 
-Errors are part of your package's public API, treat them with as much care as you would any other part of your public API.
-Choosing how errors are communicated is the responsibility of the package's author and your decision impacts the usability of your package. Choose wisely.
+This suggestion works well with the _has a_ nature of Go’s implicit interfaces, rather than the _is a [subtype of]_ nature of inheritance.
+Consider this example:
 
-- you shouldn't be using sentinal values
-- you shouldn't be making up your own sentinals 
-- you shouldn't use a sentinal in more than on place, because then you won't be able to track down where it came from 
-- so, if you shouldn't use sentinals, and you shouldn't use them more than once, then you're better off treating the error as opaque and using errors.New("exact problem") every time.
+	func isTimeout(err error) bool {
+		type timeout interface {
+			Timeout() bool
+		}
+		te, ok := err.(timeout)
+		return ok && te.Timeout()
+	}
 
-A small number of cases, generally revolving around interactions with the world outside your process, like network activity, require that the caller investigate the nature of the error to decide if it is reasonable to retry the operation.
-
-Don’t assert an error value is a specific type, but rather assert that the value implements a particular behaviour.
-
-This suggestion fits the has a nature of Go’s implicit interfaces, rather than the is a [subtype of] nature of inheritance based languages. Consider this example:
-
-func isTimeout(err error) bool {
-        type timeout interface {
-                Timeout() bool
-        }
-        te, ok := err.(timeout)
-        return ok && te.Timeout()
-}
-The caller can use isTimeout() to determine if the error is related to a timeout, via its implementation of the timeout interface, and then confirm if the error was timeout related — all without knowing anything about the type, or the original source of the error value.
-
-Gift wrapping errors, usually by libraries that annotate the error path, is enabled by this method; providing that the wrapped error types also implement the interfaces of the error they wrap.
-
-This may seem like an insoluble problem, but in practice there are relatively few interface methods that are in common use, so Timeout() bool and Temporary() bool would cover a large set of the use cases.
+The caller can use `isTimeout()` to determine if the error it received is related to a timeout.
+If the error does not implement the `timeout` interface; it does not have a `Timeout` method, then it is not a timeout error.
+If the error does implement `Timeout`, then error is a timeout error if `Timeout` returns true. 
+And all of this logic can be implemented without knowing anything about the type, or the original source of the error value.
 
 === Don't just check errors, handle them
 
@@ -280,24 +256,17 @@ Don't just check errors, handle them.
 
 What's wrong with this, very common, piece of Go code?
 
-[source]
-----
-err := doSomething()
-if err != nil {
-    return err
-}
-return nil
-----
+	err := doSomething()
+	if err != nil {
+		return err
+	}
+	return nil
 
 Firstly, it's too verbose.
-If `err` is not nil, then we return the error, but if `err` is nil, then we don't need to explicitly `return nil`.
-We can just return `err`, because we _know_ that it is nil.
-So this whole stanza can be rewritten to be clearer.
+If `err` is not nil, then we return the error, but if `err` is nil, then we don't need to explicitly `return nil`, we can just return `err`, because we _know_ that it is nil.
+So this whole stanza can be rewritten to be more readable.
 
-[source]
-----
-return doSomething()
-----
+	return doSomething()
 
 Ok, that was the easy stuff.
 Anyone should be able to spot this in code review.
@@ -309,20 +278,16 @@ There is no information of what file and line the error was generated, there is 
 
 Donovan and Kernighan's __The Go Programming Language__footnote:[http://www.gopl.io/] recommends that you add context to the error path like this
 
-[source]
-----
-err := something()
-if err != nil {
-	return fmt.Errorf("something failed: %v", err)
-}
-----
+	err := something()
+	if err != nil {
+		return fmt.Errorf("something failed: %v", err)
+	}
 
-But as we saw earlier, this pattern is incompatible with the use of sentinal error values, and type assertion.
-Using fmt.Errorf to convert the error value to a string, then merging it with another string, and converting the result to a type that implements the `error` interface destroys all the context of the original error.
+But as we saw earlier, this pattern is incompatible with the use of sentinal error values and type assertion.
+Using fmt.Errorf to convert the error value to a string, merging it with another string, then converting the result to a type that implements the `error` interface destroys all the context of the original error.
 
-Perhaps this is what you want.
-After all, I did argue that most callers should treat errors as opaque.
-But there will be some place in your code, possibly close to the `main()` function, that is responsible for extracting debugging information from the error.
+Perhaps this is what you want, after all, I did just argue that most callers should treat errors as opaque.
+But there will be some place in your code, possibly close to the `main()` function, that are responsible for extracting debugging information from the error.
 
 === Annotating errors
 
@@ -348,16 +313,45 @@ The code is online at github.com/pkg/errors footnote:[https://github.com/pkg/err
 	    returned. If the error is nil, nil will be returned without further
 	    investigation.
 
-And using these two methods, we can now annotate any error, and recover the underlying error.
+Using these two methods, we can now annotate any error, and recover the underlying error.
 
-TODO: show wrap, 
+Consider this example of a method that reads the content of a file into memory.
 
-TODO: show cause and type switch.
+	func ReadFile(path string) ([]byte, error) {
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("unable to open %q", path))
+		}
+		defer f.Close()
 
-Does this add boilerplate, yes. But how else do you expect to get these features? Importantly, error handling is composable, you can opt in at every level
+		buf, err := io.ReadFull(f)
+		if err != nil {
+			return nil, errors.Wrap(err, "io.ReadFull failed")
+		}
+		return buf, nil
+	}
 
-Performance, does this inspection and wrapping take time? Yes ? Does it matter ? No
-If the performance of your error path is a limiting factor, you need to redesign your application.
+`error` values returned from `ReadFile`, when printed, will contain the annotation information we added.
+
+Because we've now introduced the concept of wrapping errors with context, we need to talk about the reverse, unwrapping them.
+This is the domain of the `errors.Cause` method.
+
+	err := something()
+	wrapped := errors.Wrap(err, "unable to do something")
+	if err != errors.Cause(wrapped) {
+		panic("unwrapping did not return the same error")
+	}
+
+Our `errors.Cause` function has the following properties.
+
+In operation, whenever you want to check an error value for 
+
+	func isTimeout(err error) bool {
+		type timeout interface {
+			Timeout() bool
+		}
+		te, ok := errors.Cause(err).(timeout)
+		return ok && te.Timeout()
 
 === Handle the error once
 
@@ -365,49 +359,59 @@ Lastly, you should only handle the error once.
 Handling an error means inspecting the error value, and making a decision.
 You should always make one decision.
 If you make less than one, you're ignoring the error, this is obvious.
+
+	func Write(w io.Writer, buf []byte) {
+		w.Write(buf)
+	}
+
 But making more than one decision in response to an error is also a bad thing.
 
-Using this errors package, or one like it, gives you the ability to add context to error values, in a way that is inspectable by both a human and a machine.
-This means instead 
+	func Write(w io.Writer, buf []byte) error {
+		_, err := w.Write(buf)
+		if err != nil {
+			log.Println("unable to write:", err) // annotated error goes to log file
+			return err			     // unannotated error returned to caller
+		}
+		return nil
+	}
 
 I recommend that you should, either, annotate the error and return it to the caller, or, log the error.
 In logging the error you have handled it, there is no reason to handle the error twice.
 If after you've logged the error, your program cannot continue, then logging the error was the wrong choice.
 
+Using this errors package, or one like it, gives you the ability to add context to error values, in a way that is inspectable by both a human and a machine.
+
+	func Write(w io.Write, buf []byte) error {
+		_, err := w.Write(buf)
+		return errors.Wrap(err, "write failed")
+	}
+
 === In conclusion
+
+Errors are part of your package's public API, treat them with as much care as you would any other part of your public API.
 
 For maximum flexibility, treat all errors as opaque.
 
-Assert errors for behaviour, not type
-
-If API returns a specific error value, be aware of the limitation that places on all callers.
-
-If your interface returns a specific error value, be aware of the restriction that places on all implementatations.
+Assert errors for behaviour, not type.
 
 Minimise the number of sentinel errors, they are part of your public API and must be handled explicitly all the way up the call chain.
 
 Convert sentinal errors to opaque errors by wrapping them as soon as possible to minimise the weight of your API boundary.
 
-Use errors.Cause, or assert to interface { Cause() error } to recover sentinal errors. 
+If API returns a specific error value, be aware of the limitation that places on all callers.
+
+If your interface returns a specific error value, be aware of the restriction that places on all implementatations.
+
+Use `errors.Cause`, or assert to `interface { Cause() error }` to recover the underlying error for inspection. 
 
 == Epilog
 
-Proverbs aren't rules or laws, they're just stories, and how well you understand the story defines how well you understand their lesson.
-
-Proverbs are a great way of encapsulating information; capturing the essence of a story or teaching a moral. But they can equally be bewildering to newcomers who do not know the story behind the proverb.
+Proverbs aren't rules or laws, they're just stories.
+Proverbs are a great way of encapsulating information; capturing the essence of a lesson or teaching a moral.
+But they can equally be bewildering to newcomers who do not know the story behind the proverb.
 
 I hope that you will watch Sensei Pike's video, I think it was a wonderful presentation and I cannot recommend it enough to each of you.
 
 I hope that my explanations have been informative, and I will leave you to consider the meaning behind the other proverbs which I did not have time to discuss today.
-
-I want to close, not on a proverb, but on a beautiful Japanese word that I discovered in my research.
-
-== 渋い (Shibui)
-// https://en.wikipedia.org/wiki/Shibui
-
-And I really like this word, because if there is a word which I think perfectly describes my feelings about Go, it is Shibui. 
-
-It is an elegant design, a restrained design, and above all a simple design.
-The union of form and function.
 
 Thank you.
