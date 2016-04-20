@@ -177,7 +177,7 @@ We can visualise memory profiles in the same way.
 
     % go build -gcflags='-memprofile=/tmp/m.p'
     % go tool pprof --alloc_objects -svg $(go tool -n compile) /tmp/m.p > alloc_objects.svg
-    % go tool pprof --inuse_objects -svg $(go tool -n compile) /tmp/m.p > alloc_objects.svg
+    % go tool pprof --inuse_objects -svg $(go tool -n compile) /tmp/m.p > inuse_objects.svg
 
 The allocation profile reports the location of where every allocation was made.
 
