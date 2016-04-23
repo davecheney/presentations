@@ -290,7 +290,7 @@ DEMO: Show profiling `cmd/godoc` with `pkg/profile`
 
 * Memory management and GC tuning
 
-Go is a garbage collected language. This is a design principal, it will not change.
+Go is a garbage collected language. This is a design principle, it will not change.
 
 The Go GC favors _lower_latency_ over _maximum_throughput_; it moves some of the allocation cost to the mutator to reduce the cost of cleanup later.
 
