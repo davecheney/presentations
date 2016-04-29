@@ -9,7 +9,7 @@ Good morning and thank you for coming to my talk.
 My name is David, I'm a Go programmer from Sydney, and I'm delighted to be able to talk about Go at a technical conference here in my home country. 
 
 Before I begin I must note that, compared to the decades of experience of my fellow speakers, I feel like somewhat of an interloper at this conference.
-Although a keen amature since childhood, I arrived at the software development profession late in life.
+Although a keen amateur since childhood, I arrived at the software development profession late in life.
 My own career, until recently, was focused on what we now call operations.
 So I ask that you do not view me as an expert, at best, a peer.
 
@@ -17,15 +17,15 @@ So I ask that you do not view me as an expert, at best, a peer.
 
 My interest in Go was sparked in 2009 by the language's fresh approach to the problems of large scale software development.
 
-Go is a member of a triumvirate of modern langauges, Rust and Swift being the other two, that together represent a return to programs compiled directly to machine code.
+Go is a member of a triumvirate of modern languages, Rust and Swift being the other two, that together represent a return to programs compiled directly to machine code.
 All three are memory safe, concurrent, and without the requirement for a runtime, such as a virtual machine, or interpreter.
-All three languages represent a movement away from the __everything is an object__ paradigm popularised by Ruby and Java.
+All three represent a movement away from the __everything is an object__ paradigm popularised by Ruby and Java.
 
 Go is a young language.
-We celebrated the 4th birthday of the 1.0 annoucement footnote:[http://blog.golang.org/go-version-1-is-released] just over a month ago. 
+We celebrated the 4th birthday of the 1.0 announcement footnote:[http://blog.golang.org/go-version-1-is-released] just over a month ago. 
 
-Go is not an academic langauge.
-Go is a language that is explicitly designed for programming _in the large_.
+Go is not an academic language.
+Go is a language that is explicitly designed for programming _in the large_.footnote:[https://talks.golang.org/2012/splash.article]
 Its design is influenced heavily by the needs of its patron, Google.
 Go is a language which is designed primarily for the productivity of programmers, plural.
 
@@ -45,13 +45,13 @@ To believe in a world where software is _done_, in perpetuity, is to believe in 
 == SOLID Go design
 
 In his book, __Agile Software Development: Principles, Patterns, and Practices__footnote:[Pearson, 2003], Robert Martin introduces a series of ideas for the construction of software that is amenable to change.
-Martin later codified these ideas as the SOLID principals in a 2006 article entitled __Principals of Object Oriented Design__footnote:[http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod] and a series of what we would now call, white papers.
+Martin later codified these ideas as the SOLID principals in an article entitled __Principals of Object Oriented Design__footnote:[http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod] and a series of what we would now call, white papers.
 
 Part of a larger set of design principals, the SOLID principals are closely associated with the object oriented languages of their time, C++, Java, and C#.
 Although they span different eras all three share the same class structured, inheritance based, foundation. 
 
 This talk focuses on the interpretation of Go programs according to Martin's SOLID design principals.
-It is not a theological deconstruction of the principal's themselves.
+It is not a theological deconstruction of the principals themselves.
 In effect, I hold them to be self evident, as hopefully do you as indicated by your presence here today.
 
 == Will it blend?
@@ -59,19 +59,19 @@ In effect, I hold them to be self evident, as hopefully do you as indicated by y
 [quote, Alan Donnovan and Brian Kernighan, The Go Programming Language]
 The Go project includes the language itself, its tools and standard libraries, and last but not least, a cultural agenda of radical simplicity.
 
-The hallmark of Go's design asthetic is simplicity.
-One of the prominent signs of this drive towards simplicity is Go's abandonment of traditional class based inheritence.
-In fact, Go supports no form of inheritence.
+The hallmark of Go's design aesthetic is simplicity.
+A prominent sign of this drive towards simplicity is Go's abandonment of traditional class based inheritance.
+In fact, Go supports no form of inheritance.
 
-After the inital excitement of C++, and the cold reality of inheritence in commercial C# and Java programming, Go's abandonment of inheritence appears prescient.
-Not only did this side step the quagmire of multiple inheritence, it comitted the language firmly to the paradigm of composition.
+After the initial excitement of C++, and the cold reality of inheritance in commercial C# and Java programming, Go's abandonment of inheritance appears prescient.
+Not only did this side step the quagmire of multiple inheritance, it committed the language firmly to the paradigm of composition.
 
 Does this mean then that Go programs do not, or can not, follow the SOLID design principals, or that Go is not an object oriented language?
 Let us investigate.
 
 == Single responsibility principal
 
-Let's open with the single responsiblity principal.
+Let's open with the single responsibility principal.
 
 [quote, Robert C. Martin]
 A class should have one, and only one, reason to change.
@@ -80,9 +80,9 @@ Why is it important that as a unit, a piece of code should have only one impetus
 Why should a programmer care about this level of taxonomy?
 Because as distressing as the idea that your own code may change, it is far more distressing that code your code depends is changing under foot.
 
-When your code does change, it should do so in response to a direct stimuli, it shouldn't be a victim of collatoral damage.
+When your code does change, it should do so in response to a direct stimuli, it shouldn't be a victim of collateral damage.
 Change can be compartmentalised, making its effects more focused, and as a result, limiting the blast radius.
-Therefore, code that has fewer responsibilties has fewer reasons to change.
+Therefore, code that has fewer responsibilities has fewer reasons to change.
 
 Two pieces of code that are highly sensitive to change in their counterpart are said to be tightly coupled.
 Coupling is simply a word that describes two things moving together, a change in one induces a change in another
@@ -90,14 +90,14 @@ Coupling is simply a word that describes two things moving together, a change in
 In electrical engineering, inductive coupling describes the change in current in one winding of a transformer inducing a voltage in the other.
 In nature, trees bend in the wind because they are coupled to the motion of air moving across their branches.
 
-Uncle Bob's imperative single responsibilty principal is a derived from a much older observation by Tom DeMarco.
+Uncle Bob's imperative single responsibility principal is a derived from a much older observation by Tom DeMarco.
 In his book __Structured Analysis and System Specification__footnote:[http://www.amazon.com/Structured-Analysis-System-Specification-DeMarco/dp/0138543801] DeMarco puts forward a description of software cohesion.
 
 [quote, Tom DeMarco, Structured Analysis and System Specification]
 ____
 Cohesion is a measure of the strength of the association of the elements inside a module.
 A highly cohesive module is a collection of statements and data items that should be treated as a whole because they are so closely related.
-Any attempt to divide them would only result in increased coupling and decreased reability.
+Any attempt to divide them would only result in increased coupling and decreased reliability.
 ____
 
 The word _cohesion_, in the context of software, is the property of describing pieces of code are naturally attracted to one another.
@@ -108,14 +108,14 @@ They stick together, like the poles of magnets, and so where one goes, the other
 To describe the units of change in a Go program, we start with the package model.
 
 In Go all code lives inside a package, even the main function--which we call, not surprisingly, the main package.
-In this package deliniated world, the units of change are primarily those a externally visible to a package.
+In this package delineated world, the units of change are primarily those a externally visible to a package.
 
 Go packages are composed of various elements; constants, variables, types, functions, and methods.
 Each of these can be either public or private, and true to Go's focus on simplicity, a symbol is by default private unless its name starts with an upper case letter.
 
 === Package names
 
-A well designed package starts with its name, which is both as a description of its purpose, and a namespace for when it is referred to by another package.
+A well designed package starts with its name, which is both as a description of its purpose, and a name space for when it is referred to by another package.
 ----
 package http
 
@@ -131,10 +131,10 @@ package private
 
 package utils
 ----
-The use of another package's symbols inside your own is acomplished by the `import` declaration, which establishes a source level relationship between two packages.
+The use of another package's symbols inside your own is accomplished by the `import` declaration, which establishes a source level relationship between two packages.
 
 Once imported, the symbols of that package are always referred to with a prefix of the name of their containing package.
-This makes it trivial to descern where a symbol is declared.
+This makes it trivial to discern where a symbol is declared.
 
 // example
 
@@ -163,7 +163,7 @@ Go programs are therefore composed, just like the UNIX shell, by combining packa
 In is 1988 book, __Object-Oriented Software Construction__, Bertrand Meyer defined the Open / Closed principal.
 
 [quote, Bertrand Meyer, Object-Oriented Software Construction]
-Software entites should be open for extension, but closed for modification.
+Software entities should be open for extension, but closed for modification.
 
 The open closed principal, as interpreted by SOLID, states that classes should be open for extension, but closed for modification.
 Go does not have classes, however we do have structures, and methods on types. Here is an example
@@ -176,7 +176,7 @@ func (a *A) Value() int { return a.v }
 ----
 
 The type `A` has a method `Value` which returns the contents of `v`.
-This is a not a particuarly useful piece of code.
+This is a not a particularly useful piece of code.
 ----
 type B A
 ----
@@ -237,14 +237,14 @@ func (b B) Hello() {
 	b.A.Hello()
 }
 ----
-But embeddeding isn't just for methods, it also provides access to an embedded type's fields.
+But embedding isn't just for methods, it also provides access to an embedded type's fields.
 As you saw above, because both A and B are defined in the current package, we can access `A`'s private fields as if they were defined in `B`.
 
 Embedding allows Go's types to be open for extension.
 
 === No virtual dispatch
 
-A caller will see `B`'s methods overlayed on `A`'s because `A` is embedded, as a field, within `B`.
+A caller will see `B`'s methods overlaid on `A`'s because `A` is embedded, as a field, within `B`.
 
 However `A` is unaware that it has been embedded into `B`, as such there is no mechanism for `B`'s methods to override `A`'s. 
 ----
@@ -279,13 +279,13 @@ This is because `CountLegs` is defined on the `Cat` type, so it dispatches to `C
 
 Thus, Go's types are closed for modification.
 
-=== This is not inheritence
+=== This is not inheritance
 
-This is a not a wacky way of implementing inheretence, there is no implicit _this_ parameter in Go.
-The recevier is exactly what you pass into it, the first parameter of the function. 
+This is a not a wacky way of implementing inheritance, there is no implicit _this_ parameter in Go.
+The receiver is exactly what you pass into it, the first parameter of the function. 
 And because functions are not polymorphic, `OctoCat`'s are not substitutable for regular `Cat`'s.
 
-In truth, methods in Go are little more than syntactic sugar around a function with a predeclared formal parameter, the reciever. 
+In truth, methods in Go are little more than syntactic sugar around a function with a predeclared formal parameter, the receiver. 
 ----
 func (s *Speaker) SayHello(name string)
 ----
@@ -297,7 +297,7 @@ And this brings us to the next principal.
 
 == Liskov substitution principal
 
-Coined in 1988 by Barbara Lisvok during her keynote address to the ACM SIGPLAN conference, the Liskov substitution principal states, roughly, that two types are substitutable if they exhibit behaviour such that the caller is unable to tell the difference.
+Coined in 1988 by Barbara Lisvok during her keynote address to the ACM SIGPLAN conference, the Liskov substitution principal states, roughly, that two types are substitute if they exhibit behaviour such that the caller is unable to tell the difference.
 
 In a class based language, this is commonly interpreted as a specification for an abstract base class with various concrete implementations.
 But Go does not have classes, or inheritance, so substitution cannot be implemented in terms of an abstract class.
@@ -322,7 +322,7 @@ But this isn't really substitution.
 
 === Interfaces and behaviour
 
-Substituion in Go is the pervue of interfaces.
+Substitution in Go is the pervue of interfaces.
 
 While Go's packaging system draws strongly from Modula-2, and it's successor Oberon, the design of Go's interfaces are likely influenced by Python's protocols, a legacy from the environment where Go was born. 
 
@@ -400,13 +400,13 @@ As Go's interfaces are satisfied _implicitly_, it is not the implementation that
 Clients should not be forced to depend on methods they do not use.
 
 The interface segregation principal says that clients should not be forced to depend on irrelevant parts of an interface.
-When Martin talks about interfaces, he's making a broader defintion than the one I just described in Go.
+When Martin talks about interfaces, he's making a broader definition than the one I just described in Go.
 
-So if I was writing a function that wanted to work on file like things, I could specify it to take an `*os.File`, a type from the standard libary that describes files, like this
+So if I was writing a function that wanted to work on file like things, I could specify it to take an `*os.File`, a type from the standard library that describes files, like this
 ----
 func WriteUserConfig(f *os.File, cfg *Config) error
 ----
-`WriteUserConfig` would be unpleasent to test, as I would have to ensure that `f` was written to a temporary location and always removed afterwards.
+`WriteUserConfig` would be unpleasant to test, as I would have to ensure that `f` was written to a temporary location and always removed afterwards.
 Because this function therefore only works with files on disk, to verify its operation, the test would have to read the contents of the file after being written.
 
 `WriteUserConfig`'s signature precludes the option to write the user's config file to a network location, unless it was previously made available as a network share.
@@ -432,7 +432,7 @@ func WriteUserConfig(f io.ReadWriteCloser, cfg *Config) error
 ----
 With this change, any type that implements the `io.ReadWriteCloser` interface can be substituted for `*os.File`.
 This makes `WriteUserConfig` both broader in its operation, and also clarifies both to the caller and author of `WriteUserConfig` which methods of the `*os.File` type are relevant to its operation.
-However we can apply the interface segreation principal to improve the usabilty and testability of this function.
+However we can apply the interface segregation principal to improve the usability and testability of this function.
 
 Firstly, it is unlikely that if `WriteUserConfig` follows the single responsibilty principal, it will read the file it just wrote to verify its contents--that is probably the role of another piece of code.
 So we can narrow the specification for the interface to just writing and closing.
@@ -460,7 +460,7 @@ func WriteUserConfig(f io.Writer, cfg *Config) error
 ----
 By applying ISp to WriteUserConfig this function has become simlutaniously the most specific in its requirements, it only needs a thing that is writable, and the most generic in its function, it can write a config to anything which is writable.
 
-Highly cohestive interface types have methods which are directly related to the operations -- towards a _single_ goal (SRP), 
+Highly cohesive interface types have methods which are directly related to the operations -- towards a _single_ goal (SRP), 
 
 === Poor interface designs
 
@@ -469,7 +469,7 @@ You can spot poor interface declarations, they're usually the ones with a large 
 The other sign is in many of those interface's implementations, methods will be stubbed out, and things will be just fine--in tests and in production.
 
 You don't know why you need these methods, but you have to have them -- because that's what the interface's contract requires.
-These are the beurocracy of your interface.
+These are the bureaucracy of your interface.
 
 An example of this comes from the net.Conn interface.
 ----
@@ -497,7 +497,7 @@ Depend on abstractions, not on concretions.
 
 This is the dependency inversion principal, not dependency injection, or worse, a dependency injection _framework_.
 This is also not inversion of control; although this was part of the original paper.
-Fortunately the industry has abandoned the notion of this kind of metaprogramming.
+Fortunately the industry has abandoned the notion of this kind of meta-programming.
 
 What is a concretion, and how does it invert one's dependencies.
 What does dependency inversion mean in practice for Go programmers?
@@ -511,7 +511,7 @@ import "io"
 func WriteUserConfig(f io.Writer, cfg *Config) error
 ----
 
-As Go supports both functions and methods on types, you can implment not just singleton's, but plan old functions.
+As Go supports both functions and methods on types, you can implement not just singleton's, but plan old functions.
 A function is a constant who's value is the entry point to the function.
 As it's a constant, obviously it cannot be changed, and that shows itself often when writing tests.
 
@@ -530,19 +530,19 @@ A public function in a commonly used package is a very tight source level depend
 One obvious difference from Go's __everything is an object__ predecessors is it's support for first class functions and lexical closures.
 
 Go functions are not pure, not in a functional programming sense of the world, but you should act as if they are anyway.
-Eschew global state, pass all the values requred into the function.
+Eschew global state, pass all the values required into the function.
 
 === Implicit interfaces
 
 So far we've discussed that methods and functions should operate on parameters declared as interface types.
-This decouples the consumer from the implementation details of the value it is passed and allowing the user of those methods to reuse the functionality of that code by substitituing many implementations.
+This decouples the consumer from the implementation details of the value it is passed and allowing the user of those methods to reuse the functionality of that code by substituting many implementations.
 
-A great example of this is the `io.Copy` method from the `io` package.
+A great example of this is the `Io.Copy` method from the `io` package.
 ----
 func Copy(w io.Writer, r io.Reader) (int, error)
 ----
-`Copy` reads from a reader until it is exhausted, and writes that data to a writter.
-When complete it returns the number of bytes transfered, and if the trasnfer ended normally, or abnormally.
+`Copy` reads from a reader until it is exhausted, and writes that data to a writer.
+When complete it returns the number of bytes transferred, and if the transfer ended normally, or abnormally.
 
 Packages should interact using interface values, rarely concrete types.
 Those interface values can be defined by the caller, or the callee.
@@ -551,9 +551,9 @@ Those interface values can be defined by the caller, or the callee.
 
 A change to this
 
-- talk about how interfaces are satisfied impllicitly, at compile time.
+- talk about how interfaces are satisfied implicitly, at compile time.
 -- Talk about interface equality, and that the consumer of a type defines the interface it expects. 
--- This breaks the source level dependncy on the _interface_.
+-- This breaks the source level dependency on the _interface_.
 -- Talk about implicit interfaces
 - talk about how interfaces can be defined by the caller
 -- Bonus: in Go, interface's are implemented implicitly. Which means you no longer need to import a package to ensure you share the same interface definition. In Go, interfaces types are equal if their method sets are equal, and as we saw earlier one can define a smaller interface (fewer methods)
@@ -572,7 +572,7 @@ This is another way of saying "decoupling", which is indeed the goal, because so
 
 SRP encourages you to 
 
-OCP encourages you to compose types with embedding rather than extend them through inheritence.
+OCP encourages you to compose types with embedding rather than extend them through inheritance.
 
 LSP encourages you to describe the dependencies between your packages in terms of interfaces, not concrete types.
 How can we be confident that any implementation will work?
@@ -586,7 +586,7 @@ DIP encourages you to reduce the number things your code expects from the source
 This is ISP, and in Go the strong drive is to create interfaces that expose only a single behaviour.
 
 
-Go was explicitly built to control source level depenendenices.
+Go was explicitly built to control source level dependencies.
 
 == In Closing
 
@@ -597,6 +597,6 @@ If you were to summarise this talk as an elevator pitch it would probably be; in
 Interfaces in Go are a unifying force; they are _the_ means of describing behaviour.
 
 Interfaces let programmers describe what their function, method, or package provides--not how it does it.
-This shouldn't really be a suprise, as Go's interfaces provide the language with polymorphic dispatch, which really is the core of object orientation.
+This shouldn't really be a surprise, as Go's interfaces provide the language with polymorphic dispatch, which really is the core of object orientation.
 
 Thank you.
