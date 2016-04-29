@@ -10,51 +10,51 @@ My name is David, I'm a Go programmer from Sydney, and I'm delighted to be able 
 
 Before I begin I must note that, compared to the decades of experience of my fellow speakers, I feel like somewhat of an interloper at this conference.
 Although a keen amature since childhood, I arrived at the software development profession late in life.
-My own career, until recently, was focused on what we now call operations, but back in the day we just called it systems adminstration.
-So, I ask that you do not view me as an expert, at best, a peer.
+My own career, until recently, was focused on what we now call operations.
+So I ask that you do not view me as an expert, at best, a peer.
 
 == Introducing Go
 
-[quote, Alan Donnovan and Brian Kernighan, The Go Programming language]
+[quote, Alan Donnovan and Brian Kernighan, The Go Programming Language]
 The Go project includes the language itself, its tools and standard libraries, and last but not least, a cultural agenda of radical simplicity.
 
-My interest in Go dates back to 2009 in response to the language's fresh approach to the problems of large scale software development.
+My interest in Go is a response to the language's fresh approach to the problems of large scale software development.
 
 Go is a young language.
 We celebrated the 4th birthday of the 1.0 annoucement footnote:[http://blog.golang.org/go-version-1-is-released] just over a month ago. 
-Go is a member of a triumvirate of modern langauges, Rust and Swiff being the other two, that together represent a return to programs compiled directly to machine code.
-All three are memory safe, concurrent, and without the requirement for a runtime, such as the jvm, or python and javascript interpreters.
-All three also represent a movement away from the __everything is an object__ paradigm popularised by Ruby and Java.
+Go is a member of a triumvirate of modern langauges, Rust and Swift being the other two, that together represent a return to programs compiled directly to machine code.
+All three are memory safe, concurrent, and without the requirement for a runtime, such as a virtual machine, or interpreter.
+All three languages represent a movement away from the __everything is an object__ paradigm popularised by Ruby and Java.
 
 Go is not an academic langauge.
 Go is a language that is explicitly designed for programming _in the large_.
 Its design is influenced heavily by the needs of its patron, Google.
-Go is a langauge which designed for the productivity of programmers, plural.
+Go is a language which is designed primarily for the productivity of programmers, plural.
 
-I work on two large Go projects, the first is the Go language itself, the second and more capacious is Juju, from Canonical, who I am grateful for sponsoring me to attend today. 
+I work on two large Go projects, the first is the Go language itself, the second and more capacious is Juju, from Canonical, who I am grateful for sponsoring me to attend this conference. 
 
 // image of go project LOC, Juju LOC
 
-One aspect of dealing with projects of this size is there is more to debate than the mineutia of variable names, file layout, and the correct number of spaces after the period--not that these are not subjects of heated debate.
+One aspect of dealing with projects of this size is there is more to debate than the minutiae of variable names, file layout, and the correct number of spaces after the period--not that these subjects are immune to heated debate.
 
-This is not to say that design is not important for smaller programs.
-Personally I think we should aim to always write smaller programs, but the realities of commercial software development occasionally interfears with this idealistic view.
-Design is both your map to guide you, and your rubrick to interpret your ancestors footsteps.
+This is not to imply that design is not important for smaller programs.
+Personally I think we should aim to always write smaller programs, but the realities of commercial software development occasionally impinges on this idealistic world view.
 Design is important for programs of all size, but as the size--and age--of a projet grows, it becomes paramount.
 
-As authors like Sandi Metz, Robert Martin, and the late Jim Weirich remind us, the only constant in software development is change--to believe in a world where software is done in perpetuity, is to belive in a fantasy.
+As authors such as Sandi Metz, Robert Martin, and the late Jim Weirich remind us, the only constant in software development is change.
+To believe in a world where software is _done_, in perpetuity, is to believe in a fantasy.
 
 == SOLID Go design
 
 In his book, Agile Software Development: Principles, Patterns, and Practices,footnote:[Pearson, 2003] Robert Martin introduces a series of ideas as the cornerstone to the construction of software that is amenable to change.
 Martin later codified these as the SOLID principals in a 2006 article entitled __Principals of Object Oriented Design__footnote[http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod] and a series of what we would now call, white papers.
 
-Part of a larger set of design principals, the SOLID principals are closely associated with the object oriented languages of their time.
-Although they span different eras, C++, Java, and C# share the same class structured, inheritance based, foundations. 
+Part of a larger set of design principals, the SOLID principals are closely associated with the object oriented languages of their time, C++, Java, and C#.
+Although they span different eras all three share the same class structured, inheritance based, foundation. 
 
-This talk focuses on the interpretation of Go programs according to the SOLID design principals.
+This talk focuses on the interpretation of Go programs according to Martin's SOLID design principals.
 It is not a theological deconstruction of the principal's themselves.
-In effect, I hold them to be self evident, as hopefully you do as indicated by your presence here today.
+In effect, I hold them to be self evident, as hopefully do you as indicated by your presence here today.
 
 == Will it blend?
 
@@ -290,8 +290,8 @@ You can, assuming the types are public, pass a pointer to `B.A` to the `update` 
 var b B
 upate(&b.A)
 ----
-that embedded field, the `A` structure embedded inside `B`, is unaffected by the fact it is part of the larger `B` structure just like values in memory are unaffected by their neighbours.
-So this is not substitution.
+The embedded `A` structure inside `B` is unaffected by the fact it is part of the larger `B` structure, just as values in memory are unaffected by their neighbours.
+But this isn't really substitution.
 
 === Interfaces and behaviour
 
@@ -599,7 +599,8 @@ Further still, the various parts of the handler will be concerned only with read
 Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
 
 The SOLID principals are a tool to talk about design.
-They aren't rules, like the rule of law, or the law or gravity
+They aren't rules, like the rule of law, or the law or gravity.
+
 Rules do not need a context, it doesn't matter how important it is to you, wooden bridges are not as strong as steel ones.
 Principals need a context. 
 Stop talking about rules for software development, talk about principals.
