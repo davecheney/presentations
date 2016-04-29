@@ -15,9 +15,6 @@ So I ask that you do not view me as an expert, at best, a peer.
 
 == Introducing Go
 
-[quote, Alan Donnovan and Brian Kernighan, The Go Programming Language]
-The Go project includes the language itself, its tools and standard libraries, and last but not least, a cultural agenda of radical simplicity.
-
 My interest in Go is a response to the language's fresh approach to the problems of large scale software development.
 
 Go is a young language.
@@ -47,7 +44,7 @@ To believe in a world where software is _done_, in perpetuity, is to believe in 
 == SOLID Go design
 
 In his book, Agile Software Development: Principles, Patterns, and Practices,footnote:[Pearson, 2003] Robert Martin introduces a series of ideas as the cornerstone to the construction of software that is amenable to change.
-Martin later codified these as the SOLID principals in a 2006 article entitled __Principals of Object Oriented Design__footnote[http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod] and a series of what we would now call, white papers.
+Martin later codified these as the SOLID principals in a 2006 article entitled __Principals of Object Oriented Design__footnote:[http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod] and a series of what we would now call, white papers.
 
 Part of a larger set of design principals, the SOLID principals are closely associated with the object oriented languages of their time, C++, Java, and C#.
 Although they span different eras all three share the same class structured, inheritance based, foundation. 
@@ -58,14 +55,17 @@ In effect, I hold them to be self evident, as hopefully do you as indicated by y
 
 == Will it blend?
 
+[quote, Alan Donnovan and Brian Kernighan, The Go Programming Language]
+The Go project includes the language itself, its tools and standard libraries, and last but not least, a cultural agenda of radical simplicity.
+
 The hallmark of Go's design asthetic is simplicity.
 One of the visible signs of this drive towards simplicity is Go's abandonment of traditional class based inheritence.
-In fact, Go supports no forms of inheritence.
+In fact, Go supports no form of inheritence.
 
-After the inital excitement of C++, and the cold reality of inheritence in commercial C# and Java programming, Go's abandonment of inheritence apprears prescient.
+After the inital excitement of C++, and the cold reality of inheritence in commercial C# and Java programming, Go's abandonment of inheritence appears prescient.
 Not only did this side step the quagmire of multiple inheritence, it comitted the language firmly to the paradigm of composition.
 
-Does this mean then that Go programs cannot follow the SOLID design principals, or that Go is not an object oriented language?
+Does this mean then that Go programs do not, or can not, follow the SOLID design principals, or that Go is not an object oriented language?
 Let us investigate.
 
 == Single responsibility principal
@@ -77,7 +77,7 @@ A class should have one, and only one, reason to change.
 
 Why is it important that as a unit, a piece of code should have only one impetus for change?
 Why should a programmer care about this level of taxonomy?
-Because as destressing as the idea that your own code is changing, it is far more distressing that code your code depends on changed under foot.
+Because as destressing as the idea that your own code may change, it is far more distressing that code your code depends is changing under foot.
 
 When your code does change, it should do so in response to a direct stimuli, it shouldn't be a victim of collatoral damage.
 Change can be compartmentalised, making changes more targeted, and as a result, limiting the blast radius.
@@ -86,7 +86,7 @@ Therefore code that does one thing has less reason to change.
 Two pieces of code that are highly sensitive to change in their counterpart are said to be tightly coupled.
 Coupling is simply a word that describes two things moving together, a change in one induces a change in another
 
-In electrical engineering, inductive coupling describes the change in an alternating current in one winding of a transformer inducing a voltage in the other.
+In electrical engineering, inductive coupling describes the change in current in one winding of a transformer inducing a voltage in the other.
 In nature, trees bend in the wind because they are coupled to the motion of air moving across their branches.
 
 Uncle Bob's imperative single responsibilty principal is a derived from a much older observation by Tom DeMarco.
@@ -109,43 +109,62 @@ In Go all code lives inside a package, even the main function--which we call, no
 In this package deliniated world, the units of change are primarily those a externally visible to a package.
 
 Go packages are compose of various elements; constants, variables, types, functions, and methods.
-Each of these can be either public or private, and true to Go's focus on simplicity, a symbol is private unless its name starts with an upper case letter.
+Each of these can be either public or private, and true to Go's focus on simplicity, a symbol is by default private unless its name starts with an upper case letter.
 
 === Package names
 
-Each package has a name, which is
+A well designed package starts with its name, which is both as a description of its purpose, and a namespace for when it is referred to by another package.
+----
+package http
 
-The use of another package's symbols inside your own is acomplished by the `import` declaration
+package bufio
 
-=== Unix reincarnated
+package json
+----
+A package should not be named after its contents. These are all example of poor package names
+----
+package server
+
+package private
+
+package utils
+----
+The use of another package's symbols inside your own is acomplished by the `import` declaration, which establishes a source level relationship between two packages.
+
+Once imported, the symbols of that package are always referred to with a prefix of the name of their containing package.
+This makes it trivial to descern where a symbol is declared.
+
+// example
+
+=== McIlroy's revenge
 
 No discussion of Go, or decoupled design in general, would be complete without mentioning Doug McIlroy.
 
 In 1964 Doug McIlroy postulated about the power of pipes for composing programs.
 This was five years before the first Unix was written mind you.
 
-[quote, Doug McIlroy, Quarter Century of Unix, Salus et al]
-This is the Unix philosophy: Write programs that do one thing and do it well. Write programs to work together. Write programs to handle text streams, because that is a universal interface.
-
-McIlroy’s observations became the foundation of the UNIX philosophy; small, sharp tools which can be combined to solve larger tasks.
-Rasks which oftentimes may not have been envisioned by the original authors.
+[quote, Doug McIlroy, Quarter Century of Unix (Salus et al.)]
+____
+This is the Unix philosophy: Write programs that do one thing and do it well.
+Write programs to work together.
+Write programs to handle text streams, because that is a universal interface.
+____
+McIlroy’s observations became the foundation of the UNIX philosophy; small, sharp tools which combine to solve larger tasks.
+Tasks which oftentimes were not envisioned by the original authors.
 
 Go programs embody the spirit of the UNIX philosophy.
-In effect each Go package is a self contained Go program, with access to the entire language.
-Go packages interact with one another via interfaces.
-Programs are composed, just like the UNIX shell, by combining packages together.
+In effect each Go package is itself a self contained Go program, with access to the entire language.
+Go programs are therefore composed, just like the UNIX shell, by combining packages together.
 
 == Open / Closed principal
 
 In is 1988 book, __Object-Oriented Software Construction__, Bertrand Meyer defined the Open / Closed principal.
 
-[quote, Bertrand Meyer]
+[quote, Bertrand Meyer, Object-Oriented Software Construction]
 Software entites should be open for extension, but closed for modification.
 
-The open closed principal states that classes should be open for extension, but closed for modification.
-Go does not have classes, but we do have structures, and methods on types.
-
-Here is an example
+The open closed principal, as interpreted by SOLID, states that classes should be open for extension, but closed for modification.
+Go does not have classes, however we do have structures, and methods on types. Here is an example
 ----
 type A struct {
 	v int
@@ -159,7 +178,7 @@ This is a not a particuarly useful piece of code.
 ----
 type B A
 ----
-We also have a type `B` which shares the same underlying type as `A`.
+We introduce a type `B` which shares the same underlying type as `A`.
 Note that `B` does not extend `A`, nor is `B` derived from `A`.
 Both `A` and `B` share the same underlying type, a structure with one integer field, `v`.
 ----
@@ -167,17 +186,19 @@ struct {
         v int
 }
 ----
-Sharing the same underlying type means that values of type `A` can be copied to type `B` other because ultimately as they share the same layout in memory. However, the method set of `B`'s is distinct from `A`, in fact in this example it's empty.
+Sharing the same underlying type means that values of type `A` can be converted to type `B` other because ultimately as they share the same layout in memory.
 ----
 var a A
 a.v = 100
 fmt.Println(a.Value()) // prints 100
-
+----
+However, the method set of `B` is distinct from `A`, in fact in this example it is empty.
+----
 var b B
 b.v = 200
 fmt.Println(b.Value()) // b.Value undefined (type B has no field or method Value)
 ----
-If we want B to have A's methods not just it's fields, we can instead do this.
+If we want B to have access to A's methods not just it's fields, we can instead do this.
 ----
 Type A struct {
      v int
@@ -201,24 +222,25 @@ func main() {
 	b.Hello()
 }
 ----
-In Go we call this pricatice _embedding_.
-In this example type `B` has a `Hello` method because `A` is embedded into `B`.
+In Go we call this practice _embedding_.
+In this example type `B` has a `Hello` method because `A` has been embedded into `B`.
 
-It is as if by embedding `A` into `B` the compiler had provided the following  _forwarding_ method for us (which is not far from the truth).
+It is as if by embedding `A` into `B` the compiler had provided the following _forwarding_ method for us (which is not far from the truth).
 ----
 func (b B) Hello() {
 	b.A.Hello()
 }
 ----
 But embeddeding isn't just for methods, it also provides access to an embedded type's fields.
-As you saw above, because both A and B are defined in the current pacakge, we can even access `A`'s private fields as if they were defined in `B`..
+As you saw above, because both A and B are defined in the current package, we can access `A`'s private fields as if they were defined in `B`.
+
+Embedding allows Go's types to be open for extension.
 
 === No virtual dispatch
 
-Embedding allows Go's types to be open for extension.
 A caller will see `B`'s methods overlayed on `A`'s because `A` is embedded, as a field, within `B`.
 
-However `A` is never aware that it has been embedded into `B`, there is no mechanism for `B`'s methods to override `A`'s. 
+However `A` is unaware that it has been embedded into `B`, as such there is no mechanism for `B`'s methods to override `A`'s. 
 ----
 type Cat struct {
 	Name string
@@ -241,10 +263,10 @@ func main() {
 	octo.CountLegs() // actually octo.Cat.CountLegs()
 }
 ----
-In this example we have a `Cat` type which can count its number of legs with its `Legs` method.
-Now, we embed this `Cat` type into a new type, an `OctoCat`, and decare that octocats have eight legs.
+In this example we have a `Cat` type which can count its number of legs with the `Legs` method.
+We embed this `Cat` type into a new type, an `OctoCat`, and decare that octocats have eight legs.
 
-But, even though OctoCat defines it's own `Legs` method which returns 8, when the `CountLegs` method is invoked, it returns 4.
+Though `OctoCat` defines it's own `Legs` method which returns 8, when the `CountLegs` method is invoked, it returns 4.
 
 This is because `CountLegs` is defined on the `Cat` type, so it dispatches to `Cat`'s `Legs` method.
 `Cat` has no knowledge of the type it has been embedded inside of, so its method set cannot be altered by embedding it.
@@ -253,10 +275,9 @@ Thus, Go's types are closed for modification.
 
 === This is not inheritence
 
-This is a not a wacky way of doing inheretence in Go.
-There is no implicit _this_ parameter in Go.
+This is a not a wacky way of implementing inheretence, there is no implicit _this_ parameter in Go.
 The recevier is exactly what you pass into it, the first parameter of the function. 
-And because funcions are _not_ polymorphic, B is not substitituable for A.
+And because functions are not polymorphic, `OctoCat`s are not substitutable for regular `Cat`s.
 
 In truth, methods in Go are little more than syntactic sugar around calling a function with a predeclared formal parameter, the reciever. 
 ----
@@ -270,12 +291,12 @@ And this brings us to the next principal.
 
 == Liskov substitution principal
 
-Coined in by Barbara Lisvok in her 1988 keynote address to the ACM SIGPLAN conference, the Liskov substitution principal states, roughly, that two types are substitutable if they exhibit behaviour such that the caller is unable to tell the difference.
+Coined in 1988 by Barbara Lisvok during her keynote address to the ACM SIGPLAN conference, the Liskov substitution principal states, roughly, that two types are substitutable if they exhibit behaviour such that the caller is unable to tell the difference.
 
 In a class based language, this is commonly interpreted as a specification for an abstract base class with various concrete implementations.
 But Go does not have classes, or inheritance, so substitution cannot be implemented in terms of an abstract class.
 
-As we saw above if you have a type
+As we saw above, if you have a type
 ----
 type B struct {
 	A
@@ -285,33 +306,31 @@ And a function that takes an `A`
 ----
 func update(a *A)
 ----
-You can, assuming the types are public, pass a pointer to `B.A` to the `update` function.
+You can, assuming the types are public, pass a pointer to `B`'s `A` field to the `update` function.
 ----
 var b B
 upate(&b.A)
 ----
-The embedded `A` structure inside `B` is unaffected by the fact it is part of the larger `B` structure, just as values in memory are unaffected by their neighbours.
+The embedded `A` structure inside `B` is unaffected by the fact it is part of a larger structure, just as values in memory are unaffected by their neighbours.
 But this isn't really substitution.
 
 === Interfaces and behaviour
 
-Subtituion in Go is the pervue of interfaces.
+Substituion in Go is the pervue of interfaces.
 
 While Go's packaging system draws strongly from Modula-2, and it's successor Oberon, the design of Go's interfaces are likely influenced by Python's protocols, a legacy from the environment where Go was born. 
 
 Types are not required to nominate, either by an `implements` declaration or by extending from an abstract type, that they implement a particular interface. 
 In Go, _any type_ can implement an interface provided it has all the methods whose signatures matches the interface declaration.
 
-While it is not possible to modify a type from another package, at any time an interface may be defined, and if a type satisfies the interface, then automatically that type  _is_ an implementation of the desired interface.
+While it is not possible to modify a type from another package, at any time an interface may be defined, and if a type satisfies the interface, then automatically that type _is_ an implementation of the desired interface.
 We say that in Go interfaces are satisfied implicitly, rather than explicitly, and this has a profound impact on how they are used in the language.
-
 
 === Small interfaces
 
-Well designed interfaces are more likely to be small interfaces; the prevailing idiom here is that an interface contain only a single method.
+Well designed interfaces are more likely to be small interfaces; the prevailing idiom is an interface contain only a single method.
 
-Compare this to other languages like Java or C++, whose interfaces are generally larger.
-Larger in terms of both the method count required to satisfy them, and complexity because of their entanglement with the inheritance based nature of those languages.
+Compare this to other languages like Java or C++, whose interfaces are generally larger both in terms method count required to satisfy them, and complexity because of their entanglement with those languages' inheritance based nature.
 
 Interfaces in Go share none of those restrictions and so are simpler, yet at the same time, are more powerful.
 Any Go type, written at any time, in any package, by any programmer, can implement an interface by simply providing the methods necessary to satisfy the interface’s contract.
@@ -334,11 +353,12 @@ type Closer interface {
 }
 ----
 
+TODO SHOW MultiWriter, TeeReader, etc
 
 === Interface composition
 
 In Go, we often compose interfaces from smaller ones.
-For example, an interface which encapsulates the behaviour of a type returned from the `os.Open` function might be.
+Just as we saw above, two types can be considered equal when they have the same set of fields, two interfaces are equal when they have the same set of methods.
 ----
 type File interface {
 	Read([]byte) (int, error)
@@ -346,8 +366,7 @@ type File interface {
 	Close() error
 }
 ----
-Just as we saw above, two types can be considered equal when they have the same set of fields, two interfaces are equal when they have the same set of methods.
-And similar to type embedding, Go supports interface embedding, allowing the previous declaration to be rewritten as
+Similar to type embedding, Go supports interface embedding, allowing the previous declaration to be rewritten as
 ----
 type ReadWriter {
 	io.Reader
@@ -374,23 +393,47 @@ And this is a great segue into the next SOLID principal.
 
 At this point in the presentation, hopefully you'll agree with me that in Go, types describing data, and interfaces describing behaviour.
 Interfaces define the behaviour of various components, types provide the implementations.
-
 As Go's interfaces are satisfied _implicitly_, it is not the implementation that dictates which interfaces it implements, that privilege belongs to the consumer.
 
 [quote, Robert C. Martin]
 Clients should not be forced to depend on methods they do not use.
 
-The interface specification says that clients should not be forced to depend on irrelevant parts of an interface.
-And when Martin talks about interfaces, he's making a broader defintion than the one I just described in Go.
+The interface segregation principal says that clients should not be forced to depend on irrelevant parts of an interface.
+When Martin talks about interfaces, he's making a broader defintion than the one I just described in Go.
 
-So if I was writing a function that wanted to work on file like things, I could specify it to take an `*os.File` like this
+So if I was writing a function that wanted to work on file like things, I could specify it to take an `*os.File`, a type from the standard libary that describes files, like this
 ----
 func WriteUserConfig(f *os.File, cfg *Config) error
 ----
-But that would be unpleasent to test, as I would have to ensure that f was written to a temporary location, and always removed afterwards to avoid filling up `/tmp`.
-Secondly, because this function only works with files on disk, to verify its operation, the test would have to read the contents of the file after being written.
-Thirdly, this signature precludes the option to write the user's config file to a network location, unless it was previously made available as a network share.
-Finally, assuming that network storage was a requirement later, the function of this signature would have to change,
+`WriteUserConfig` would be unpleasent to test, as I would have to ensure that `f` was written to a temporary location and always removed afterwards.
+Because this function therefore only works with files on disk, to verify its operation, the test would have to read the contents of the file after being written.
+
+`WriteUserConfig`'s signature precludes the option to write the user's config file to a network location, unless it was previously made available as a network share.
+Assuming that network storage was to become requirement later, the signature of this function would have to change, impacting all its callers.
+
+Additionally `*os.File` defines a lot of methods which are not relevant to `WriteUserConfig`.
+Things like setting file permissions, reading directories.
+It would be useful if the signature of the method could describe only the parts of `*os.File` that were relevant.
+
+The `io` package provides an interface composed of the three basic io interfaces we say earlier:
+----
+package io
+
+type ReadWriteCloser interface {
+	Reader
+	Writer
+	Closer
+}
+----
+Using `io.ReadWriteCloser` we can redefine `WriteUserConfig` in terms of an interface that described more general file shaped things.
+----
+func WriteUserConfig(f io.ReadWriteCloser, cfg *Config) error
+----
+With this change, any type that implements the `io.ReadWriteCloser` interface can be substituted for `*os.File`.
+This makes `WriteUserConfig` both more broader in its operation, and also clarifies both to the caller and author of `WriteUserConfig` which methods of the `*os.File` type are relevant to its operation.
+However we can further apply the interface segreation principal further to improve the usabilty and testability of this function.
+
+Because `WriteUserConfig` deals with operations that could fail,
 
 - close the file externally
 - make deleting the partial file on failure the responsibilty of someone else, SRP.
@@ -610,7 +653,7 @@ Don't forget, the goal is to write software that is amenable to change.
 Because a design that is so intricate that it cannot be changed is obsolete before you've finished implementing it.
 
 Thank you.
-
+////
 ----
 
 // In Go a type and the method set of that type are orthogonal.
@@ -635,5 +678,6 @@ If you are responsible for doing more than one thing, then you at some point one
 === Method resolution
 
 https://play.golang.org/p/ALIexlJV-T
+////
 
 
