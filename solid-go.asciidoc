@@ -115,7 +115,7 @@ const PI = 355/113
 const φ = 1.61803398874
 
 var Log = os.Stdout.Write
-var debugging = false
+var debugging bool
 
 func Dial(network, address string) (net.Conn, error)
 func loop(fn func())
@@ -144,8 +144,6 @@ The use of another package's symbols inside your own is accomplished by the `imp
 Once imported, the symbols of that package are always prefixed with the name of their containing package.
 This makes it trivial to discern where a symbol is declared.
 ----
-package p
-
 package main
 
 import (
@@ -188,7 +186,7 @@ package utils
 This isn't just noun pedantry.
 In addition to a poorly named package missing the opportunity to enumerate its purpose--what does the private package provide?
 Things that I should not see?
-Catchall packages become a dumping ground for miscellany, Jack's of all trades, yet responsible to no one.
+Catch all packages become a dumping ground for miscellany, Jack's of all trades, yet responsible to no one.
 
 === McIlroy's revenge
 No discussion of Go, or decoupled design in general, would be complete without mentioning Doug McIlroy.
@@ -321,7 +319,7 @@ func main() {
 }
 ----
 In this example we have a `Cat` type which can count its number of legs with the `Legs` method.
-We embed this `Cat` type into a new type, an `OctoCat`, and decare that octocats have eight legs.
+We embed this `Cat` type into a new type, an `OctoCat`, and declare that octocats have eight legs.
 
 Though `OctoCat` defines it's own `Legs` method which returns 8, when the `PrintLegs` method is invoked, it returns 4.
 
@@ -334,7 +332,7 @@ Thus, Go's types are closed for modification.
 
 This is a not a wacky form of implementing inheritance, there is no implicit _this_ parameter in Go.
 The receiver is exactly what you pass into it, the first parameter of the function. 
-And because Go does not support polymorphic function dispatch, `OctoCat`'s are not substitutable for regular `Cat`'s.
+And because Go does not support polymorphic function dispatch, `OctoCat`'s are not subsitutable for regular `Cat`'s.
 
 In truth, methods in Go are little more than syntactic sugar around a function with a predeclared formal parameter, the receiver. 
 ----
@@ -350,7 +348,7 @@ And this brings us to the next principal.
 
 Coined in 1988 by Barbara Lisvok during her keynote address to the ACM SIGPLAN conference, the Liskov substitution principal states, roughly, that two types are substitute if they exhibit behaviour such that the caller is unable to tell the difference.
 
-In a class based language, LSP is commonly interpreted as a specification for an abstract base class with various concrete implementations.
+In a class based language, Liskov's substitution principal is commonly interpreted as a specification for an abstract base class with various concrete implementations.
 But Go does not have classes, or inheritance, so substitution cannot be implemented in terms of an abstract class.
 
 As we saw above, if you have a type
@@ -366,7 +364,7 @@ func update(a *A)
 You can, because the type is public, thus it's embedded field is public, pass a pointer to `B`'s `A` field to the `update` function.
 ----
 var b B
-upate(&b.A)
+update(&b.A)
 ----
 The embedded `A` structure inside `B` is unaware of the fact it is part of a larger structure, just as values in memory are unaware of their neighbours.
 But this isn't really substitution.
@@ -470,24 +468,22 @@ Go does not have Eifel's design by contract, but we do have a tradition of small
 [quote, Jim Weirich]
 Require no more, promise no less
 
-So the pull quote for the Liskov substitability principal could be summarised by this lovely aphorism from Jim Weirich.
+So the Liskov substitution principal could be summarised by this lovely aphorism from Jim Weirich.
 And this is a great segue into the next SOLID principal.
 
 == Interface segregation principal
-
-At this point in the presentation, hopefully you'll agree with me that in Go, interfaces describe the behaviour of various components, types provide the implementations.
-As Go's interfaces are satisfied _implicitly_, it is not the implementation that dictates which interfaces it implements, that privilege belongs to the consumer.
 
 [quote, Robert C. Martin]
 Clients should not be forced to depend on methods they do not use.
 
 The interface segregation principal states that clients should not be forced to depend on irrelevant parts of an interface.
-When Martin talks about interfaces, he's making a broader definition than the one I just described in Go.
-In Go the application of ISP can refer to a process of divining the functionality required for a function to operate.
+When Martin talks about interfaces, he's making a broader definition than the one I just described in Go because interfaces in C++ are wedded to a notion of an absract type in a class heirarchy.
 
-As a concrete example, I'm working on a function that needs to persist a data structure, describing some kind of document, to disk.
+In Go the application of the interface segregation principal can refer to a process of isolating the behaviour required for a function to do its job.
+As a concrete example, say I've been given a task to write a function that persists a data structure, describing some kind of document, to disk.
 I could specify this function to take an `*os.File`, a type from the standard library that describes files:
 ----
+// Save writes the contents of doc to the file f.
 func Save(f *os.File, doc *Document) error
 ----
 `Save`'s signature precludes the option to write the document to a network location, unless it was previously made available as a network share.
@@ -499,12 +495,10 @@ Because this function therefore only works with files on disk, to verify its ope
 `*os.File` also defines a lot of methods which are not relevant to `Save`, like reading directories and checking to see if a path is a symlink.
 It would be useful if the signature of the `Save` function could describe only the parts of `*os.File` that were relevant.
 
-We can apply the interface segregation principal to improve the usability and testability of this function.
-
 === Interface abstraction
 
 In Go, we often compose interfaces from smaller ones.
-Just as two types can be considered equal when they have the same set of fields, two interfaces are equal when they have the same set of methods.
+Just as two types can be considered comparable when they have the same set of fields, two interfaces are equal when they have the same set of methods.
 The `io` package provides an interface composed of the three basic io interfaces we saw earlier:
 ----
 package io
@@ -515,24 +509,27 @@ type ReadWriteCloser interface {
 	Closer
 }
 ----
-Using `io.ReadWriteCloser` we can redefine `Save` in terms of an interface that described more general stream shaped things.
+Using `io.ReadWriteCloser` we can apply the interface segregation principal to redefine `Save` in terms of an interface that described more general stream shaped things.
 ----
+// Save writes the contents of doc to the supplied Writer.
 func Save(rwc io.ReadWriteCloser, doc *Document) error
 ----
 With this change, any type that implements the `io.ReadWriteCloser` interface can be substituted for `*os.File`.
-This makes `Save` both broader in its operation, and clarifies both to the caller and author of `Save` which methods of the `*os.File` type are relevant to its operation.
-But we can potentially continue to improve this function.
+This makes `Save` both broader in its operation, and clarifies to both the caller and author of `Save` which methods of the `*os.File` type are relevant to its operation.
+
+But we can take ISP further to improve this function.
 
 Firstly, it is unlikely that if `Save` follows the single responsibilty principal, it will read the file it just wrote to verify its contents--that should be responsibility of another piece of code.
 So we can narrow the specification for the interface to just writing and closing.
 ----
+// Save writes the contents of doc to the supplied Writer.
 func Save(rc io.WriteCloser, doc *Document) error
 ----
 Secondly, by providing `Save` with a mechnism to close its `WriteCloser` this raises the question of under what circumstances will `rc` be closed.
 Possibly this will be unconditionally, or it could be only in the case of success.
 This presents a problem for the caller of `Save` as it may want to write additional data after the document is written.
 
-On solution would be to define a new type which embeds an `io.Writer` and provides a `Close` method which does nothing.
+One solution would be to define a new type which embeds an `io.Writer` and provides a `Close` method which does nothing.
 ----
 type NoCloseWriter struct {
 	io.Writer
@@ -548,11 +545,15 @@ if err != nil {
 ----
 A better solution would be to redefine `Save` to take only an `io.Writer`, stripping it of the responsibilty to do anything but write data to a stream.
 ----
+// Save writes the contents of doc to the supplied Writer.
 func Save(rc io.Writer, doc *Document) error
 ----
-By applying the interface segregation principal to `Save` it has become simlutaniously the most specific in its requirements--it only needs a thing that is writable--and the most general in its function, it can write a document to anything which is writable.
+By applying the interface segregation principal to `Save` it has simultaniously become the most specific in its requirements--it only needs a thing that is writable--and the most general in its function, it can write a document to anything which is writable.
 
 == Dependency inversion principal
+
+At this point, hopefully you'll agree with me that in Go, interfaces describe the behaviour of components, types provide the implementations.
+As Go's interfaces are satisfied _implicitly_, it is not the implementation that dictates which interfaces it implements, that privilege belongs to the consumer.
 
 The final SOLID principal is the dependency inversion principal.
 
@@ -561,61 +562,18 @@ Depend on abstractions, not on concretions.
 
 What is a concretion, and how does it invert one's dependencies.
 What does dependency inversion mean in practice for Go programmers?
+
 At a basic level if a concretion is a type, an abstraction would therefore be an interface.
 More fundamentally a concretion is one piece of code depending on another.
 
-If you've applied all the principals up to this point your code should be factored into discrete functional units with a well defined purpose.
+If you've applied all the principals up to this point your code should be factored into discrete packages units with a well defined purpose.
 Your code should describe its dependencies in terms of interfaces, and those interfaces should be factored to describe only the behaviour thoes functions require.
+In other words, there shouldn't be much left to do at this point.
 
-In the previous example we saw a function defined in terms of an interface defined in another package, `io`.
-This is perhaps too simple an example, as the `io` package itself has few dependencies, but imagine
-----
-package p
+The only thing remaining to consider at this point is to talk about source level coupling.
 
-import "io"
-
-func Save(f io.Writer, doc *Document) error
-----
-There is one remaining point of coupling.
-
-So far we've discussed that methods and functions should operate on parameters declared as interface types.
-This decouples the consumer from the implementation details of the value it is passed and allowing the user of those methods to reuse the functionality of that code by substituting many implementations.
-
-=== Tight coupling
-
-If you have a package and who's every function consumes types that are defined in a different package, this is a sign that those two packages are accidentally coupled.
-Your package, sitting at the head of a tall stack of dependencies, is setting itself up to be tossed about on the winds of change.
-
-Your type and methods should describe their dependencies not in terms of their type, but their behaviour.
-
-- implicit interfaces
-- define your own interface
-- reduce the number of dependencies your package has by reducing the number of import statements.
-
-So if all code is factored into these discrete chunks, then where i
-At the main package,
-
-
-Long tall, brittle import hieriarchies
-
-As we saw earier, types with the same underlying types can be converted from one to the other.
-Interfaces share the same property.
-Two interface types that have the same underlying set of methods are considered to be equal.
-
-Clients, functions and methods that take values, should depend on interface types, and those interfaces should be as narrow as possible.
-This reduces, possibly eliminates, their coupling to the concrete implementation they are provided at run time.
-
-=== Implicit interfaces
-
-Packages should interact using interface values, rarely concrete types.
-Those interface values can be defined by the caller, or the callee.
-
-Bonus: in Go, interface's are implemented implicitly. Which means you no longer need to import a package to ensure you share the same interface definition. In Go, interfaces types are equal if their method sets are equal, and as we saw earlier one can define a smaller interface (fewer methods)
-
-DIP means moving from using concrete types to describe the implementation of a type, to interfaces which describe the expected behaviour
-
-DIP encourages you to reduce the number things your code expects from the source level--in Go we see this with a reduction in the number of `import` statements--to run time.
-This is crucial because if the code is written to expect _anything_ that implements a certain interface, a certain behaviour--behaviour that the code defines--not imports from somewhere else.
+In Go, the import graph must be acyclic.
+A package is not permitted to import itself, either directly, or transitively.
 
 == A theme
 
