@@ -56,7 +56,7 @@ In effect, I hold them to be self evident, as hopefully do you as indicated by y
 
 == Will it blend?
 
-[quote, Alan Donnovan and Brian Kernighan, The Go Programming Language]
+[quote, Alan Donovan and Brian Kernighan, The Go Programming Language]
 The Go project includes the language itself, its tools and standard libraries, and last but not least, a cultural agenda of radical simplicity.
 
 The hallmark of Go's design aesthetic is simplicity.
@@ -121,7 +121,7 @@ func Dial(network, address string) (net.Conn, error)
 func loop(fn func())
  
 type Counter struct { val int }
-type guage struct { Val int }
+type gauge struct { Val int }
 ----
 In Go, all code lives inside a package, even the main function--which we call, not surprisingly, the main package.
 In this package delineated world, the units of change are package's visible elements.
@@ -552,9 +552,6 @@ By applying the interface segregation principal to `Save` it has simultaniously 
 
 == Dependency inversion principal
 
-At this point, hopefully you'll agree with me that in Go, interfaces describe the behaviour of components, types provide the implementations.
-As Go's interfaces are satisfied _implicitly_, it is not the implementation that dictates which interfaces it implements, that privilege belongs to the consumer.
-
 The final SOLID principal is the dependency inversion principal.
 
 [quote, Robert C. Martin]
@@ -570,10 +567,42 @@ If you've applied all the principals up to this point your code should be factor
 Your code should describe its dependencies in terms of interfaces, and those interfaces should be factored to describe only the behaviour thoes functions require.
 In other words, there shouldn't be much left to do at this point.
 
-The only thing remaining to consider at this point is to talk about source level coupling.
+So it is clear that this sort of code.
+----
+package before
+
+import "somepackage"
+
+func SomeFunction(t *somepackage.SomeType)
+----
+Should be better rewritten as 
+----
+package after
+
+import "somepackage"
+
+func SomeFunction(i somepackage.AnInterface)
+----
+You've decoupled the operation of `SomeFunction` from the concrete that is passed to it.
+But `SomeFunction` still depends on `somepackage` for the definition of `AnInterface`.
+There is not value in refactoring your code to depend on an interface if you the go and import the same package for its interface definition, not its concrete definition.
+This is an example of source level, or compile time, coupling.
 
 In Go, the import graph must be acyclic.
 A package is not permitted to import itself, either directly, or transitively.
+A failure to respect this acyclic requirement is grounds for a compliation failure, but more gravely represents a serious error in design.
+All things being equal you want your program to be structured into a large, relatively flat import graph, rather than a tall narrow one.
+
+If you have a package whose functions cannot operate without enlisting the aid of another, that is perhaps a sign that code is not well factored along package boundaries.
+
+[quote, Robert C. Martin]
+____
+A. High-level modules should not depend on low-level modules. Both should depend on abstractions.
+B. Abstractions should not depend on details. Details should depend on abstractions.
+____
+
+The dependency inversion principal encourages you to pass the responsibility for the specifics, the concretions, as high as possible up the import graph, leaving the lower level code to deal with abstractions.
+Instead depend on common shared interface, or even define your own with only the methods you require.
 
 == A theme
 
