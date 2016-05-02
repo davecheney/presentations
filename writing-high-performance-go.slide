@@ -327,7 +327,7 @@ Using `GODEBUG=gctrace=1` is good when you _know_ there is a problem, but for ge
 
 Importing the `net/http/pprof` package will register a handler at `/debug/pprof` with various runtime metrics, including:
 
-- A list of all the running goroutines, `/debug/pprof/heap?debug=1`. 
+- A list of all the running goroutines, `/debug/pprof/goroutines?debug=1`. 
 - A report on the memory allocation statistics, `/debug/pprof/heap?debug=1`.
 
 *Warning*: `net/http/pprof` will register itself with your default `http.ServeMux`.
