@@ -16,6 +16,8 @@ http://dave.cheney.net/
 
 * Named and unnamed
 
+TODO: rename to "assignment"
+
 Does this code compile ?
 
 .play gopher-puzzlers/named-and-unnamed.go /START OMIT/,/END OMIT/
@@ -26,6 +28,41 @@ Does this code compile ?
 * Named and unnamed (cont.)
 
 Yes, it does compile.
+
+* Named and unnamed (cont.)
+
+Why is this even a thing ?
+
+Well, if it wasn't, then you wouldn't be able to write things like
+
+    	type stack []uintptr
+	var st stack = make([]uintptr, 20)
+
+* Named and unnamed (cont.)
+
+There is a bigger point here, unamed types are _very_ common in Go. We almost don't see them they are that common.
+
+You'd expect this to not compile
+
+    type TING int
+    
+    func Blort(t TING) {}
+    
+    func main() {
+    	var i int = 200
+    	Blort(i)
+    }
+
+But would you expect this to compile?
+
+    type TING int
+    
+    func Blort(t TING) {}
+    
+    func main() {
+    	Blort(200)
+    }
+
 
 * Two hundred
 
@@ -58,3 +95,15 @@ It gets worse. Closing an fd returns it to the processes table of free file desc
 Question: Why is it important to sleep for a short time before `r.Close()` ?
 
 Question: Why is it important to call `w.Close()` ? What could happen if we don't ?
+
+* Missing panic
+
+This program prints a panic message to the screen.
+
+.play gopher-puzzlers/missing-panic.go
+
+Without using `recover`, can you suppress the panic message?
+
+* Missing panic (solution)
+
+.play gopher-puzzlers/missing-panic.go
