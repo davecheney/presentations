@@ -1,0 +1,69 @@
+Seven ways to profile a Go program
+GolangUK
+18 Aug 2016
+
+Dave Cheney
+Himself
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* Welcome
+
+Hello!
+
+
+
+* What's all this then?
+
+Seven different ways to profile the same program.
+
+Not all of them are available on every platform.
+
+* What program ?
+
+Let's not be coy, 
+
+    go tool compile
+
+* /usr/bin/time
+
+* /usr/bin/time
+
+Show time, show time -v, show /usr/bin/time and /usr/bin/time -v
+
+Show how to use -toolexec and time -f … to profile a build
+
+* Go debug / gctrace
+
+Show godebug, gctrace, schedtrace
+
+* Pprof / pkg/profile
+
+Talk about taking whole program profiles,
+
+* /debug/pprof
+
+Show debug pprof, talk about the memstats interface 
+
+Talk about the differences between full and timed mode
+
+Show graphical view
+
+* Perf
+
+Show perf(1), show -g, 
+
+* Flame graph
+
+Show pprof -> flame graph using go-uber
+
+* Trace
+
+Show trace support, best til last.
+
+* Why 
+
+Different tools give you a different perspective on the performance of your application.
+
+Maybe you don't need to know always use every one of these tools, but a working knowledge of most will serve you well.

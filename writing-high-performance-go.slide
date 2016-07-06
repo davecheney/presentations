@@ -407,7 +407,7 @@ _Before:_
 
 _After:_
 
-    b := make(b, 0, 40) // guess
+    b := make([]byte, 0, 40) // guess
     b = append(b, request.ID...)
     b = append(b, ' ')
     b = append(b, addr.String()...)
