@@ -1,0 +1,60 @@
+Gopher Puzzlers
+Golang Paris
+11 Oct 2016
+
+Dave Cheney
+Canonical
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* Who's read this book ?
+
+.image gopher-puzzlers/java-puzzlers.jpg 461 _ 
+
+* How well do you know your language ?
+
+* Named and unnamed
+
+Does this code compile ?
+
+.play gopher-puzzlers/named-and-unnamed.go /START OMIT/,/END OMIT/
+
+- Yes - Why ?
+- No - Why not ?
+
+* Named and unnamed (cont.)
+
+Yes, it does compile.
+
+* Two hundred
+
+What does this program print ?
+
+.play gopher-puzzlers/twohundred.go /START OMIT/,/END OMIT/
+
+* Snowman or poop
+
+On _Linux_ what will this program print ?
+
+.code gopher-puzzlers/snowman-or-poop.go /START OMIT/,/END OMIT/
+
+* Snowman or poop (cont.)
+
+`os.Pipe` calls `pipe(2)` and returns two `*os.File` values. We called them `r` for reader and `w` for writer, but in truth they are bi-directional.
+
+If either end can be a reader _and_ a writer _and_ a closer, why does it matter which end calls close ?
+
+.link https://github.com/golang/go/issues/10001
+
+* Snowman or poop (cont.)
+
+It gets worse. Closing an fd returns it to the processes table of free file descriptors. Suddenly that read(2) on fd 7 is reading a different fd.
+
+.link http://man7.org/linux/man-pages/man2/close.2.html#NOTES
+
+* Snowman or poop (cont.)
+
+Question: Why is it important to sleep for a short time before `r.Close()` ?
+
+Question: Why is it important to call `w.Close()` ? What could happen if we don't ?
