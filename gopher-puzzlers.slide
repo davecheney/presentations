@@ -107,3 +107,26 @@ Without using `recover`, can you suppress the panic message?
 * Missing panic (solution)
 
 .play gopher-puzzlers/missing-panic.go
+
+* Missing panic (cont.)
+
+What's going on here.
+
+- fd 2 is considered by the runtime to be stderr, panic messages are written to it. TODO(dfc) add link to runtime code
+
+- fd 2 is initalised as os.Stderr by the os package. TODO(dfc) code sample and link to os code
+
+- If we close os.Stderr, file descriptior 2 is now closed so the write of the panic message
+
+* Missing panic (cont.)
+
+This is something that cannot be fixed without breaking backward compat.
+
+- Maybe `os.Stderr` should not be a `*os.File`.
+
+- Probably still has to retain a `Close` method.
+
+- You can redirect panic messages to another location by replacing fd 2.
+
+- Probably not a serious problem, you can do this in almost every language.
+- Someone replacing
