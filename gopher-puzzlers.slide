@@ -130,3 +130,81 @@ This is something that cannot be fixed without breaking backward compat.
 
 - Probably not a serious problem, you can do this in almost every language.
 - Someone replacing
+
+* Unicode package name
+
+Can you use Unicode as a package name
+
+Can you use emoji as a package name?
+
+TODO: which of these package names are valid ?
+
+* Panicing mutex
+
+What happens when mutex unlock panics, https://github.com/golang/go/issues/13879.
+
+* Semaphores
+
+Two different ways of implementing a semaphore
+
+Why
+
+What's the difference. 
+
+* hide a panic
+
+Close os.Stderr, and then hit a panic.
+
+* keywords 
+
+Which of these three functions will not compile
+
+func A(string string) string {
+    return string+string
+    }
+
+func B(l len) int
+
+func C(val, default string) string {
+    If val == " 
+
+...
+
+* Declarations
+
+Which of 
+
+Type (
+
+
+)
+
+Import (
+
+
+)
+
+Const (
+
+)
+
+Var (
+
+
+)
+
+func (
+
+)
+
+Is not valid go syntax?
+How many other declarations cannot use this form?
+
+* Why isn't Len a method on a slice?
+
+Stylistic 
+
+Also it would mean that an unnamed type had a method, which wouod mean a receiver with an unnamed type. 
+
+Worse a named slice type wouod not have a Len method. 
+
