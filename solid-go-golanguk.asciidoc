@@ -1,0 +1,563 @@
+= SOLID Go design
+Dave Cheney <dave@cheney.net>
+v1.0, 3rd May, 2016
+
+== Welcome
+
+Welcome.
+
+Good morning and thank you for coming to my talk.
+My name is David, I'm a Go programmer from Sydney, and I'm delighted to be able to talk about Go at a technical conference here in my home country. 
+
+I want to open my talk this morning with by continuing the theme that Damian asked last year.
+How many Go programmers are there in the world?
+
+I'll be honest with you, I don’t know the number the exact number.
+Damian had a guess last year.
+
+[quote, Damian Gryski]
+____
+
+____
+
+
+Odesrsky said last year that there are around 100 thousand scala deveolopers. Do you think this is growing ? Possibly, but certainly not as quickly as the number of Go deveopers.
+
+This stat is a few years out of date, but there are around 19 million Java developers in the world.
+
+OK, let's leave this question for a bit.
+
+== The Go standard library
+
+How many of you have read the source of the Go standard library?
+What did you think?
+Is it good?
+All of it?
+Which bits didn't you like?
+Can you tell me why?
+What makes you think it's [good, well designed]?
+
+Before I begin I must note that compared to the decades of experience of my fellow speakers at this conference, I feel like somewhat of an interloper.
+Although a keen amateur since childhood, I arrived at the software development profession late in life.
+My own career, until recently, was focused on what we now call operations.
+So I ask that you do not view me as an expert, at best, a peer.
+
+== Code review
+
+Ok, let's change tacks.
+Who here does code review as part of their job?
+Ok, how do you do it ?
+
+So, what are some of the things that you look for in a review?
+How do you know when code is good ?
+Testing, ok, what about tests,
+Is it sufficient to have tests ?
+How can you tell if tests are good ?
+
+Most importantly, why do I keep saying good?
+This sort of implies there is a kind of binary nature to code; good code implies the presence of bad code.
+
+So what are the properties of bad code that you might pick up on in code review.
+
+- Rigidity. Is the code rigid, does it have such a straightjacket of overbearing types and settings that change is impossible?
+- Fragility. Is the code fragile, such that the slightest change ripples throught the codebase causing untold havoc?
+- Immobility. T
+- Needlessly complex. Is there code for the sake of having code, are things overengineered in the hope that one day you'll need it. YAGNI?
+- Needlessly verbose. Is it just exhausting to use the code?
+- Opacity. 
+
+Are these positive sounding words?
+Would you be pleased to see these works used in a review of your code.
+
+== Good design smells
+
+ok, so that's great, now we can say things like "i don't like this, it's too tightly coupled", but what can we do about it ? How can we fix the design.
+
+Ok. So in code review, you're looking for a good design.
+But, how did you learn what good design was?
+How did you learn the rules of design that you applying when considering other code for review?
+
+Wouldn't it be great if there was some way to codify good design.
+Wouldn't that be neat?
+Wouldn't that make things easier, if we all spoke the same language of design.
+Just as we all speak the same language of source code?
+
+Do you think that would be useful ?
+
+what are the signs of good design ?
+
+== Patterns
+
+image GOF patterns book
+
+Who’s read this book ?
+If you haven’t read all of it, you’ve probably heard of it.
+Who thinks this book teaches you good design?
+
+Ok. What about negative responses, who doesn't like this book?
+Who thinks this book does _not_ teach you good design?
+
+I don't think you'll find advice for good design here.
+Certainly rules for cookie cutter patterns, but that's about it.
+Lead into Bob's book, it came out in 2003 but most of the content came from the mid to late 90's. What langauges were prevelant in that timeframe?
+
+== CHANGE
+
+TODO describe a need for software that is amenable to change.
+
+== Design principals
+
+image Agile Software Development, Principles, Patterns, and Practice
+
+Who's read this book?
+Admitedly it's getting quite expensive these days
+
+In his book, __Agile Software Development: Principles, Patterns, and Practices__, Robert Martin introduces a series of ideas for the construction of software that is amenable to change.
+Martin later codified these ideas as the SOLID principals in an article entitled __Principals of Object Oriented Design__footnote:[http://butunclebob.com/ArticleS.UncleBob.PrinciplesOfOod] and a series of what we would now call, white papers.
+
+Do you think that if patterns are too didactic, the prescriptive, perhaps a more holistic idea of abiding by principals will give us a clue about what is a well designed Go program, and what is one that is not as well designed.
+
+
+== Single responsibility principal
+
+We’ll open with the S in solid, which stands for the single responsibility principle.
+
+It’s potentially the most well known.
+
+Let's open with the single responsibility principal.
+
+The SRP states
+
+[quote, Robert C. Martin]
+____
+A class should have one, and only one, reason to change.
+____
+
+Why is it important that as a unit, a piece of code should have only one impetus for change?
+Why should a programmer care about this level of taxonomy?
+Because as distressing as the idea that your own code may change, it is far more distressing that code your code depends on is changing under your feet.
+
+When your code does have to change, it should do so in response to a direct stimuli, it shouldn't be a victim of collateral damage.
+Two pieces of code that are highly sensitive to change in their counterpart are said to be tightly coupled.
+Coupling is simply a word that describes two things change together--a change in one induces a change in another.
+Therefore, code that has fewer responsibilities has fewer reasons to change.
+
+COHESION
+
+=== The Go package model
+
+To describe the units of coupling and cohesion in a Go program, we might talk about functions and methods, as is very common when discussing SRP but really it starts with the go package model.
+
+Go packages are composed of various elements; constants, variables, types, functions, and methods.
+
+Each of these can be either public or private, or if you like, exported or unexported.
+
+and true to Go's focus on simplicity, everything in a package is by default private unless its identifier starts with an upper case letter
+
+=== Package names
+
+In Go, all code lives inside a package, even the main entry function--which we call, not surprisingly, the main package.
+
+A well designed package starts with its name, which is both a description of its purpose, and a name space prefix. Some examples of good packages from the Go standard library might be:
+
+http, which provides http clients  and  servers
+
+exec, which runs external commands
+
+json, which implements encoding and decoding of JSON documents.
+
+When you use another package's symbols inside your own this is accomplished by the `import` declaration, which establishes a source level dependency (coupling?) between two packages.
+
+Once imported, the symbols of a package are always prefixed with the name of their package. This makes it trivial to discern where an identifier is declared.
+
+=== Bad package names
+
+This focus on names is not just noun pedantry.
+
+A poorly named package misses the opportunity to enumerate its purpose, if indeed it had one
+
+What does the server package provide … well a server, hopefully, but which protocol ?
+
+what does the private package provide? Things that I should not see?
+
+And package common, is often found close because if gone to that level of granularity, you’ll have a server package, you’ll need a client package, and a common package. All three are code smells.
+
+Catch all packages become a dumping ground for miscellany, Jack's of all trades, yet responsible to no one, and change frequently and without cause.
+
+=== McIlroy's revenge
+
+No discussion of Go, or decoupled design in general, would be complete without mentioning Doug McIlroy.
+
+In 1964 Doug McIlroy postulated about the power of pipes for composing programs.
+
+McIlroy’s observations became the foundation of the UNIX philosophy; small, sharp tools which combine to solve larger tasks which oftentimes were not envisioned by the original authors.
+
+I think that Go packages embody the spirit of the UNIX philosophy. In effect each Go package is itself a small Go program, with access to the entire language.
+
+And just like programming with the unix shell, Go programs are therefore composed by combining loosely coupled packages together.
+
+== Open / Closed principal
+
+The second principle, the O, is the open closed principle
+
+In is 1988 book, Object-Oriented Software Construction, Bertrand Meyer defined the Open / Closed principle.
+
+[quote, Bertrand Meyer, Object-Oriented Software Construction]
+____
+Software entities should be open for extension, but closed for modification.
+____
+
+which, as re-interpreted by SOLID, states that classes should be open for extension, but closed for modification.
+
+Go does not have classes, however we do have types, and methods on types.
+
+== Liskov substitution principal
+
+Coined in 1988 by Barbara Lisvok during her keynote address to the ACM SIGPLAN conference, the Liskov substitution principal states, roughly, that two types are substitute if they exhibit behaviour such that the caller is unable to tell the difference.
+
+In a class based language, Liskov's substitution principal is commonly interpreted as a specification for an abstract base class with various concrete implementations.
+But Go does not have classes, or inheritance, so substitution cannot be implemented in terms of an abstract class.
+
+As we saw above, if you have a type
+----
+type B struct {
+	A
+}
+----
+And a function that takes a pointer to an `A`
+----
+func update(a *A)
+----
+You can, because the type is public, thus it's embedded field is public, pass a pointer to `B`'s `A` field to the `update` function.
+----
+var b B
+update(&b.A)
+----
+The embedded `A` structure inside `B` is unaware of the fact it is part of a larger structure, just as values in memory are unaware of their neighbours.
+But this isn't really substitution.
+
+=== Interfaces
+
+Substitution in Go is the purview of interfaces.
+
+While Go's packaging system draws strongly from Modula-2, and it's successor Oberon, the design of Go's interfaces are likely influenced by Python's protocols, a legacy from the environment where Go was born. 
+
+In Go, types are not required to nominate, either by an `implements` declaration or by extending from an abstract type, that they implement a particular interface. 
+_Any type_ can implement an interface provided it has methods whose signature matches the interface declaration.
+
+While it is not possible to modify a type from another package, at any time an interface may be defined, and if a type satisfies the interface, then automatically that type _is_ an implementation of the desired interface.
+We say that in Go interfaces are satisfied implicitly, rather than explicitly, and this has a profound impact on how they are used in the language.
+
+=== Small interfaces
+
+Well designed interfaces are more likely to be small interfaces; the prevailing idiom is an interface contains only a single method.
+It follows logically that small interfaces lead to simple implementations, because it is hard to do otherwise.
+Leading to packages comprised of simple implementations connected by common behaviour.
+
+A canonical example of small interfaces are the canonical stream oriented behaviours found in the `io` package.
+----
+type Reader interface {
+	// Read reads up to len(buf) bytes into buf. 
+	Read(buf []byte) (n int, err error)
+}
+
+type Writer interface {
+	// Write writes len(buf) bytes from buf to the underlying data stream.
+	Write(buf []byte) (n int, err error)
+}
+
+type Closer interface {
+	// Close closes the underlying data stream.
+	Close() error
+}
+----
+Read reads data into the supplied buffer, and returns to the caller the number of bytes that were read, and possibly an error encountered during read.
+Write writes the contents of the buffer, which may be less than the total size of the buffer if an error occured.
+Close closes the stream, signalling that no further processing will be done.
+
+These three interfaces are highly pervasive inside Go programs, and because of their simple contract, they permit many decoupled implementations. For example
+----
+package io
+
+// MultiReader returns a Reader that's the logical concatenation of the provided input readers.
+func MultiReader(readers ...Reader) Reader
+
+// LimitReader returns a Reader that reads from r but stops with EOF after n bytes.
+func LimitReader(r Reader, n int64) Reader
+----
+`io.MultiReader` takes a variable number of `Reader`'s and returns a single `Reader` which will consume data from each underlying reader until it's exhausted.
+
+The `LimitReader` wraps a reader that will read until it's end of file, into a reader that returns end of file after a certain number of bytes.
+----
+package io
+
+// TeeReader returns a Reader that writes to w what it reads from r.
+func TeeReader(r Reader, w Writer) Reader
+
+// MultiWriter creates a writer that duplicates its writes to all the provided writers.
+func MultiWriter(writers ...Writer) Writer
+----
+The `TeeReader`, analogus to the the `tee(1)` command, returns a `Reader` that copies any data read through it to a `Writer`, effectively enabling you to snoop on `Read` operations. The companion `MultiWriter` returns a `Writer` which copies each `Write` operation to each of the supplied writers.  
+----
+package strings
+
+// NewReader returns a new Reader reading from s.
+func NewReader(s string) *Reader
+
+package bytes
+
+// NewReader returns a new Reader reading from b.
+func NewReader(b []byte) *Reader
+----
+Further afield we have functions which create a reader over a `string` or `[]byte` slice.
+----
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"os"
+)
+
+func main() {
+	var b bytes.Buffer      // bytes.Buffer needs no initialization.
+	b.Write([]byte("Hello "))
+	fmt.Fprintf(&b, "world!")
+	b.WriteTo(os.Stdout)	// Hello world!
+}
+----
+The `bytes.Buffer` type is a popular in memory implementation of both `io.Reader` and `io.Writer`.
+
+=== Design by contract
+
+Go does not have Eifel's design by contract, but we do have a tradition of small interfaces.
+
+[quote, Jim Weirich]
+Require no more, promise no less
+
+So the Liskov substitution principal could be summarised by this lovely aphorism from Jim Weirich.
+And this is a great segue into the next SOLID principal.
+
+== Interface segregation principal
+
+[quote, Robert C. Martin]
+Clients should not be forced to depend on methods they do not use.
+
+The interface segregation principal states that clients should not be forced to depend on irrelevant parts of an interface.
+When Martin talks about interfaces, he's making a broader definition than the one I just described in Go because interfaces in C++ are wedded to a notion of an absract type in a class heirarchy.
+
+In Go the application of the interface segregation principal can refer to a process of isolating the behaviour required for a function to do its job.
+As a concrete example, say I've been given a task to write a function that persists a data structure, describing some kind of document, to disk.
+I could specify this function to take an `*os.File`, a type from the standard library that describes files:
+----
+// Save writes the contents of doc to the file f.
+func Save(f *os.File, doc *Document) error
+----
+`Save`'s signature precludes the option to write the document to a network location, unless it was previously made available as a network share.
+Assuming that network storage was to become requirement later, the signature of this function would have to change, impacting all its callers.
+
+`Save` would be unpleasant to test, as it assumes that the host running the test will have access to a writable disk, and I would have to ensure that `f` was written to a temporary location and always removed afterwards.
+Because this function therefore only works with files on disk, to verify its operation, the test would have to read the contents of the file after being written.
+
+`*os.File` also defines a lot of methods which are not relevant to `Save`, like reading directories and checking to see if a path is a symlink.
+It would be useful if the signature of the `Save` function could describe only the parts of `*os.File` that were relevant.
+
+=== Interface abstraction
+
+In Go, we often compose interfaces from smaller ones.
+Just as two types can be considered comparable when they have the same set of fields, two interfaces are equal when they have the same set of methods.
+The `io` package provides an interface composed of the three basic io interfaces we saw earlier:
+----
+package io
+
+type ReadWriteCloser interface {
+	Reader
+	Writer
+	Closer
+}
+----
+Using `io.ReadWriteCloser` we can apply the interface segregation principal to redefine `Save` in terms of an interface that described more general stream shaped things.
+----
+// Save writes the contents of doc to the supplied Writer.
+func Save(rwc io.ReadWriteCloser, doc *Document) error
+----
+With this change, any type that implements the `io.ReadWriteCloser` interface can be substituted for `*os.File`.
+This makes `Save` both broader in its operation, and clarifies to both the caller and author of `Save` which methods of the `*os.File` type are relevant to its operation.
+
+But we can take ISP further to improve this function.
+
+Firstly, it is unlikely that if `Save` follows the single responsibilty principal, it will read the file it just wrote to verify its contents--that should be responsibility of another piece of code.
+So we can narrow the specification for the interface to just writing and closing.
+----
+// Save writes the contents of doc to the supplied Writer.
+func Save(rc io.WriteCloser, doc *Document) error
+----
+Secondly, by providing `Save` with a mechnism to close its `WriteCloser` this raises the question of under what circumstances will `rc` be closed.
+Possibly this will be unconditionally, or it could be only in the case of success.
+This presents a problem for the caller of `Save` as it may want to write additional data after the document is written.
+
+One solution would be to define a new type which embeds an `io.Writer` and provides a `Close` method which does nothing.
+----
+type NoCloseWriter struct {
+	io.Writer
+}
+
+func (ncw NoCloseWriter) Close() error { return nil }
+
+nc := NoCloseWriter{Writer: f}
+err := Save(nc, doc)
+if err != nil {
+    ...
+}
+----
+A better solution would be to redefine `Save` to take only an `io.Writer`, stripping it of the responsibilty to do anything but write data to a stream.
+----
+// Save writes the contents of doc to the supplied Writer.
+func Save(rc io.Writer, doc *Document) error
+----
+By applying the interface segregation principal to `Save` it has simultaniously become the most specific in its requirements--it only needs a thing that is writable--and the most general in its function, it can write a document to anything which is writable.
+
+== Dependency inversion principal
+
+The final SOLID principal is the dependency inversion principal.
+
+[quote, Robert C. Martin]
+Depend on abstractions, not on concretions.
+
+What is a concretion, and how does it invert one's dependencies.
+What does dependency inversion mean in practice for Go programmers?
+
+At a basic level if a concretion is a type, an abstraction would therefore be an interface.
+More fundamentally a concretion is one piece of code depending on another.
+
+If you've applied all the principals up to this point your code should be factored into discrete packages units with a well defined purpose.
+Your code should describe its dependencies in terms of interfaces, and those interfaces should be factored to describe only the behaviour thoes functions require.
+In other words, there shouldn't be much left to do at this point.
+
+So it is clear that this sort of code.
+----
+package before
+
+import "somepackage"
+
+func SomeFunction(t *somepackage.SomeType)
+----
+Should be better rewritten as 
+----
+package after
+
+import "somepackage"
+
+func SomeFunction(i somepackage.AnInterface)
+----
+You've decoupled the operation of `SomeFunction` from the concrete that is passed to it.
+But `SomeFunction` still depends on `somepackage` for the definition of `AnInterface`.
+There is not value in refactoring your code to depend on an interface if you the go and import the same package for its interface definition, not its concrete definition.
+This is an example of source level, or compile time, coupling.
+
+In Go, the import graph must be acyclic.
+A package is not permitted to import itself, either directly, or transitively.
+A failure to respect this acyclic requirement is grounds for a compliation failure, but more gravely represents a serious error in design.
+All things being equal you want your program to be structured into a large, relatively flat import graph, rather than a tall narrow one.
+
+If you have a package whose functions cannot operate without enlisting the aid of another, that is perhaps a sign that code is not well factored along package boundaries.
+
+[quote, Robert C. Martin]
+____
+A. High-level modules should not depend on low-level modules. Both should depend on abstractions.
+B. Abstractions should not depend on details. Details should depend on abstractions.
+____
+
+The dependency inversion principal encourages you to pass the responsibility for the specifics, the concretions, as high as possible up the import graph, leaving the lower level code to deal with abstractions.
+Instead depend on common shared interface, or even define your own with only the methods you require.
+
+== A theme
+
+Each of Martin's SOLID principals are powerful ideas in their own right, but taken together they have a central theme; dependency management.
+I'm not talking about `go get` depenendencies, i'm talking about the dependencices between software units.
+The dependencies between functions, the dependencies between types, the dependencies between packages.
+This is another way of saying "decoupling", which is indeed the goal, because software that is loosely coupled is software that is easier to change.
+
+- SRP encourages you to structure your functions and types into packages that exhibit natural cohesion, the types belong together, they serve a singular purpose.
+- OCP encourages you to compose types with embedding rather than extend them through inheritance.
+- LSP encourages you to describe the dependencies between your packages in terms of interfaces, not concrete types. By defining small interfaces, we can be more confident that implementations satisfy the behaviour of the interface.
+- ISP takes that idea further and encourages you to define functions and methods that depend only on the behaviour that they need. If your function on requires a parameter with a single interface method, then it is more likely to have only one responsibility.
+- DIP encourages you to refactor the number things your code expects from the source level--in Go we see this with a reduction in the number of `import` statements--to run time.
+
+== In Closing
+
+[quote,Sandi Metz]
+Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
+
+If you were to summarise this talk it would probably be; interfaces let you apply SOLID principals to Go programs.
+Interfaces in Go are a unifying force; they are _the_ means of describing behaviour.
+
+Interfaces let programmers describe what their function, method, or package provides--not how it does it.
+This shouldn't really be a surprise, as Go's interfaces provide the language with polymorphic dispatch, which really is the core of object orientation.
+
+
+In conclusion,
+
+Do the SOILD principals apply to Go ? Yes, the SOILD principals apply to go.
+
+but
+
+Do does each principal apply to Go uniformly ? Maybe
+
+My colleague William writes SOLID like this (so)LID, and he's got a point, SRP isn't just a principal, it's an axiom of design, build things that do one and only one thing, then compose them with other things with a thing who's only job is to be that connective tissue.
+
+The solid principals are not
+
+== Conclusion
+
+In closing, let's return to the question I opened this talk.
+How many go developers are there?
+
+Here as my guess:
+
+[quote, me]
+____
+By 2020, there will be 500,000 Go developers?
+____
+
+Is that so hard to believe, that's only five times the number of Scala programmers today.
+
+So what will half a million go programmers do with their time?
+Well, they’ll write a lot of Go code and, to be frank, most of it won't be very good, or at least, very remarkable. 
+
+I do not say this to be cruel, and I certainly don't mean to imply these poor programs will be written by the people in this room. 
+
+But similarly, every one of you in this room with experience with development in other languages, some with much larger followings that possibly Go will ever achieve, know from your experience, to be a true prediction.
+And this is my point, the derision we use to put down other languages for bloated, poor design, could happen to Go.
+The same veribage that daemonises other languages for being overcomplicated or unworable, or just in need of a damn good rewrite, will happen to Go.
+
+[ image Spring Framework, Golang edition ]
+
+unless
+
+unless two thigns
+
+The first, is Go programmers need to stop talking about frameworks, and start talking about design.
+We need to stop focusing on performance at all cost, and focus on reuse at all cost. 
+
+Now is the time to stop talking about what other languages cannot do.
+Now is the time to start talking about what you can do with our language.
+About the problems you can solve, and how you solve them
+About how to design software that is well engineered, decoupled, reusable, and above all responsive to changing requirements.
+
+The biggest threat to Go will not be a faster, special purpose language, but the ability of Go programmers, as a population, to not make such a hash of it that it starts to look like the risible state of Java these days. 
+What I would like to see, in general, is a raising of the level of discussion about Go; everyone can stop whining about generics and petty schoolyard arguments about what Go does better than language X and what language Y does better than Go -- that's a zero sum game, everyone loses.
+
+What I want to see is people talking about how to use the language we have today, whatever its choices and limitations, to design solutions and solve problems. 
+
+And second, we need to tell the rest of the world how good software should be witten.
+Good software, composable software, software that is ameable to change, and show them how to do it, in Go.
+And that starts with you.
+
+[quote, Atlassian]
+____
+Be the change you seek
+____
+I worked for several years for a 
+
+Thank you.
