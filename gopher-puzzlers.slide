@@ -8,7 +8,10 @@ dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
+
 * Who's read this book ?
+
+.html code.html
 
 .image gopher-puzzlers/java-puzzlers.jpg 461 _ 
 
@@ -168,7 +171,7 @@ func B(l len) int
 func C(val, default string) string {
     If val == " 
 
-...
+/// ...
 
 * Declarations
 

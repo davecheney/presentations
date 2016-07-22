@@ -13,7 +13,6 @@ http://dave.cheney.net/
 Hello!
 
 
-
 * What's all this then?
 
 Seven different ways to profile the same program.
@@ -25,6 +24,19 @@ Not all of them are available on every platform.
 Let's not be coy, 
 
     go tool compile
+
+* Profiling basics
+
+Before you profile, you must have a stable environment to get repeatable results.
+
+- The machine must be idle—don't profile on shared hardware, don't browse the web while waiting for a long benchmark to run.
+- Watch out for power saving and thermal scaling.
+- Avoid virtual machines and shared cloud hosting; they are too noisy for consistent measurements.
+- There is a kernel bug on OS X versions less than El Capitan; upgrade or avoid profiling on OS X.
+
+If you can afford it, buy dedicated performance test hardware. Rack them, disable all the power management and thermal scaling and never update the software on those machines.
+
+For everyone else, have a before and after sample and run them multiple times to get consistent results.
 
 * /usr/bin/time
 
