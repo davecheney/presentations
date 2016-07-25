@@ -385,7 +385,7 @@ Well designed interfaces are more likely to be small interfaces; the prevailing 
 
 It follows logically that small interfaces lead to simple implementations, because it is hard to do otherwise.
 
-Which leads to packages comprised of simple implementations connected by common behaviour.
+Which leads to packages comprised of simple implementations connected by common _behaviour_.
 
 A canonical example of small interfaces are the stream oriented interfaces found in the `io` package.
 ----
