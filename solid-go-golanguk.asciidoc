@@ -8,14 +8,14 @@ Good morning and thank you for coming to my talk.
 
 Before I begin, I want to give a nod to Damian's talk from last year and ask this question:
 
-How many Go programmers are there in the world?
+_How many Go programmers are there in the world?_
 
 Does anyone want to have a guess?
 
 _wait for responses_
 
 OK, those are some good guesses.
-Let's come back to this question at the end.
+I have my own suggestion, but we'll come back to this question at the end of the talk.
 
 == The Go standard library
 
@@ -36,12 +36,10 @@ Who here does code review as part of their job?
 
 // slide: code review vs pair programming https://twitter.com/davecheney/status/730194450371117056
 
-Ok, how do you do it ?
+If code review is there to catch bad code, then you should also be able to recognize good code when you see it.
+What are some of the things that you look for when doing a code review?
 
-So, what are some of the things that you look for when doing a code review?
 How do you know if the code you're reviewing is good, or bad?
-
-If code review is there to catch bad code, then you should also be able to recognise good code when you see it.
 
 What about tests?
 Is it sufficient to have tests ?
@@ -49,32 +47,32 @@ How can you tell if they're any good?
 
 == Good code
 
-Why do I keep saying good?
+Why do I keep saying good code.
 
 After all, we're talking about a computer program.
-This isn't popular fiction, source code isn't trying to evoke an emotinoal response.
+This isn't popular fiction, source code isn't trying to evoke an emotional response.
 
-But this is the thing, whenever we discuss software, as a group, inevitably the discussion turns to adjectives like good; good code, good design, good style, and so on.
+But this is the thing, whenever we discuss software, inevitably the discussion turns to adjectives like good; good code, good design, good style, and so on.
 
-This sort of implies there is a kind of binary nature to code; good code implies the presence of bad code.
+This sort of implies there is a kind of binary nature to code; good code must imply the presence of bad code.
 
 == Bad code
 
 What are the properties of bad code that you might pick up on in code review.
 
 === Rigidity.
-Is the code rigid, does it have such a straightjacket of overbearing types and parameters, that making modification difficult.
+Is the code rigid, does it have such a straight jacket of overbearing types and parameters, that making modification difficult.
 
 === Fragility.
-Is the code fragile, such that the slightest change ripples throught the codebase causing untold havoc?
+Is the code fragile, such that the slightest change ripples through the code base causing untold havoc?
 
 === Immobility.
-Is the code hard to refactor, is it one keystoke away from an import loop?
+Is the code hard to refactor, is it one keystroke away from an import loop?
 
-=== Needlessly complex.
-Is there code for the sake of having code, are things overengineered in vain hope that one day you might need to implement some obscure option?
+=== Needless complexity.
+Is there code for the sake of having code, are things over-engineered in vain hope that one day you might need to implement some obscure option?
 
-=== Needlessly verbose.
+=== Needless verbosity.
 Is it just exhausting to use the code?
 
 === Opacity.
@@ -83,7 +81,7 @@ Can you even tell what this code is trying to do?
 Are these positive sounding words?
 Would you be pleased to see these words used in a review of your code?
 
-Hopefully not.
+Probably not.
 
 == Good design
 
@@ -124,7 +122,7 @@ And this isn't a surprise, the Design Patterns' authors state themselves that th
 
 Patterns represent observations about the languages in use at the time. Nothing more. 
 
-// quote, patterns represent deficiency in a langauge
+// quote, patterns represent deficiency in a language
 
 == Design principals
 
@@ -152,7 +150,7 @@ So this is what I want to spend some time discussing with you this morning.
 
 == Single responsibility principal
 
-The first principle, and probably the most well known, is the single responsiblity principal, which states:
+The first principle, and probably the most well known, is the single responsibility principal, which states:
 
 [quote, Robert C. Martin]
 ____
@@ -172,14 +170,13 @@ ____
 Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
 ____
 
-The key word there is _change_, software you write, will change over time.
+As authors of software that will be successful, and in that success, grow, and change, a guiding architectural principal must be the construction of software that is amenable to change.
 
 Two pieces of code that are highly sensitive to change in their counterpart are said to be tightly coupled.
-
 Coupling is simply a word that describes two things change together--a change in one induces a change in another.
 
 Therefore, code that has fewer responsibilities has fewer reasons to change.
-And when it does require change, it can do so with as little impact to its surondings.
+And when it does require change, it can do so with as little impact to its surroundings.
 
 A related notion is the idea of cohesion, a force of mutual attraction. 
 
@@ -420,7 +417,7 @@ These three interfaces are highly pervasive inside Go programs, and because of t
 
 Go does not have Eiffel's design by contract, but we do have a tradition of small interfaces.
 
-So the Liskov substitution principle could be summarised in Go by this lovely aphorism from Jim Weirich.
+So the Liskov substitution principle could be summarized in Go by this lovely aphorism from Jim Weirich.
 
 [quote, Jim Weirich]
 Require no more, promise no less
@@ -524,7 +521,7 @@ Your code should describe its dependencies in terms of interfaces, and those int
 
 In other words, there shouldn't be much left to do at this point.
 
-So it’s useful to look at a slightly longer defintion of the dependency inversion principle.
+So it’s useful to look at a slightly longer definition of the dependency inversion principle.
 
 [quote, Robert C. Martin]
 ____
@@ -563,10 +560,12 @@ This is another way of saying "decoupling", which is indeed the goal, because so
 - DIP encourages you to refactor the number things your package depends on at compile time--in Go we see this with a reduction in the number of `import` statements used by a particular package.
 
 If you were to summarise this talk it would probably be; interfaces let you apply the SOLID principles to Go programs.
-Interfaces are a unifying force in Go; they are the means of describing behaviour.
 Interfaces let Go programmers describe what their package provides--not how it does it.
-This shouldn't really be a surprise, as Go's interfaces provide the language with its polymorphism.
-And polymorphism is really the core of all object orientated programming.
+
+// But—and this is crucial—do not merely _substitute_ an interface for concrete types, do not create an interface so you can mock the concrete type, use and interface to _describe_ the behaviour the code expects.
+// Use and interface to describe the contract between two compoents.
+// And, if you do it right, those interfaces will naturally be small.
+// And when I say small, i mean one method, because each type should have only a single responsibility -- a singe purpose -- a single behavoiur
 
 == Coda
 
@@ -625,6 +624,6 @@ Teach a workshop about it
 Write a book about it,
 Come back to this conference next year and give a talk about it.
 
-Because that is how we all can develop a culture of design.
+Because this is how we can develop a culture of Go developers caring about design.
 
 Thank you.
