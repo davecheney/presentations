@@ -38,13 +38,100 @@ If you can afford it, buy dedicated performance test hardware. Rack them, disabl
 
 For everyone else, have a before and after sample and run them multiple times to get consistent results.
 
-* /usr/bin/time
+* time 
+
+* time
+
+The first method of profiling any program, is `time`.
+
+    % time go fmt std
+
+    real    0m5.812s
+    user    0m4.254s
+    sys     0m1.130s
+
+`time` is a builtin
+
+- Linux
+
+    % /usr/bin/time go fmt std
+    8.07user 1.02system 0:09.25elapsed 98%CPU (0avgtext+0avgdata 221940maxresident)k
+    172296inputs+58448outputs (180major+226861minor)pagefaults 0swaps
+
+- OSX
+
+    % /usr/bin/time go fmt std                                                                                                
+        4.64 real         3.72 user         0.93 sys
 
 * /usr/bin/time
 
-Show time, show time -v, show /usr/bin/time and /usr/bin/time -v
+BSD and GNU systems come with a `time(1)` command that is signficantly more powerful than the shell builtin.
 
-Show how to use -toolexec and time -f … to profile a build
+    % /usr/bin/time -v go fmt std
+        Command being timed: "go fmt std"
+        User time (seconds): 7.44
+        System time (seconds): 0.80
+        Percent of CPU this job got: 104%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 0:07.88
+        Maximum resident set size (kbytes): 252864
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 24
+        Minor (reclaiming a frame) page faults: 233455
+        Voluntary context switches: 23564
+        Involuntary context switches: 2146
+        Swaps: 0
+        File system inputs: 16880
+        File system outputs: 0
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Exit status: 0
+
+* /usr/bin/time (cont.)
+
+    % /usr/bin/time -l go fmt std
+            4.66 real         3.73 user         0.90 sys
+       9687040  maximum resident set size
+             0  average shared memory size
+             0  average unshared data size
+             0  average unshared stack size
+        171362  page reclaims
+             4  page faults
+             0  swaps
+             0  block input operations
+             2  block output operations
+             0  messages sent
+             0  messages received
+           159  signals received
+         17182  voluntary context switches
+          7205  involuntary context switches
+
+* Did you know
+
+The go tool has the ability to prefix every command it issues with something you provide.
+
+`go build -toolexec=...`
+
+We use this for 
+
+- `toolstash`, a tool rsc wrote to check the compiler output is byte for byte identical.
+- 
+
+Bonus: go help build
+
+* Why is my build slow?
+
+Most of you know about `go build -x` that shows each command the go tool invokes.
+
+`-x` output can be copied and pasted into the shell to run commands manually.
+
+Laborious, and only realisit
+
+Idea:
+
+- combine `-toolexec` and `/usr/bin/time` to profile the entire build.
+
+DEMO!
 
 * Go debug / gctrace
 
@@ -65,6 +152,8 @@ Show graphical view
 * Perf
 
 Show perf(1), show -g, 
+
+Bonus: use `-toolexec` and `perf` to profile the compiler.
 
 * Flame graph
 
