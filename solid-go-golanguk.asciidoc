@@ -6,7 +6,7 @@ v1.0, 17th August, 2016
 
 Good morning and thank you for coming to my talk.
 
-Before I begin my talk, I want to give a nod to Damian's talk last year by asking:
+Before I begin, I want to give a nod to Damian's talk from last year and ask this question:
 
 How many Go programmers are there in the world?
 
@@ -72,7 +72,7 @@ Is the code fragile, such that the slightest change ripples throught the codebas
 Is the code hard to refactor, is it one keystoke away from an import loop?
 
 === Needlessly complex.
-Is there code for the sake of having code, are things overengineered in the hope that one day you might need to implement some obscure option?
+Is there code for the sake of having code, are things overengineered in vain hope that one day you might need to implement some obscure option?
 
 === Needlessly verbose.
 Is it just exhausting to use the code?
@@ -83,10 +83,13 @@ Can you even tell what this code is trying to do?
 Are these positive sounding words?
 Would you be pleased to see these words used in a review of your code?
 
+Hopefully not.
+
 == Good design
 
 ok, so that's great, now we can say things like "i don't like this because it's too had to modify", or, "i don't like this because i cannot tell what the code is trying to do", but what about leading with the positive?
 
+Wouldn't it be great if there were some ways to describe good design, not just bad design.
 Wouldn't it be great if there was some way to codify good design.
 Wouldn't that be neat?
 
@@ -121,9 +124,11 @@ And this isn't a surprise, the Design Patterns' authors state themselves that th
 
 Patterns represent observations about the languages in use at the time. Nothing more. 
 
+// quote, patterns represent deficiency in a langauge
+
 == Design principals
 
-So, if not patterns, then what?
+So, if not patterns cannot give us a language to talk about good design.
 
 [[agile_book]]
 .Agile Software Development, Principles, Patterns, and Practice
@@ -131,7 +136,7 @@ image::asgppp.jpg[]
 
 Who's read this book?
 
-This book was first published in 2003, and in it, Robert Martin described five principles of reusable software design.
+This book was first published in 2003, by Robert Martini, and in it he described five principles of reusable software design.
 He called these the SOLID principals, after the first letters in their names.
 
 - Single Responsibility Principal
@@ -140,7 +145,7 @@ He called these the SOLID principals, after the first letters in their names.
 - Interface Segregation Principal
 - Dependency Inversion Principal
 
-When Martin describes them in his book, they are described in terms of the languages in use at the time; java, c++, python, smalltalk. 
+This book is a little dated, the languages that it talks about are the ones in use a decade or more ago; java, c++, python, smalltalk. 
 
 But, if patterns are too prescriptive, perhaps a more holistic idea like these principals may give us a clue about how to talk about a well designed Go program.
 So this is what I want to spend some time discussing with you this morning.
@@ -155,16 +160,19 @@ A class should have one, and only one, reason to change.
 ____
 
 Now Go obviously doesn't have classes, instead we have the far more powerful notion of composition.
-but if you can look past the use of the word class, and instead focus on the rest of the sentence; one and only one reason to change, I think there is some value here.
+but if you can look past the archaic use of the word class, and instead focus on the rest of the sentence; one and only one reason to change, I think there is some value here.
 
 Why does this matter?
-Why is it important that as a unit, a piece of code should have only one reason for change?
+Why is it important that a piece of code should have only one reason for change?
 
-Why should a programmer care about this level of taxonomy?
+One of the best answers for this comes from, Sandi Metz:
 
-Because as distressing as the idea that your own code may change, it is far more distressing that code your code depends on is changing under your feet.
+[quote,Sandi Metz]
+____
+Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
+____
 
-When your code inevitably has to change, it should do so in response to a direct stimuli, it shouldn't be a victim of collateral damage.
+The key word there is _change_, software you write, will change over time.
 
 Two pieces of code that are highly sensitive to change in their counterpart are said to be tightly coupled.
 
@@ -188,23 +196,21 @@ Each of these can be either public or private, and true to Go's focus on simplic
 
 === Package names
 
-In Go, all code lives inside a package, even the main entry function--which we call, not surprisingly, the main package.
-
-A well designed package starts with its name, which is both a description of its purpose, and a name space prefix.
+In Go, all code lives inside a package, and a well designed package starts with its name, which is both a description of its purpose, and a name space prefix.
 Some examples of good packages from the Go standard library might be:
 
 - net/http, which provides http clients and servers.
 - os/exec, which runs external commands.
-- json, which implements encoding and decoding of JSON documents.
+- encoding/json, which implements encoding and decoding of JSON documents.
 
-When you use another package's symbols inside your own this is accomplished by the `import` declaration, which establishes a source level dependency (coupling?) between two packages.
+When you use another package's symbols inside your own this is accomplished by the `import` declaration, which establishes a source level coupling between two packages.
 
 Once imported, the symbols of a package are always prefixed with the name of their package.
 This makes it trivial to discern where an identifier is declared.
 
 === Bad package names
 
-This focus on names is not just noun pedantry.
+This focus on names is not just pedantry.
 A poorly named package misses the opportunity to enumerate its purpose, if indeed it had one.
 
     package server
@@ -223,7 +229,7 @@ Catch all packages become a dumping ground for miscellany, Jack's of all trades,
 
 === McIlroy's revenge
 
-No discussion of Go, or decoupled design in general, would be complete without mentioning Doug McIlroy, who postulated in 1964 about the power of pipes for composing programs.
+No discussion of Go, or decoupled design in general, would be complete without mentioning Doug McIlroy, who in 1964 described the power of pipes for composing programs.
 
 McIlroy’s observations became the foundation of the UNIX philosophy; small, sharp tools which combine to solve larger tasks which oftentimes were not envisioned by the original authors.
 
@@ -419,6 +425,8 @@ So the Liskov substitution principle could be summarised in Go by this lovely ap
 [quote, Jim Weirich]
 Require no more, promise no less
 
+And we see this in the trend in API design for libraries to declare function signatures composed of parameters of interface, not concrete types.
+
 And this is a great segue into the next SOLID principle.
 
 == Interface segregation principal
@@ -431,18 +439,21 @@ Clients should not be forced to depend on methods they do not use.
 ____
 
 The interface segregation principle states that clients should not be forced to depend on methods they do not use.
+
 In Go, the application of the interface segregation principle can refer to a process of isolating the behaviour required for a function to do its job.
-As a concrete example, say I've been given a task to write a function that persists a data structure to disk.
+As a concrete example, say I've been given a task to write a function that persists a Document structure to disk.
 ----
 // Save writes the contents of doc to the file f.
 func Save(f *os.File, doc *Document) error
 ----
-I could specify this function to take an `*os.File`, a type from the standard library that describes files.
+I could specify this function to take an `*os.File`, a type from the standard library that represents a file in the local file system of the machine.
 But this has a few problems
 
 The signature of `Save` precludes the option to write the data to a network location, unless it was previously made available as a network share.
-Assuming that network storage is likely to become requirement later, the signature of this function would have to change, impacting all its callers.
-`Save` is also unpleasant to test, as it assumes that the host running the test will have access to a writable disk
+Assuming that in this cloud oriented world, network storage is likely to become requirement later, the signature of this function would have to change, impacting all its callers.
+
+`Save` is also unpleasant to test, as it assumes that the host running the test will have access to a writable disk, and again in this world of containers and read only file systems, this is less of a given than it was a decade ago.
+
 Because this function works directly with files on disk, to verify its operation, the test would have to read the contents of the file after being written.
 
 And I would have to ensure that `f` was written to a temporary location and always removed afterwards.
@@ -508,7 +519,7 @@ What does dependency inversion mean in practice for Go programmers?
 At a superficial level if a concretion is a type, an abstraction would therefore be an interface.
 More fundamentally a concretion is one piece of code depending on another.
 
-If you've applied all the principles we’ve talked about up to this point then your code should be factored into discrete packages, each with a single well defined responsibility or purpose.
+If you've applied all the principles we’ve talked about up to this point then your code should already be factored into discrete packages, each with a single well defined responsibility or purpose.
 Your code should describe its dependencies in terms of interfaces, and those interfaces should be factored to describe only the behaviour those functions require.
 
 In other words, there shouldn't be much left to do at this point.
@@ -543,24 +554,17 @@ The dependencies between functions, the dependencies between types, the dependen
 
 This is another way of saying "decoupling", which is indeed the goal, because software that is loosely coupled is software that is easier to change.
 
+// slide - bad design words
+
 - SRP encourages you to structure the functions, types, and methods of a Go program into packages that exhibit natural cohesion, the types belong together, the functions serve a singular purpose.
 - OCP encourages you to compose types with embedding, rather than extend them through inheritance.
 - LSP encourages you to express the dependencies between your packages in terms of interfaces, not concrete types. By defining small interfaces, we can be more confident that implementations will faithfully satisfy the contract of these interfaces.
 - ISP takes that idea further and encourages you to define functions and methods that depend only on the behaviour that they need. If your function only requires a parameter with a single interface method, then it is more likely that this function has only one responsibility.
 - DIP encourages you to refactor the number things your package depends on at compile time--in Go we see this with a reduction in the number of `import` statements used by a particular package.
 
-== In Closing
-
-In conclusion, Sandi Metz notes that,
-
-[quote,Sandi Metz]
-____
-Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
-____
-
 If you were to summarise this talk it would probably be; interfaces let you apply the SOLID principles to Go programs.
-Interfaces let Go programmers describe what their package provides--not how it does it.
 Interfaces are a unifying force in Go; they are the means of describing behaviour.
+Interfaces let Go programmers describe what their package provides--not how it does it.
 This shouldn't really be a surprise, as Go's interfaces provide the language with its polymorphism.
 And polymorphism is really the core of all object orientated programming.
 
@@ -588,14 +592,14 @@ In his keynote late last year, Martin Odesrsky said last there are around 100 th
 So what will half a million go programmers do with their time?
 Well, they’ll write a lot of Go code and, to be frank, most of it won't be very good, or at least, very remarkable. 
 
-I do not say this to be cruel, and I certainly don't mean to imply these poor programs will be written by the people in this room. 
-But, every one of you in this room with experience with development in other languages, some with much larger followings that possibly Go will ever achieve, knows from your experience that this is a strong possibility.
+Please understand that I do not say this to be cruel, and I certainly don't mean to imply these poor programs will be written by the people in this room. 
+But, every one of you in this room with experience with development in other languages, the languages you can from, to go, some with much larger followings that possibly Go will ever achieve, knows from your experience that this prediction is the truth.
 
 And this is my point, the words we use to deride other languages for being bloated, poorly designed, verbose, or just over engineered, could happen to Go.
 
-The biggest threat to Go will not be a faster, special purpose language, but the ability of all of us, all Go programmers, as a population, to not make such a mess of it that we start to talk about Go in the way that you probably talk about Java today.
+// The same narrative that demonises other languages for being overcomplicated or unworkable, or just in need of a damn good rewrite, may very well happen to Go.
 
-The same narrative that demonises other languages for being overcomplicated or unworkable, or just in need of a damn good rewrite, may very well happen to Go.
+The biggest threat to Go will not be a faster, special purpose language, but the ability of all of us, all Go programmers, as a population, to not make such a mess of it that we start to talk about Go in the way that you probably joke about Java today.
 
 I don't want to see this happen, so I have two requests:
 
@@ -605,7 +609,7 @@ We need to stop focusing on performance at all cost, and focus on reuse at all c
 This is the point in Go's lifecycle to stop talking about what other languages cannot do.
 This is the time to start talking about what we _can_ do, with our language.
 What I want to see is people talking about how to use the language we have today, whatever its choices and limitations, to design solutions and to solve problems. 
-What I want to hear is people talking about how to design software that is well engineered, decoupled, reusable, and above all responsive to changing requirements.
+What I want to hear is people talking about how to design Go progams in a way that is well engineered, decoupled, reusable, and above all responsive to changing requirements.
 
 For my second request, it's great that so many of you are here today to hear from the great lineup of speakers, to meet and network with your compatriates in the audience, but no matter how large GolangUK would ever grow, comparatively we attendees will always be a minority.
 
