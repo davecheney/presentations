@@ -133,13 +133,42 @@ Idea:
 
 DEMO!
 
-* Go debug / gctrace
+* GODEBUG
 
-Show godebug, gctrace, schedtrace
+If `/usr/bin/time` is external, let's turn to something built into every Go program.
 
-* Pprof / pkg/profile
+The Go runtime collects various statistics during the life of your program, these are normally surpressed.
 
-Talk about taking whole program profiles,
+`GODEBUG` controls the display of these statistics
+
+* GODEBUG=gctrace=1
+
+`gctrace=1`
+
+* GODEBUG=schedtrace
+
+* `runtime/pprof`
+
+`runtime/pprof` is another facility built into the runtime of every Go program.
+
+pprof is a general framework for associating the running 
+
+pprof supports the following profiles:
+
+- cpu
+- memory
+- block
+- trace
+
+Trivia: you can register your own profiles, has anyone tried?
+
+* `runtime/pprof` (cont.)
+
+The easiest way to profile a _function_ is with the `testing` package.
+
+`go test` has support for 
+
+* Profiling whole programs.
 
 * /debug/pprof
 
@@ -149,7 +178,11 @@ Talk about the differences between full and timed mode
 
 Show graphical view
 
+Show gcviz
+
 * Perf
+
+
 
 Show perf(1), show -g, 
 
