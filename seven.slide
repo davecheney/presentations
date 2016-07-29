@@ -180,7 +180,17 @@ Show graphical view
 
 Show gcviz
 
+* Framepointers for everyone
+
+Good news everyone!
+
+Go 1.7 has been released and along with a new compiler for amd64, the compiler finally supports frame pointers by default.
+
+Framepointers enable tools like gdb(1) and perf(1) to understand the Go call stack.
+
 * Perf
+
+If you're a linux user, then perf(1) is a great tool for profiling applications, and now with Go 1.7, it works excellently with Go programs.
 
 
 

@@ -211,44 +211,6 @@ ____
 So, how does this advice apply to a language written 21 years later?
 ----
 type A struct {
-       v int
-}
-
-func (a A) Value() int { return a.v }
-
-type B A
-----
-In this example, `type A` is a structure with one field, an integer named `v`.
-Our type `A` has a method `Value` which returns the contents of its `v` field.
-
-We introduce a type `B` which shares the same underlying type as `A`, being careful to note that `B` does not extend `A`, nor is `B` derived from `A`.
-
-Instead, both `A` and `B` share the same underlying type, a structure with one integer field, `v`.
-But that’s all.
-----
-var a A
-a.v = 99
-
-var b = B(a)
-fmt.Println(b.v) // 99
-----
-Sharing the same underlying type means that values of type `A` can be converted to type `B` because ultimately they share the same layout in memory.
-----
-var a A
-a.v = 100
-fmt.Println(a.Value()) // 100
-
-var b B
-b.v = 200
-fmt.Println(b.Value()) // b.Value undefined (type B has no field or method Value)
-----
-However, the method set of `B` is distinct from `A` because while they share the same underlying type, methods are associated only with the type on which they were declared.
-
-Not only has `B` not inherited the Value method from `A`, in fact, in this example the method set of B is empty.
-
-If we want one type to have access to another’s methods, we can instead do something like this:
-----
-type A struct {
         year int
 }
 
@@ -329,7 +291,7 @@ And this brings us to the next principle.
 
 == Liskov substitution principal
 
-Coined in 1988 by Barbara Lisvok, the Liskov substitution principle states, roughly, that two types are substitutable if they exhibit behaviour such that the caller is unable to tell the difference.
+Coined by Barbara Lisvok, the Liskov substitution principle states, roughly, that two types are substitutable if they exhibit behaviour such that the caller is unable to tell the difference.
 
 In a class based language, Liskov's substitution principle is commonly interpreted as a specification for an abstract base class with various concrete implementations.
 
@@ -372,9 +334,10 @@ type Closer interface {
         Close() errorr
 }
 ----
-Read reads data into the supplied buffer, and returns to the caller the number of bytes that were read, and possibly an error encountered during read.
-Write writes the contents of the buffer, which may be less than the total size of the buffer if an error occured.
-Close closes the stream, signalling that no further processing will be done.
+
+- Read reads data into the supplied buffer, and returns to the caller the number of bytes that were read, and possibly an error encountered during read.
+- Write writes the contents of the buffer, which may be less than the total size of the buffer if an error occured.
+- Close closes the stream, signalling that no further processing will be done.
 
 These three interfaces are highly pervasive inside Go programs, and because of their simple contract, they permit many decoupled implementations.
 
