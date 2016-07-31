@@ -14,22 +14,9 @@ Does anyone want to have a guess?
 
 _wait for responses_
 
-OK, those are some good guesses.
-I have my own suggestion, but we'll come back to this question at the end of the talk.
-
-== The Go standard library
-
-How many of you have read the source of the Go standard library?
-
-What did you think?
-Is it good?
-
-Which bits didn't you like?
-Can you tell me why?
+OK, those are some good guesses, keep those in mind, we'll come back to this question at the end of the talk.
 
 == Code review
-
-Ok, one more question before we get into it.
 
 _Who here does code review as part of their job?_
 
@@ -37,30 +24,16 @@ _Who here does code review as part of their job?_
 
 _Why do you do code review?_
 
-If code review is there to catch bad code, then hopefully all of you who practice code review should be able to recognize good code when you see it.
-
-How do you know if the code you're reviewing is good, or bad?
-What are some of the things that you look for when doing a code review?
-
-What about tests?
-Is it sufficient to have tests ?
-How can you tell if they're any good?
-
+If code review is there to catch bad code, how do you know if the code you're reviewing is good, or bad?
 
 == Good code
 
-Why do I keep saying good code?
-
-After all, we're talking about a computer program.
-This isn't popular fiction, source code isn't trying to evoke an emotional response.
+Why do I keep saying good code? Isn't that a bit subjetive ?
 
 Now it's fine to say, "wow that source code is beautiful". Just like you might say, "this painting is beautiful", but these are subjective terms, 
-nd we're looking for objective ways to talk about the properties of good code.
-
-But this is the thing, whenever groups of developers discuss a piece of software, inevitably the discussion turns to adjectives like good; good code, good design, good style, and so on.
+and we're looking for objective ways to talk about the properties of good code.
 
 This sort of implies there is a kind of binary nature to code; good code must admit the existance of bad code.
-//Yet, when I asked you to tell me some things about bad code, you couldn't really answer that.
 
 == Bad code
 
@@ -76,7 +49,7 @@ Is the code fragile, such that the slightest change ripples through the code bas
 Is the code hard to refactor, is it one keystroke away from an import loop?
 
 === Complexity.
-Is there code for the sake of having code, are things over-engineered in vain hope that one day you might need to implement some obscure option?
+Is there code for the sake of having code, are things over-engineered?
 
 === Verbosity.
 Is it just exhausting to use the code?
@@ -106,8 +79,7 @@ Do you think that would be useful ?
 image::asgppp.jpg[]
 
 So back in 2003 Robert Martin published this book.
-In it he described five principles of reusable software design.
-He called these the SOLID principles, after the first letters in their names.
+In it he described five principles of reusable software design, which he called the SOLID principles, after the first letters in their names.
 
 - Single Responsibility Principle
 - Open / Closed Principle
@@ -115,8 +87,7 @@ He called these the SOLID principles, after the first letters in their names.
 - Interface Segregation Principle
 - Dependency Inversion Principle
 
-This book is a little dated, the languages that it talks about are the ones in use a decade or more ago; java, c++, python, smalltalk. 
-This gives you a clue to the era that robert martin comes from.
+This book is a little dated, the languages that it talks about are the ones in use a decade or more ago.
 
 But, perhaps there are some aspects of the SOLID principles that may give us a clue about how to talk about a well designed Go programs.
 So this is what I want to spend some time discussing with you this morning.
@@ -131,10 +102,9 @@ A class should have one, and only one, reason to change.
 ____
 
 Now Go obviously doesn't have classes, instead we have the far more powerful notion of composition.
-but if you can look past the archaic use of the word class, and instead focus on the rest of the sentence; one and only one reason to change, I think there is some value here.
+but if you can look past the archaic use of the word class, I think there is some value here.
 
 Why is it important that a piece of code should have only one reason for change?
-Why does this matter?
 
 One of the best answers for this comes from, Sandi Metz:
 
@@ -143,19 +113,17 @@ ____
 Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
 ____
 
-And all of us in this room, a authors of software we hope will be successful, and in that success, grow, and change, a guiding architectural principle must be the construction of software that is easy to change.
-
-Two words that can describe how easy it is to change a piece of software are coupling and cohesion.
-
-Coupling is simply a word that describes two things changing together--a movement in one induces a movement in another.
-Therefore, code that has fewer responsibilities has fewer reasons to change.
-
-A related notion is the idea of cohesion, a force of mutual attraction. 
-
-In the context of software, cohesion is the property of describing pieces of code are naturally attracted to one another.
-They want to stick together, like poles of a magnet.
+For all of us in this room, as authors of software we hope will be successful, a guiding architectural principle must be the construction of software that is easy to change.
 
 === The Go package model
+
+Two words that describe how easy or difficult it is to change a piece of software are coupling and cohesion.
+
+Coupling is simply a word that describes two things changing together--a movement in one induces a movement in another.
+
+A related notion is the idea of cohesion, a force of mutual attraction. 
+In the context of software, cohesion is the property of describing pieces of code are naturally attracted to one another.
+They want to stick together, like poles of a magnet.
 
 To describe the units of coupling and cohesion in a Go program, we might talk about functions and methods, as is very common when discussing SRP but really I believe it starts with Go's package model.
 
@@ -484,10 +452,7 @@ In closing, let's return to the question I opened this talk with.
 
 _How many go developers are there?_
 
-Last month I was lucky enough to pose this question to Donnie Berkholz, but it turned out he misherd me and instead told me that there are around 25 million programmers in the world today.
-
-But, in his presentation he mentioned that Go has somewhere around a 1% market share.
-So, here's my guess:
+Here's my guess:
 
 [quote, me]
 ____
@@ -506,7 +471,7 @@ Please understand that I do not say this to be cruel, and I certainly don't mean
 
 But, every one of you in this room with experience with development in other languages--the languages you can from, to go--some with much larger followings than Go may ever achieve, knows from your own experience that there is an element of truth to this prediction.
 
-And this is my point, the narrative that derides other languages for being bloated, overcomplicated, poorly designed, verbose, unworkable, or just in need of a damn good rewrite, could very well be turned upon Go.
+And this is my point, the narrative that derides other languages for being bloated, overcomplicated, poorly designed, verbose, unworkable, or just in need of a damn good rewrite, could very well be turned upon Go at some point.
 
 I don't want to see this happen, so I have two requests:
 
@@ -524,7 +489,7 @@ So we need to tell the rest of the world how good software should be witten.
 Good software, composable software, software that is ameable to change, and show them how to do it, in Go.
 And this starts with you.
 
-Start talking about design, maybe use some of the ideas I presented here, or maybe you do your own research, and apply those ideas to your projects.
+Start talking about design, maybe use some of the ideas I presented here, or maybe you do your own research, then apply those ideas to your projects.
 
 - Blog about it
 - If you can, open source your code.
