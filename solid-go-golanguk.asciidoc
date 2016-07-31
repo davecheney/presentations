@@ -39,13 +39,13 @@ _Why do you do code review?_
 
 If code review is there to catch bad code, then hopefully all of you who practice code review should be able to recognize good code when you see it.
 
+How do you know if the code you're reviewing is good, or bad?
 What are some of the things that you look for when doing a code review?
 
 What about tests?
 Is it sufficient to have tests ?
 How can you tell if they're any good?
 
-How do you know if the code you're reviewing is good, or bad?
 
 == Good code
 
@@ -60,7 +60,7 @@ nd we're looking for objective ways to talk about the properties of good code.
 But this is the thing, whenever groups of developers discuss a piece of software, inevitably the discussion turns to adjectives like good; good code, good design, good style, and so on.
 
 This sort of implies there is a kind of binary nature to code; good code must admit the existance of bad code.
-Yet, when I asked you to tell me some things about bad code, you couldn't really answer that.
+//Yet, when I asked you to tell me some things about bad code, you couldn't really answer that.
 
 == Bad code
 
@@ -123,7 +123,7 @@ So this is what I want to spend some time discussing with you this morning.
 
 == Single responsibility principle
 
-The first principle of SOLID, is the single responsibility principle, which states:
+The first principle of SOLID, the S, is the single responsibility principle:
 
 [quote, Robert C. Martin]
 ____
@@ -133,8 +133,8 @@ ____
 Now Go obviously doesn't have classes, instead we have the far more powerful notion of composition.
 but if you can look past the archaic use of the word class, and instead focus on the rest of the sentence; one and only one reason to change, I think there is some value here.
 
-Why does this matter?
 Why is it important that a piece of code should have only one reason for change?
+Why does this matter?
 
 One of the best answers for this comes from, Sandi Metz:
 
@@ -143,11 +143,11 @@ ____
 Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
 ____
 
-As authors of software that will be successful, and in that success, grow, and change, a guiding architectural principle must be the construction of software that is easy to change.
+And all of us in this room, a authors of software we hope will be successful, and in that success, grow, and change, a guiding architectural principle must be the construction of software that is easy to change.
 
 Two words that can describe how easy it is to change a piece of software are coupling and cohesion.
 
-Coupling is simply a word that describes two things changing together--a change in one induces a change in another.
+Coupling is simply a word that describes two things changing together--a movement in one induces a movement in another.
 Therefore, code that has fewer responsibilities has fewer reasons to change.
 
 A related notion is the idea of cohesion, a force of mutual attraction. 
@@ -157,11 +157,12 @@ They want to stick together, like poles of a magnet.
 
 === The Go package model
 
-To describe the units of coupling and cohesion in a Go program, we might talk about functions and methods, as is very common when discussing SRP but really it starts with Go's package model.
+To describe the units of coupling and cohesion in a Go program, we might talk about functions and methods, as is very common when discussing SRP but really I believe it starts with Go's package model.
 
 === Package names
 
-In Go, all code lives inside a package, and a well designed package starts with its name, which is both a description of its purpose, and a name space prefix.
+In Go, all code lives inside a package, and a well designed package starts with its name.
+A pacakge's name is both a description of its purpose, and a name space prefix.
 Some examples of good packages from the Go standard library might be:
 
 - net/http, which provides http clients and servers.
@@ -169,6 +170,7 @@ Some examples of good packages from the Go standard library might be:
 - encoding/json, which implements encoding and decoding of JSON documents.
 
 When you use another package's symbols inside your own this is accomplished by the `import` declaration, which establishes a source level coupling between two packages.
+They now know about each other.
 
 === Bad package names
 
@@ -203,7 +205,7 @@ In effect each Go package is itself a small Go program, with a single responsibi
 
 == Open / Closed principle
 
-The second principle, the O, is the open closed principle, which was first described in 1988 by Betrand Meyer.
+The second principle, the O, is the open closed principle by Betrand Meyer. Who wrote in 1988 that
 
 [quote, Bertrand Meyer, Object-Oriented Software Construction]
 ____
@@ -273,7 +275,7 @@ This is because `PrintLegs` is defined on the `Cat` type, it takes a Cat as its 
 
 `Cat` has no knowledge of the type it has been embedded inside of, so its method set cannot be altered by embedding it.
 
-Thus, Go's types are closed for modification.
+Thus, we can say that Go's types are closed for modification.
 
 In truth, methods in Go are little more than syntactic sugar around a function with a predeclared formal parameter, the receiver.
 ----
@@ -294,13 +296,13 @@ And this brings us to the next principle.
 
 Coined by Barbara Liskov, the Liskov substitution principle states, roughly, that two types are substitutable if they exhibit behaviour such that the caller is unable to tell the difference.
 
-In a class based language, Liskov's substitution principle is commonly interpreted as a specification for an abstract base class with various concrete implementations.
+In a class based language, Liskov's substitution principle is commonly interpreted as a specification for an abstract base class with various concrete subtypes.
 
 But Go does not have classes, or inheritance, so substitution cannot be implemented in terms of an abstract class hierarchy.
 
 === Interfaces
 
-Instea, substitution is the purview of Go’s interfaces.
+Instead, substitution is the purview of Go’s interfaces.
 
 In Go, types are not required to nominate that they implement a particular interface, instead any type can implement an interface provided it has methods whose signature matches the interface declaration.
 
@@ -362,7 +364,7 @@ func Save(f *os.File, doc *Document) error
 I could specify this function, Save, which takes an `*os.File` as the destination to write the `Document`.
 But this has a few problems
 
-The signature of `Save` precludes the option to write the data to a network location, unless it was previously made available as a network share.
+The signature of `Save` precludes the option to write the data to a network location.
 Assuming that in this cloud oriented world, network storage is likely to become requirement later, the signature of this function would have to change, impacting all its callers.
 
 `Save` is also unpleasant to test, as it assumes that the host running the test will have access to a writable disk, and again in this world of containers and read only file systems, this is less of a given than it was a decade ago.
@@ -374,8 +376,7 @@ And I would have to ensure that `f` was written to a temporary location and alwa
 `*os.File` also defines a lot of methods which are not relevant to `Save`, like reading directories and checking to see if a path is a symlink.
 It would be useful if the signature of the `Save` function could describe only the parts of `*os.File` that were relevant.
 
-In Go, we often compose interfaces from smaller ones.
-The `io` package provides an interface composed of the three basic io operations called io.ReadWriteCloser
+The `io` package provides an interface composed of the three basic io operations called `io.ReadWriteCloser`.
 Using `io.ReadWriteCloser` we can apply the interface segregation principle to redefine `Save` to take an interface that describes more general stream shaped things.
 ----
 // Save writes the contents of doc to the supplied Writer.r
@@ -449,27 +450,25 @@ ____
 So what I think Martin is talking about here, certainly the context of Go, is the structure of your import graph.
 
 In Go, your import graph must be acyclic.
-A package is not permitted to import itself, either directly, or transitively.
-
 A failure to respect this acyclic requirement is grounds for a compilation failure, but more gravely represents a serious error in design.
 
 All things being equal the the import graph of a well design Go program should be a wide, and relatively flat, rather than tall and narrow.
 
 If you have a package whose functions cannot operate without enlisting the aid of another package, that is perhaps a sign that code is not well factored along package boundaries.
 
-The dependency inversion principle encourages you to push the responsibility for the specifics, the concretions, as high as possible up the import graph, leaving the lower level code to deal with abstractions — interfaces.
+The dependency inversion principle encourages you to push the responsibility for the specifics, as high as possible up the import graph, leaving the lower level code to deal with abstractions -- the interfaces.
 
 == A theme
 
 Each of the SOLID principles are powerful statements about design in their own right, but taken together they have a central theme.
 
-- SRP encourages you to structure the functions, types, and methods of a Go program into packages that exhibit natural cohesion, the types belong together, the functions serve a singular purpose.
+- SRP encourages you to structure the functions, types, and methods into packages that exhibit natural cohesion; the types belong together, the functions serve a singular purpose.
 - OCP encourages you to compose types with embedding, rather than extend them through inheritance.
 - LSP encourages you to express the dependencies between your packages in terms of interfaces, not concrete types. By defining small interfaces, we can be more confident that implementations will faithfully satisfy the contract of these interfaces.
 - ISP takes that idea further and encourages you to define functions and methods that depend only on the behaviour that they need. If your function only requires a parameter with a single interface method, then it is more likely that this function has only one responsibility.
 - DIP encourages you to refactor the number things your package depends on at compile time--in Go we see this with a reduction in the number of `import` statements used by a particular package.
 
-All five of the SOLID principles relate to the management of dependencies between software units.
+The theme of all five of the SOLID principles is the management of dependencies between software units.
 The dependencies between functions, the dependencies between types, the dependencies between packages.
 
 If you were to summarise this talk it would probably be; interfaces let you apply the SOLID principles to Go programs.
@@ -497,36 +496,35 @@ ____
 
 I think this number is defensible.
 
-In his keynote late last year, Martin Odesrsky said there are around 100 thousand scala developers.
+Martin Odesrsky said last year that there are around 100 thousand scala developers.
 Is it so hard to believe that by the end of the decade Go developers will outnumber Scala programmers by three to five times?
 
 So what will half a million Go programmers do with their time?
-Well, they’ll write a lot of Go code and, to be frank, most of it won't be very good, or at least, very remarkable. 
+Well, obviously, they’ll write a lot of Go code and, if we're being honest, most of it won't be very good, or at least, very remarkable. 
 
 Please understand that I do not say this to be cruel, and I certainly don't mean to imply these poor programs will be written by the people in this room. 
+
 But, every one of you in this room with experience with development in other languages--the languages you can from, to go--some with much larger followings than Go may ever achieve, knows from your own experience that there is an element of truth to this prediction.
 
-And this is my point, the narrative that derides other languages for being bloated, overcomplicated, poorly designed, verbose, unworkable, or just in need of a damn good rewrite, may very well be turned upon Go.
-
-The biggest threat to Go will not be a faster, special purpose language, but the ability of all of us, all Go programmers, as a population, to not make such a mess of it that people start to talk about Go in the way that they joke about Java today.
+And this is my point, the narrative that derides other languages for being bloated, overcomplicated, poorly designed, verbose, unworkable, or just in need of a damn good rewrite, could very well be turned upon Go.
 
 I don't want to see this happen, so I have two requests:
 
 My first request, is Go programmers need to start talking less about frameworks, and start talking more about design.
 We need to stop focusing on performance at all cost, and focus instead on reuse at all cost. 
 
-- This is the point in Go's lifecycle to stop talking about what other languages cannot do.
-- This is the time to start talking about what we _can_ do, with our language.
+- This is the point in Go's lifecycle to stop talking about what other languages cannot do, and start talking about what we _can_ do, with our language.
 - What I want to see is people talking about how to use the language we have today, whatever its choices and limitations, to design solutions and to solve problems. 
 - What I want to hear is people talking about how to design Go progams in a way that is well engineered, decoupled, reusable, and above all responsive to changing requirements.
 
-For my second request, it's great that so many of you are here today to hear from the great lineup of speakers, to meet and network with your compatriates in the audience, but no matter how large GolangUK would ever grow, comparatively we attendees will always be a minority.
+For my second request, it's great that so many of you are here today to hear from the great lineup of speakers, but no matter how large GolangUK would ever grow, comparatively we attendees will always be a minority.
+There are a lot of people who are not in the room.
 
 So we need to tell the rest of the world how good software should be witten.
 Good software, composable software, software that is ameable to change, and show them how to do it, in Go.
 And this starts with you.
 
-Start talking about design, maybe use some of the ideas I presented here as a base, and apply those ideas to your projects.
+Start talking about design, maybe use some of the ideas I presented here, or maybe you do your own research, and apply those ideas to your projects.
 
 - Blog about it
 - If you can, open source your code.
