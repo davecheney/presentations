@@ -1,4 +1,5 @@
 = SOLID Go design
+
 Dave Cheney <dave@cheney.net>
 v1.0, 17th August, 2016
 
@@ -33,7 +34,7 @@ Why do I keep saying good code? Isn't that a bit subjetive ?
 Now it's fine to say, "wow that source code is beautiful". Just like you might say, "this painting is beautiful", but these are subjective terms, 
 and we're looking for objective ways to talk about the properties of good code.
 
-This sort of implies there is a kind of binary nature to code; good code must admit the existance of bad code.
+And it sort of implies there is a kind of binary nature to code; good code must admit the existance of bad code.
 
 == Bad code
 
@@ -106,14 +107,11 @@ but if you can look past the archaic use of the word class, I think there is som
 
 Why is it important that a piece of code should have only one reason for change?
 
-One of the best answers for this comes from, Sandi Metz:
+Because as distressing as the idea that your own code may change, it is far more distressing that code your code depends on is changing under your feet.
 
-[quote,Sandi Metz]
-____
-Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
-____
+When your code does have to change, it should do so in response to a direct stimuli, it shouldn't be a victim of collateral damage.
 
-For all of us in this room, as authors of software we hope will be successful, a guiding architectural principle must be the construction of software that is easy to change.
+And Go that has a single responsibilty therefor has fewer reasons to change.
 
 === The Go package model
 
@@ -123,7 +121,6 @@ Coupling is simply a word that describes two things changing together--a movemen
 
 A related notion is the idea of cohesion, a force of mutual attraction. 
 In the context of software, cohesion is the property of describing pieces of code are naturally attracted to one another.
-They want to stick together, like poles of a magnet.
 
 To describe the units of coupling and cohesion in a Go program, we might talk about functions and methods, as is very common when discussing SRP but really I believe it starts with Go's package model.
 
@@ -162,7 +159,7 @@ Because if you've gone down the path of this level of granularity, you’ll have
 Catch all packages become a dumping ground for miscellany, Jack's of all trades.
 And because they have many responsibilties they change frequently and without cause.
 
-=== McIlroy's revenge
+=== Go's UNIX philosophy
 
 No discussion of Go, or decoupled design in general, would be complete without mentioning Doug McIlroy, who in 1964 described the power of pipes for composing programs.
 
@@ -428,7 +425,7 @@ The dependency inversion principle encourages you to push the responsibility for
 
 == A theme
 
-Each of the SOLID principles are powerful statements about design in their own right, but taken together they have a central theme.
+Each of the SOLID principles are powerful statements about design, but taken together they have a central theme.
 
 - SRP encourages you to structure the functions, types, and methods into packages that exhibit natural cohesion; the types belong together, the functions serve a singular purpose.
 - OCP encourages you to compose types with embedding, rather than extend them through inheritance.
@@ -444,7 +441,12 @@ Interfaces let Go programmers describe what their package provides--not how it d
 
 This is another way of saying "decoupling", which is indeed the goal, because software that is loosely coupled is software that is easier to change.
 
-And if Go is going to be a language that companies invest in for the long term, the maintenance of Go programs, the easy of change, will be a key factor in their decision.
+[quote,Sandi Metz]
+____
+Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
+____
+
+And if Go is going to be a language that companies invest in for the long term, the maintenance of Go programs, the ease of change, will be a key factor in their decision.
 
 == Coda
 
@@ -459,17 +461,12 @@ ____
 By 2020, there will be 300-500k Go developers.
 ____
 
-I think this number is defensible.
-
-Martin Odesrsky said last year that there are around 100 thousand scala developers.
-Is it so hard to believe that by the end of the decade Go developers will outnumber Scala programmers by three to five times?
-
 So what will half a million Go programmers do with their time?
 Well, obviously, they’ll write a lot of Go code and, if we're being honest, most of it won't be very good, or at least, very remarkable. 
 
 Please understand that I do not say this to be cruel, and I certainly don't mean to imply these poor programs will be written by the people in this room. 
 
-But, every one of you in this room with experience with development in other languages--the languages you can from, to go--some with much larger followings than Go may ever achieve, knows from your own experience that there is an element of truth to this prediction.
+But, every one of you in this room with experience with development in other languages--the languages you can from, to go--knows from your own experience that there is an element of truth to this prediction.
 
 And this is my point, the narrative that derides other languages for being bloated, overcomplicated, poorly designed, verbose, unworkable, or just in need of a damn good rewrite, could very well be turned upon Go at some point.
 
@@ -497,6 +494,6 @@ Start talking about design, maybe use some of the ideas I presented here, or may
 - Write a book about it,
 - Come back to this conference next year and give a talk about it.
 
-Because this is how we can promulgate a culture of Go developers who care about the design of programs that are built to last.
+Because by doing these things this is how we can promulgate a culture of Go developers who care about the design of programs that are built to last.
 
 Thank you.
