@@ -30,13 +30,14 @@ Can you tell me why?
 == Code review
 
 Ok, one more question before we get into it.
-Who here does code review as part of their job?
+
+_Who here does code review as part of their job?_
 
 // slide: code review vs pair programming https://twitter.com/davecheney/status/730194450371117056
 
-Why do you do code review ?
+_Why do you do code review?_
 
-If code review is there to catch bad code, then hoepfully all of use doing code review should be able to recognize good code when you see it.
+If code review is there to catch bad code, then hopefully all of you who practice code review should be able to recognize good code when you see it.
 
 What are some of the things that you look for when doing a code review?
 
@@ -48,12 +49,15 @@ How do you know if the code you're reviewing is good, or bad?
 
 == Good code
 
-Why do I keep saying good code.
+Why do I keep saying good code?
 
 After all, we're talking about a computer program.
 This isn't popular fiction, source code isn't trying to evoke an emotional response.
 
-But this is the thing, whenever we discuss software, inevitably the discussion turns to adjectives like good; good code, good design, good style, and so on.
+Now it's fine to say, "wow that source code is beautiful". Just like you might say, "this painting is beautiful", but these are subjective terms, 
+nd we're looking for objective ways to talk about the properties of good code.
+
+But this is the thing, whenever groups of developers discuss a piece of software, inevitably the discussion turns to adjectives like good; good code, good design, good style, and so on.
 
 This sort of implies there is a kind of binary nature to code; good code must admit the existance of bad code.
 Yet, when I asked you to tell me some things about bad code, you couldn't really answer that.
@@ -71,15 +75,12 @@ Is the code fragile, such that the slightest change ripples through the code bas
 === Immobility.
 Is the code hard to refactor, is it one keystroke away from an import loop?
 
-=== Needless complexity.
+=== Complexity.
 Is there code for the sake of having code, are things over-engineered in vain hope that one day you might need to implement some obscure option?
 
-=== Needless verbosity.
+=== Verbosity.
 Is it just exhausting to use the code?
-
-=== Opacity.
-Can you even tell what this code is trying to do?
-When you look at it, can you tel from the change what the code is doing?
+When you look at it, can you even tell what this code is trying to do?
 
 Are these positive sounding words?
 Would you be pleased to see these words used in a review of your code?
@@ -117,7 +118,7 @@ He called these the SOLID principals, after the first letters in their names.
 This book is a little dated, the languages that it talks about are the ones in use a decade or more ago; java, c++, python, smalltalk. 
 This gives you a clue to the era that robert martin comes from.
 
-But, perhaps ideas like these principals may give us a clue about how to talk about a well designed Go program.
+But, perhaps there are some aspects of the SOLID principals that may give us a clue about how to talk about a well designed Go programs.
 So this is what I want to spend some time discussing with you this morning.
 
 == Single responsibility principal
@@ -142,7 +143,7 @@ ____
 Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
 ____
 
-As authors of software that will be successful, and in that success, grow, and change, a guiding architectural principal must be the construction of software that is amenable to change.
+As authors of software that will be successful, and in that success, grow, and change, a guiding architectural principal must be the construction of software that is easy to change.
 
 Two words that can describe how easy it is to change a piece of software are coupling and cohesion.
 
@@ -169,9 +170,6 @@ Some examples of good packages from the Go standard library might be:
 
 When you use another package's symbols inside your own this is accomplished by the `import` declaration, which establishes a source level coupling between two packages.
 
-//Once imported, the symbols of a package are always prefixed with the name of their package.
-//This makes it trivial to discern where an identifier is declared.
-
 === Bad package names
 
 This focus on names is not just pedantry.
@@ -189,9 +187,10 @@ what does the private package provide? Things that I should not see? Should it h
 
 And package common, just like it's partner in crime, package utils, is often found close by these other offenders.
 
-Because if gone down the path of this level of granularity, you’ll have a server package, you’ll need a client package, and a common package for things that fit in neither.
+Because if you've gone down the path of this level of granularity, you’ll have a server package, you’ll need a client package, and a common package for things that fit in neither.
 
-Catch all packages become a dumping ground for miscellany, Jack's of all trades. And because they have many responsibilties they change frequently and without cause.
+Catch all packages become a dumping ground for miscellany, Jack's of all trades.
+And because they have many responsibilties they change frequently and without cause.
 
 === McIlroy's revenge
 
@@ -301,7 +300,7 @@ But Go does not have classes, or inheritance, so substitution cannot be implemen
 
 === Interfaces
 
-Substitution is the purview of Go’s interfaces.
+Instea, substitution is the purview of Go’s interfaces.
 
 In Go, types are not required to nominate that they implement a particular interface, instead any type can implement an interface provided it has methods whose signature matches the interface declaration.
 
@@ -315,7 +314,7 @@ It follows logically that small interfaces lead to simple implementations, becau
 
 Which leads to packages comprised of simple implementations connected by common _behaviour_.
 
-So that brings me to Io.Reader, one of the most popular interfaces in Go, and my favorite.
+So that brings me to `io.Reader`, one of the most popular interfaces in Go, and my favorite.
 
 ----
 type Reader interface {
@@ -324,12 +323,13 @@ type Reader interface {
 }
 ----
 
-The io.Reader interface is very simple.
+The io.Reader interface is very simple;
 `Read` reads data into the supplied buffer, and returns to the caller the number of bytes that were read, and possibly an error encountered during read.
 
 Seems simple but it's very powerful.
 
-Because Reader's deal with anything that can be expressed as a stream of bytes, we can construct readers to read just about anything; a constant string, a byte array, standard in, a network stream, a gzip'd tar file. And all of these implementations are subtituable for one another because they fullfi the same contract.
+Because Reader's deal with anything that can be expressed as a stream of bytes, we can construct readers to read just about anything; a constant string, a byte array, standard in, a network stream, a gzip'd tar file.
+And all of these implementations are subtituable for one another because they fullfil the same contract.
 
 === Design by contract
 
@@ -400,7 +400,10 @@ Secondly, by providing `Save` with a mechanism to close its stream, which we inh
 Possibly Save will call Close unconditionally, or perhaps Close will be called in the case of success.
 This presents a problem for the caller of `Save` as it may want to write additional data to the stream after the document is written.
 ----
-type NopCloser struct { io.Writer }
+type NopCloser struct {
+        io.Writer
+}
+
 func (c *NopCloser) Close() error { return nil }
 ----
 A crude solution would be to define a new type which embeds an `io.Writer` and overrides the `Close` method, preventing `Save` from closing the underlying stream.
@@ -458,14 +461,7 @@ The dependency inversion principle encourages you to push the responsibility for
 
 == A theme
 
-Each of Martin's SOLID principles are powerful statements about design in their own right, but taken together they have a central theme.
-
-Martin's observation is all five of the SOLID principles relate to the management of dependencies between software units.
-The dependencies between functions, the dependencies between types, the dependencies between packages.
-
-This is another way of saying "decoupling", which is indeed the goal, because software that is loosely coupled is software that is easier to change.
-
-// slide - bad design words
+Each of the SOLID principles are powerful statements about design in their own right, but taken together they have a central theme.
 
 - SRP encourages you to structure the functions, types, and methods of a Go program into packages that exhibit natural cohesion, the types belong together, the functions serve a singular purpose.
 - OCP encourages you to compose types with embedding, rather than extend them through inheritance.
@@ -473,13 +469,15 @@ This is another way of saying "decoupling", which is indeed the goal, because so
 - ISP takes that idea further and encourages you to define functions and methods that depend only on the behaviour that they need. If your function only requires a parameter with a single interface method, then it is more likely that this function has only one responsibility.
 - DIP encourages you to refactor the number things your package depends on at compile time--in Go we see this with a reduction in the number of `import` statements used by a particular package.
 
+All five of the SOLID principles relate to the management of dependencies between software units.
+The dependencies between functions, the dependencies between types, the dependencies between packages.
+
 If you were to summarise this talk it would probably be; interfaces let you apply the SOLID principles to Go programs.
 Interfaces let Go programmers describe what their package provides--not how it does it.
 
-// But—and this is crucial—do not merely _substitute_ an interface for concrete types, do not create an interface so you can mock the concrete type, use and interface to _describe_ the behaviour the code expects.
-// Use and interface to describe the contract between two compoents.
-// And, if you do it right, those interfaces will naturally be small.
-// And when I say small, i mean one method, because each type should have only a single responsibility -- a singe purpose -- a single behavoiur
+This is another way of saying "decoupling", which is indeed the goal, because software that is loosely coupled is software that is easier to change.
+
+And if Go is going to be a language that companies invest in for the long term, the maintenance of Go programs, the easy of change, will be a key factor in their decision.
 
 == Coda
 
@@ -487,29 +485,30 @@ In closing, let's return to the question I opened this talk with.
 
 _How many go developers are there?_
 
-Last month I was lucky enough to pose this question to Donnie Berkholz, but it turned out he misherd me and instead told me that he thinks, in the world, there are around 25 million programmers.
+Last month I was lucky enough to pose this question to Donnie Berkholz, but it turned out he misherd me and instead told me that there are around 25 million programmers in the world today.
 
-But, in his presentation he mentioned that Go has somewhere between 1-2% market share.
+But, in his presentation he mentioned that Go has somewhere around a 1% market share.
 So, here's my guess:
 
 [quote, me]
 ____
-By 2020, there will be 300-500k Go developers?
+By 2020, there will be 300-500k Go developers.
 ____
 
 I think this number is defensible.
 
-In his keynote late last year, Martin Odesrsky said there are around 100 thousand scala developers, so is it so hard to believe that by the end of the decade Go developers will outnumber scala programmers by three to five times.
+In his keynote late last year, Martin Odesrsky said there are around 100 thousand scala developers.
+Is it so hard to believe that by the end of the decade Go developers will outnumber Scala programmers by three to five times?
 
 So what will half a million Go programmers do with their time?
 Well, they’ll write a lot of Go code and, to be frank, most of it won't be very good, or at least, very remarkable. 
 
 Please understand that I do not say this to be cruel, and I certainly don't mean to imply these poor programs will be written by the people in this room. 
-But, every one of you in this room with experience with development in other languages--the languages you can from, to go--some with much larger followings than Go may ever achieve, knows from your own experience that this prediction has an element of truth to it.
+But, every one of you in this room with experience with development in other languages--the languages you can from, to go--some with much larger followings than Go may ever achieve, knows from your own experience that there is an element of truth to this prediction.
 
 And this is my point, the narrative that derides other languages for being bloated, overcomplicated, poorly designed, verbose, unworkable, or just in need of a damn good rewrite, may very well be turned upon Go.
 
-The biggest threat to Go will not be a faster, special purpose language, but the ability of all of us, all Go programmers, as a population, to not make such a mess of it that we start to talk about Go in the way that you probably joke about Java today.
+The biggest threat to Go will not be a faster, special purpose language, but the ability of all of us, all Go programmers, as a population, to not make such a mess of it that people start to talk about Go in the way that they joke about Java today.
 
 I don't want to see this happen, so I have two requests:
 
@@ -529,13 +528,12 @@ And this starts with you.
 
 Start talking about design, maybe use some of the ideas I presented here as a base, and apply those ideas to your projects.
 
-- Write about it
 - Blog about it
 - If you can, open source your code.
 - Teach a workshop about it
 - Write a book about it,
 - Come back to this conference next year and give a talk about it.
 
-Because this is how we can develop a culture of Go developers caring about design.
+Because this is how we can promulgate a culture of Go developers who care about the design of programs that are built to last.
 
 Thank you.
