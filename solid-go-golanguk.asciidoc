@@ -99,7 +99,7 @@ Wouldn't that make things easier, if we all spoke the same language of design.
 Just as we all speak the same language of source code?
 Do you think that would be useful ?
 
-== Design principals
+== Design principles
 
 [[agile_book]]
 .Agile Software Development, Principles, Patterns, and Practice
@@ -107,23 +107,23 @@ image::asgppp.jpg[]
 
 So back in 2003 Robert Martin published this book.
 In it he described five principles of reusable software design.
-He called these the SOLID principals, after the first letters in their names.
+He called these the SOLID principles, after the first letters in their names.
 
-- Single Responsibility Principal
-- Open / Closed Principal
-- Liskov Substitution Principal
-- Interface Segregation Principal
-- Dependency Inversion Principal
+- Single Responsibility Principle
+- Open / Closed Principle
+- Liskov Substitution Principle
+- Interface Segregation Principle
+- Dependency Inversion Principle
 
 This book is a little dated, the languages that it talks about are the ones in use a decade or more ago; java, c++, python, smalltalk. 
 This gives you a clue to the era that robert martin comes from.
 
-But, perhaps there are some aspects of the SOLID principals that may give us a clue about how to talk about a well designed Go programs.
+But, perhaps there are some aspects of the SOLID principles that may give us a clue about how to talk about a well designed Go programs.
 So this is what I want to spend some time discussing with you this morning.
 
-== Single responsibility principal
+== Single responsibility principle
 
-The first principle of SOLID, is the single responsibility principal, which states:
+The first principle of SOLID, is the single responsibility principle, which states:
 
 [quote, Robert C. Martin]
 ____
@@ -143,7 +143,7 @@ ____
 Design is the art of arranging code that needs to work _today_, and to be easy to change _forever_.
 ____
 
-As authors of software that will be successful, and in that success, grow, and change, a guiding architectural principal must be the construction of software that is easy to change.
+As authors of software that will be successful, and in that success, grow, and change, a guiding architectural principle must be the construction of software that is easy to change.
 
 Two words that can describe how easy it is to change a piece of software are coupling and cohesion.
 
@@ -201,7 +201,7 @@ McIlroy’s observations became the foundation of the UNIX philosophy; small, sh
 I think that Go packages embody the spirit of the UNIX philosophy.
 In effect each Go package is itself a small Go program, with a single responsibility.
 
-== Open / Closed principal
+== Open / Closed principle
 
 The second principle, the O, is the open closed principle, which was first described in 1988 by Betrand Meyer.
 
@@ -290,7 +290,7 @@ func PrintLegs(c Cat) {
 And because Go does not support function overloading, `OctoCat`'s are not substitutable for regular `Cat`'s.
 And this brings us to the next principle.
 
-== Liskov substitution principal
+== Liskov substitution principle
 
 Coined by Barbara Liskov, the Liskov substitution principle states, roughly, that two types are substitutable if they exhibit behaviour such that the caller is unable to tell the difference.
 
@@ -342,7 +342,7 @@ And we see this in the trend in API design for libraries to declare function sig
 
 And this is a great segue into the next SOLID principle.
 
-== Interface segregation principal
+== Interface segregation principle
 
 The fourth principle is the interface segregation principle.
 
@@ -417,9 +417,9 @@ A better solution would be to redefine `Save` to take only an `io.Writer`, strip
 
 By applying the interface segregation principle to our `Save` function, the results has simultaneously been a function which is the most specific in terms of its requirements--it only needs a thing that is writable--and the most general in its function, it can now use Save to save our data to anything which implements io.Writer.
 
-== Dependency inversion principal
+== Dependency inversion principle
 
-The final SOLID principal is the dependency inversion principal.
+The final SOLID principle is the dependency inversion principle.
 
 Which states:
 
