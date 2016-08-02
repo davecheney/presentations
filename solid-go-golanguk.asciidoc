@@ -462,13 +462,15 @@ By 2020, there will be 300-500k Go developers.
 ____
 
 So what will half a million Go programmers do with their time?
-Well, obviously, they’ll write a lot of Go code and, if we're being honest, most of it won't be very good, or at least, very remarkable. 
+Well, obviously, they’ll write a lot of Go code and, if we're being honest, not all of it will be good, and some will be quite bad.
 
 Please understand that I do not say this to be cruel, and I certainly don't mean to imply these poor programs will be written by the people in this room. 
 
 But, every one of you in this room with experience with development in other languages--the languages you can from, to go--knows from your own experience that there is an element of truth to this prediction.
 
-And this is my point, the narrative that derides other languages for being bloated, overcomplicated, poorly designed, verbose, unworkable, or just in need of a damn good rewrite, could very well be turned upon Go at some point.
+And this is my point, it's easy to write bad code in any langauge, and doubly so if you bring your previous biases with you.
+
+And I am concerned that the narrative that derides other languages for being bloated, verbose, overcomplicated, and in need of replacement, could very well be turned upon Go at some point.
 
 I don't want to see this happen, so I have two requests:
 
@@ -486,7 +488,7 @@ So we need to tell the rest of the world how good software should be witten.
 Good software, composable software, software that is ameable to change, and show them how to do it, in Go.
 And this starts with you.
 
-Start talking about design, maybe use some of the ideas I presented here, or maybe you do your own research, then apply those ideas to your projects.
+Start talking about design, maybe use some of the ideas I presented here, or maybe you do your own research, then apply those ideas to your projects. Then;
 
 - Blog about it
 - If you can, open source your code.
