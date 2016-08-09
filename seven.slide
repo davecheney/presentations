@@ -147,6 +147,19 @@ The Go runtime collects various statistics during the life of your program, thes
 
 * GODEBUG=schedtrace
 
+* Profilers
+
+How does a profiler work?
+
+The profiler will run your program and configure the operating system to interrupt the program a regular intervals.
+
+This is done by sending SIGPROF to the program being profiled, which suspends it, and transfers execution to the profiler.
+
+The profiler then grabs the program counter for each executing _thread_
+
+
+Question: Why is the profile per _thread_, not per _goroutine?
+
 * `runtime/pprof`
 
 `runtime/pprof` is another facility built into the runtime of every Go program.
@@ -176,23 +189,47 @@ Show debug pprof, talk about the memstats interface
 
 Talk about the differences between full and timed mode
 
+* Visualisations
+
+.image mindblown.gif
+
 Show graphical view
 
 Show gcviz
 
-* Framepointers for everyone
+* Framepointers
+
+The frame pointer is a register that points to the top of the current activation frame. 
+
+The compiler and the CPU doesn't need the fp to execute your program, it works with fixed offsets but the fp is critical for debugging. 
+
+Traditionally on 386, dedicating a register to the debugger, the what if case, was seen as profligate, especially when it was 1/8 of your register supply. 
+
+Now in 2016 amd64 has more registers, and debugging is given a higher priority. 
+
+The take away is the frame pointer helps debuggers unwind the stack.
+
+# Framepointers (cont.)
 
 Good news everyone!
 
 Go 1.7 has been released and along with a new compiler for amd64, the compiler finally supports frame pointers by default.
 
+So, who benefits from frame pointers 
+
 Framepointers enable tools like gdb(1) and perf(1) to understand the Go call stack.
+
+Debuggers, gdb and delve, for their backtrack (bt) command
+
+Profilers, to obtain the call stack of a PC.
+
+So let's talk about profilers
 
 * Perf
 
 If you're a linux user, then perf(1) is a great tool for profiling applications, and now with Go 1.7, it works excellently with Go programs.
 
-
+You might also be interested in trying tools like vtune. 
 
 Show perf(1), show -g, 
 
@@ -200,11 +237,42 @@ Bonus: use `-toolexec` and `perf` to profile the compiler.
 
 * Flame graph
 
-Show pprof -> flame graph using go-uber
+"The x-axis shows the stack profile population, sorted alphabetically (it is not the passage of time), and the y-axis shows stack depth. Each rectangle represents a stack frame. The wider a frame is is, the more often it was present in the stacks. The top edge shows what is on-CPU, and beneath it is its ancestry. The colors are usually not significant, picked randomly to differentiate frames."
 
-* Trace
+.link http://www.brendangregg.com/flamegraphs.html
+
+* Flame graph (cont.)
+
+flame graphs can consume data from many sources, perf(1) is a good one on linux.
+
+Uber have open sourced a tool call go-torch which automates the whole process, assuming your program has the `/debug/pprof` endpoint enabled.
+
+.link https://github.com/uber/go-torch
+
+Or you can feed it an existing profile.
+
+* Flame graphs (cont.)
+
+DEMO TIME
+
+* go tool trace
+
+So scheduled profiling can be quite useful, but as they 
+
+In Go 1.5, Dmitry Vyukov added a new kind of profiling to the runtime; execution trace profiling.
+
+Execution traces are not just a 
 
 Show trace support, best til last.
+
+* Wait, there's more
+
+That's not all the profiling you get out of the box with Go.
+
+There are more options that we haven't covered today:
+
+- Memory (heap) profiling
+- Block profiling
 
 * Why 
 
