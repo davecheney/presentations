@@ -249,7 +249,7 @@ Note: use `-run=XXX` to disable tests, you only want to profile benchmarks.
 
 * Profiling whole programs
 
-Profiling testing benchmarks is useful for microbenchmarks, but what if you want to profile a complete application?
+`testing` benchmarks is useful for microbenchmarks, but what if you want to profile a complete application?
 
 To profile an application, you could use the runtime/pprof package, but that is fiddly and low level.
 
@@ -272,9 +272,18 @@ If your program runs a webserver you can enable debugging over http.
 
 .code seven/net-http-pprof.go
 
-DEMO:
+Then use the pprof tool to look at a 30-second CPU profile:
 
-.link http://localhost:3999/debug/pprof
+	go tool pprof http://localhost:3999/debug/pprof/profile
+
+Or to look at the heap profile:
+
+	go tool pprof http://localhost:3999/debug/pprof/heap
+
+Or to look at the goroutine blocking profile:
+
+	go tool pprof http://localhost:3999/debug/pprof/block
+
 
 * Using pprof
 
@@ -319,12 +328,6 @@ This is a sample cpu profile:
              6.26s  2.82% 67.80%     32.09s 14.43%  runtime.entersyscall
 
 Often this output is hard to understand.
-
-* Visualisations
-
-.image seven/mindblown.gif
-
-Show gcviz
 
 * Using pprof (cont.)
 
@@ -384,9 +387,34 @@ Framepointers enable tools like `gdb(1)`, and `perf(1)` to understand the Go cal
 
 If you're a linux user, then `perf(1)` is a great tool for profiling applications, and now with Go 1.7, it can profile Go applications.
 
-DEMO: Show `perf(1)`, `show -g`, 
+* perf stat
 
-Bonus: use `-toolexec` and `perf` to profile the compiler.
+	% go build -toolexec="perf stat" .
+	# cmd/compile/internal/gc
+	
+	 Performance counter stats for '/home/dfc/go/pkg/tool/linux_amd64/compile -o $WORK/cmd/compile/internal/gc.a -trimpath $WORK -p cmd/compile/internal/gc -complete -buildid 87cd803267511b4d9e753d68b5b66a70e2f878c4 -D _/home/dfc/go/src/cmd/compile/internal/gc -I $WORK -pack ./alg.go ./align.go ./bexport.go ./bimport.go ./builtin.go ./bv.go ./cgen.go ./closure.go ./const.go ./cplx.go ./dcl.go ./esc.go ./export.go ./fmt.go ./gen.go ./go.go ./gsubr.go ./init.go ./inl.go ./lex.go ./magic.go ./main.go ./mpfloat.go ./mpint.go ./obj.go ./opnames.go ./order.go ./parser.go ./pgen.go ./plive.go ./popt.go ./racewalk.go ./range.go ./reflect.go ./reg.go ./select.go ./sinit.go ./sparselocatephifunctions.go ./ssa.go ./subr.go ./swt.go ./syntax.go ./type.go ./typecheck.go ./universe.go ./unsafe.go ./util.go ./walk.go':
+	
+	       7026.140760 task-clock (msec)         #    1.283 CPUs utilized          
+	             1,665 context-switches          #    0.237 K/sec                  
+	                39 cpu-migrations            #    0.006 K/sec                  
+	            77,362 page-faults               #    0.011 M/sec                  
+	    21,769,537,949 cycles                    #    3.098 GHz                     [83.41%]
+	    11,671,235,864 stalled-cycles-frontend   #   53.61% frontend cycles idle    [83.31%]
+	     6,839,727,058 stalled-cycles-backend    #   31.42% backend  cycles idle    [66.65%]
+	    27,157,950,447 instructions              #    1.25  insns per cycle        
+	                                             #    0.43  stalled cycles per insn [83.25%]
+	     5,351,057,260 branches                  #  761.593 M/sec                   [83.49%]
+	       118,150,150 branch-misses             #    2.21% of all branches         [83.15%]
+	
+	       5.476816754 seconds time elapsed
+
+* perf record
+
+	% go build -toolexec="perf record -g -o /tmp/p" cmd/compile/internal/gc
+	% perf report -i /tmp/p
+
+.image seven/perf.png _ 600
+.link seven/perf.png 
 
 * #6. Flame graph
 
@@ -408,28 +436,31 @@ Uber have open sourced a tool call go-torch which automates the whole process, a
 
 Or you can feed it an existing profile.
 
-* Flame graphs (cont.)
+DEMO
 
-DEMO TIME
+	% go build -gcflags=-cpuprofile=/tmp/c.p .
+	% go-torch $(go tool compile -n) /tmp/c.p
+	INFO[16:00:09] Run pprof command: go tool pprof -raw -seconds 30 /Users/dfc/go/pkg/tool/darwin_amd64/compile /tmp/c.p
+	INFO[16:00:09] Writing svg to torch.svg
+
+.link seven/torch.svg
 
 * #7. go tool trace
 
-So scheduled profiling can be quite useful, but as they 
+* go tool trace
 
 In Go 1.5, Dmitry Vyukov added a new kind of profiling to the runtime; execution trace profiling.
 
-Execution traces are not just a 
+Execution traces are not just another external 
 
-Show trace support, best til last.
+* go tool trace (cont.)
 
-* Wait, there's more
-
-That's not all the profiling you get out of the box with Go.
-
-There are more options that we haven't covered today:
-
-- Memory (heap) profiling
-- Block profiling
+	% go build -gcflags=-traceprofile=seven/t.p .
+	% go tool trace /tmp/t.p
+	2016/08/13 17:01:04 Parsing trace...
+	2016/08/13 17:01:04 Serializing trace...
+	2016/08/13 17:01:05 Splitting trace...
+	2016/08/13 17:01:06 Opening browser
 
 * Why?
 

@@ -1,11 +1,9 @@
-package main
-
-import (
-	"log"
-	"net/http"
-	_ "net/http/pprof"
-)
+package main // OMIT
+// OMIT
+import _ "net/http/pprof"
+import "log"      // OMIT
+import "net/http" // OMIT
 
 func main() {
-	log.Println(http.ListenAndServe("localhost:6060", nil))
+	log.Println(http.ListenAndServe("localhost:3999", nil))
 }
