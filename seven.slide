@@ -1,5 +1,6 @@
 Seven ways to profile a Go program
 GolangUK
+
 18 Aug 2016
 
 Dave Cheney
@@ -12,7 +13,7 @@ http://dave.cheney.net/
 
 Notwithstanding my remarks yesterday, a reason people choose Go is because it lets them write efficient programs.
 
-But it's not just the compiler, the tooling around the language is what gives us our real edge.
+But it's not just the compiler, the tooling around the language is what gives us our 
 
 Agenda: Seven different ways to profile Go programs.
 
@@ -26,7 +27,7 @@ There's a lot of information in these slides, please keep your hands inside the 
 
 The first method of profiling any program is `time`.
 
-`time` is a shell builtin. The format is specific by POSIX.2 (IEEE Std 1003.2-1992).
+`time` is a shell builtin. The format is specified by POSIX.2 (IEEE Std 1003.2-1992).
 
     % time go fmt std
 
@@ -34,17 +35,20 @@ The first method of profiling any program is `time`.
     user    0m4.254s
     sys     0m1.130s
 
-
-GNU and BSD systems come with a `time(1)` command that is signficantly more powerful than the shell builtin.
+GNU come with a `time(1)` command that is signficantly more powerful than the shell builtin.
 
 	% /usr/bin/time go fmt std
 	8.07user 1.02system 0:09.25elapsed 98%CPU (0avgtext+0avgdata 221940maxresident)k
 	172296inputs+58448outputs (180major+226861minor)pagefaults 0swaps
+
+BSD also has a `/usr/bin/time`, which is almost as good.
 	    
 	% /usr/bin/time go fmt std                                                                                                
 	4.64 real         3.72 user         0.93 sys
 
 * /usr/bin/time -v (GNU)
+
+GNU's `/usr/bin/time` suports many flags, the most impressive is `-v`.
 
     % /usr/bin/time -v go fmt std
         Command being timed: "go fmt std"
@@ -67,6 +71,8 @@ GNU and BSD systems come with a `time(1)` command that is signficantly more powe
         Exit status: 0
 
 * /usr/bin/time -v (BSD)
+
+BSD's `/usr/bin/time` also supports `-v`, but it's less impressive.
 
     % /usr/bin/time -l go fmt std
             4.66 real         3.73 user         0.90 sys
@@ -103,7 +109,7 @@ Further reading:
 
 - go help build
 
-* Why is my build slow?
+* Why is my build so slow?
 
 Most of you know about `go`build`-x` that shows each command the go tool invokes.
 
@@ -116,9 +122,7 @@ Most of you know about `go`build`-x` that shows each command the go tool invokes
 
 `-x` output can be copied and pasted into the shell to run commands manually. Buuuut, it's kind of laborious.
 
-Idea:
-
-- combine `-toolexec` and `/usr/bin/time` to profile the entire build.
+Idea: combine `-toolexec` and `/usr/bin/time` to profile the entire build.
 
 DEMO:
 
@@ -147,7 +151,7 @@ DEMO:
 
 * How does a profiler work?
 
-A profile runs your program and configures the operating system to interrupt it at regular intervals.
+A profiler runs your program and configures the operating system to interrupt it at regular intervals.
 
 This is done by sending `SIGPROF` to the program being profiled, which suspends and transfers execution to the profiler.
 
@@ -229,7 +233,7 @@ If you enable multiple profiles at the same time, they will observe their own in
 
 *Do*not*enable*more*than*one*kind*of*profile*at*a*time.*
 
-* runtime/pprof (cont.)
+* Microbenchmarks
 
 The easiest way to profile a _function_ is with the `testing` package.
 
@@ -479,6 +483,8 @@ DEMO:
 	go tool trace seven/t.p
 
 Bonus: [[https://github.com/pkg/profile/releases/tag/v1.2.0][`github.com/pkg/profile`]] supports generating trace profiles.
+
+	defer profile.Start(profile.TraceProfile).Stop()
 
 * Conclusion
 
