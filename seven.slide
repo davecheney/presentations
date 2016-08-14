@@ -8,19 +8,25 @@ dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
-* Welcome
+* Hello, again.
 
-Hello! Nice to see you (again).
+Notwithstanding my remarks yesterday, a reason people choose Go is because it lets them write efficient programs.
+
+But it's not just the compiler, the tooling around the language is what gives us a real edge.
 
 Agenda: Seven different ways to profile Go programs.
 
 _Note:_ Not all of them are available on every platform.
 
-* #1 time 
+There's a lot of information in these slides, please keep your hands inside the vehicle at all times.
+
+* №1 time 
 
 * time
 
-The first method of profiling any program, is `time`.
+The first method of profiling any program is `time`.
+
+`time` is a shell builtin. The format is specific by POSIX.2 (IEEE Std 1003.2-1992).
 
     % time go fmt std
 
@@ -28,22 +34,17 @@ The first method of profiling any program, is `time`.
     user    0m4.254s
     sys     0m1.130s
 
-`time` is a builtin. The format above is specific by POSIX.2 (IEEE Std 1003.2-1992).
 
-- Linux
+GNU and BSD systems come with a `time(1)` command that is signficantly more powerful than the shell builtin.
 
-    % /usr/bin/time go fmt std
-    8.07user 1.02system 0:09.25elapsed 98%CPU (0avgtext+0avgdata 221940maxresident)k
-    172296inputs+58448outputs (180major+226861minor)pagefaults 0swaps
+	% /usr/bin/time go fmt std
+	8.07user 1.02system 0:09.25elapsed 98%CPU (0avgtext+0avgdata 221940maxresident)k
+	172296inputs+58448outputs (180major+226861minor)pagefaults 0swaps
+	    
+	% /usr/bin/time go fmt std                                                                                                
+	4.64 real         3.72 user         0.93 sys
 
-- OSX
-
-    % /usr/bin/time go fmt std                                                                                                
-        4.64 real         3.72 user         0.93 sys
-
-* /usr/bin/time
-
-BSD and GNU systems come with a `time(1)` command that is signficantly more powerful than the shell builtin.
+* /usr/bin/time -v (GNU)
 
     % /usr/bin/time -v go fmt std
         Command being timed: "go fmt std"
@@ -65,7 +66,7 @@ BSD and GNU systems come with a `time(1)` command that is signficantly more powe
         Signals delivered: 0
         Exit status: 0
 
-* /usr/bin/time (cont.)
+* /usr/bin/time -v (BSD)
 
     % /usr/bin/time -l go fmt std
             4.66 real         3.73 user         0.90 sys
@@ -84,9 +85,9 @@ BSD and GNU systems come with a `time(1)` command that is signficantly more powe
          17182  voluntary context switches
           7205  involuntary context switches
 
-* Did you know
+* Did you know?
 
-The go tool has the ability to prefix every command it issues with something you provide.
+The go tool has the ability to add a prefix to every command it runs.
 
 	% go build -toolexec=... github.com/pkg/profile
 	% go test -toolexec=... net/http
@@ -98,7 +99,9 @@ We use this for:
 - `toolstash`, a tool rsc wrote to check the compiler output is byte for byte identical.
 - `android/arm` and `ios/arm` builds that are built on one machine, and run on another.
 
-Bonus: go help build
+Further reading:
+
+- go help build
 
 * Why is my build slow?
 
@@ -122,21 +125,19 @@ DEMO:
 	go build -toolexec="/usr/bin/time -f '%U %S %C'" cmd/compile/internal/gc #linux
 	go build -toolexec="/usr/bin/time" cmd/compile/internal/gc #osx
 
-* #2 GODEBUG
+* №2 GODEBUG
 
 * GODEBUG
 
 If `/usr/bin/time` is external, let's turn to something built into every Go program.
 
-The Go runtime collects various statistics during the life of your program, these are normally surpressed.
-
-`GODEBUG` controls the display of these statistics
-
-A simple way to obtain a general idea of how hard the garbage collector is working is to enable the output of GC logging.
+The Go runtime collects various statistics during the life of your program.
 
 These stats are always collected, but normally supressed, you can enable their display by setting the `GODEBUG` environment variable.
 
-The trace output gives a general measure of GC activity.
+As a garbage collected language, the performance of Go programs is often determined by their interaction with the garbage collector.
+
+A simple way to obtain a general idea of how hard the garbage collector is working is to enable the output of GC logging.
 
 DEMO: 
 
@@ -148,15 +149,15 @@ DEMO:
 
 * How does a profiler work?
 
-The profiler will run your program and configure the operating system to interrupt the program a regular intervals.
+A profile runs your program and configures the operating system to interrupt it at regular intervals.
 
-This is done by sending SIGPROF to the program being profiled, which suspends it, and transfers execution to the profiler.
+This is done by sending `SIGPROF` to the program being profiled, which suspends and transfers execution to the profiler.
 
-The profiler then grabs the program counter for each executing _thread_
+The profiler then grabs the program counter for each executing _thread_ and restarts the program.
 
 Question: Why is the profile per _thread_, not per _goroutine_?
 
-* Profiling ground rules
+* Profiling do's and don't's
 
 Before you profile, you must have a stable environment to get repeatable results.
 
@@ -169,9 +170,9 @@ If you can afford it, buy dedicated performance test hardware. Rack them, disabl
 
 For everyone else, have a before and after sample and run them multiple times to get consistent results.
 
-* #3. runtime/pprof
+* №3 pprof
 
-* runtime/pprof
+* pprof
 
 `pprof` descends from the Google Performance Tools suite.
 
@@ -264,7 +265,7 @@ A few years ago I wrote a small package, [[https://github.com/pkg/profile][githu
 
 DEMO: Show profiling cmd/godoc with pkg/profile
 
-* #4 /debug/pprof
+* №4 /debug/pprof
 
 * /debug/pprof
 
@@ -381,13 +382,11 @@ The frame pointer is a register that points to the top of the current activation
 
 Framepointers enable tools like `gdb(1)`, and `perf(1)` to understand the Go call stack.
 
-* #5. perf
+* №5 perf
 
 * perf
 
 If you're a linux user, then `perf(1)` is a great tool for profiling applications, and now with Go 1.7, it can profile Go applications.
-
-* perf stat
 
 	% go build -toolexec="perf stat" .
 	# cmd/compile/internal/gc
@@ -416,7 +415,7 @@ If you're a linux user, then `perf(1)` is a great tool for profiling application
 .image seven/perf.png _ 600
 .link seven/perf.png 
 
-* #6. Flame graph
+* №6 Flame graph
 
 * Flame graph
 
@@ -445,27 +444,39 @@ DEMO
 
 .link seven/torch.svg
 
-* #7. go tool trace
+* №7 go tool trace
 
 * go tool trace
 
 In Go 1.5, Dmitry Vyukov added a new kind of profiling to the runtime; execution trace profiling.
 
-Execution traces are not just another external 
+Execution traces are essentially not documented, see [[https://github.com/golang/go/issues/16526][github/go#16526]]
 
-* go tool trace (cont.)
+Generating a profile (with [[https://go-review.googlesource.com/#/c/25354/][CL 25354]] applied):
 
-	% go build -gcflags=-traceprofile=seven/t.p .
+	% go build -gcflags=-traceprofile=/tmp/t.p .
+
+Viewing the trace:
+
 	% go tool trace /tmp/t.p
 	2016/08/13 17:01:04 Parsing trace...
 	2016/08/13 17:01:04 Serializing trace...
 	2016/08/13 17:01:05 Splitting trace...
 	2016/08/13 17:01:06 Opening browser
 
-* Why?
+DEMO:
+
+	go tool trace seven/t.p
+
+* Conclusion
 
 .image seven/wharrgarbl.jpg
+
+That's a lot to consume in 30 minutes.
 
 Different tools give you a different perspective on the performance of your application.
 
 Maybe you don't need to know always use every one of these tools, but a working knowledge of most will serve you well.
+
+.link http://go-talks.appspot.com/github.com/davecheney/presentations/seven.slide#1
+
