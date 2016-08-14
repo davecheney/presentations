@@ -13,7 +13,7 @@ http://dave.cheney.net/
 
 Notwithstanding my remarks yesterday, a reason people choose Go is because it lets them write efficient programs.
 
-But it's not just the compiler, the tooling around the language is what gives us our 
+But it's not just the compiler, the tooling around the language is what gives us our edge.
 
 Agenda: Seven different ways to profile Go programs.
 
