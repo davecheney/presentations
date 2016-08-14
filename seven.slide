@@ -12,7 +12,7 @@ http://dave.cheney.net/
 
 Notwithstanding my remarks yesterday, a reason people choose Go is because it lets them write efficient programs.
 
-But it's not just the compiler, the tooling around the language is what gives us a real edge.
+But it's not just the compiler, the tooling around the language is what gives us our real edge.
 
 Agenda: Seven different ways to profile Go programs.
 
@@ -143,9 +143,7 @@ DEMO:
 
 	env GODEBUG=gctrace=1 godoc -http=:8080
 
-* Profiling
-
-# the next section will focus on profilers
+* Intermission №1
 
 * How does a profiler work?
 
@@ -372,13 +370,15 @@ Here is a visulaisation of a block profile:
 
 .link seven/block.svg
 
+* Intermission №2
+
 * Framepointers
 
 .image seven/good-news.jpg
 
-Go 1.7 has been released and along with a new compiler for amd64, the compiler finally supports frame pointers by default.
+Go 1.7 has been released and along with a new compiler for amd64, the compiler now enables frame pointers by default.
 
-The frame pointer is a register that points to the top of the current activation frame. 
+The frame pointer is a register that always points to the top of the current stack frame. 
 
 Framepointers enable tools like `gdb(1)`, and `perf(1)` to understand the Go call stack.
 
@@ -386,9 +386,9 @@ Framepointers enable tools like `gdb(1)`, and `perf(1)` to understand the Go cal
 
 * perf
 
-If you're a linux user, then `perf(1)` is a great tool for profiling applications, and now with Go 1.7, it can profile Go applications.
+If you're a linux user, then `perf(1)` is a great tool for profiling applications. Now we have frame pointers, `perf` can profile Go applications.
 
-	% go build -toolexec="perf stat" .
+	% go build -toolexec="perf stat" cmd/compile/internal/gc
 	# cmd/compile/internal/gc
 	
 	 Performance counter stats for '/home/dfc/go/pkg/tool/linux_amd64/compile -o $WORK/cmd/compile/internal/gc.a -trimpath $WORK -p cmd/compile/internal/gc -complete -buildid 87cd803267511b4d9e753d68b5b66a70e2f878c4 -D _/home/dfc/go/src/cmd/compile/internal/gc -I $WORK -pack ./alg.go ./align.go ./bexport.go ./bimport.go ./builtin.go ./bv.go ./cgen.go ./closure.go ./const.go ./cplx.go ./dcl.go ./esc.go ./export.go ./fmt.go ./gen.go ./go.go ./gsubr.go ./init.go ./inl.go ./lex.go ./magic.go ./main.go ./mpfloat.go ./mpint.go ./obj.go ./opnames.go ./order.go ./parser.go ./pgen.go ./plive.go ./popt.go ./racewalk.go ./range.go ./reflect.go ./reg.go ./select.go ./sinit.go ./sparselocatephifunctions.go ./ssa.go ./subr.go ./swt.go ./syntax.go ./type.go ./typecheck.go ./universe.go ./unsafe.go ./util.go ./walk.go':
@@ -429,11 +429,9 @@ If you're a linux user, then `perf(1)` is a great tool for profiling application
 
 flame graphs can consume data from many sources, including `pprof` (and `perf(1)`).
 
-Uber have open sourced a tool call go-torch which automates the whole process, assuming your program has the `/debug/pprof` endpoint enabled.
+Uber have open sourced a tool call go-torch which automates the process, assuming you have the `/debug/pprof` endpoint, or you can feed it an existing profile.
 
 .link https://github.com/uber/go-torch
-
-Or you can feed it an existing profile.
 
 DEMO
 
@@ -448,13 +446,25 @@ DEMO
 
 * go tool trace
 
-In Go 1.5, Dmitry Vyukov added a new kind of profiling to the runtime; execution trace profiling.
+In Go 1.5, Dmitry Vyukov added a new kind of profiling to the runtime; [[https://golang.org/doc/go1.5#trace_command][execution trace profiling]].
+
+Gives insight into dynamic execution of a program.
+
+Captures with nanosecond precision:
+
+- goroutine creation/start/end
+- goroutine blocking/unblocking
+- network blocking
+- system calls
+- GC events
 
 Execution traces are essentially not documented, see [[https://github.com/golang/go/issues/16526][github/go#16526]]
 
+* go tool trace (cont.)
+
 Generating a profile (with [[https://go-review.googlesource.com/#/c/25354/][CL 25354]] applied):
 
-	% go build -gcflags=-traceprofile=/tmp/t.p .
+	% go build -gcflags=-traceprofile=/tmp/t.p cmd/compile/internal/gc
 
 Viewing the trace:
 
@@ -467,6 +477,8 @@ Viewing the trace:
 DEMO:
 
 	go tool trace seven/t.p
+
+Bonus: [[https://github.com/pkg/profile/releases/tag/v1.2.0][`github.com/pkg/profile`]] supports generating trace profiles.
 
 * Conclusion
 
