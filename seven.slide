@@ -1,8 +1,6 @@
 Seven ways to profile a Go program
 GolangUK
 
-18 Aug 2016
-
 Dave Cheney
 Himself
 dave@cheney.net
@@ -125,9 +123,7 @@ Most of you know about `go`build`-x` that shows each command the go tool invokes
 Idea: combine `-toolexec` and `/usr/bin/time` to profile the entire build.
 
 DEMO:
-
-	go build -toolexec="/usr/bin/time -f '%U %S %C'" cmd/compile/internal/gc #linux
-	go build -toolexec="/usr/bin/time" cmd/compile/internal/gc #osx
+	go build -toolexec="/usr/bin/time" cmd/compile/internal/gc
 
 * №2 GODEBUG
 
@@ -367,7 +363,7 @@ In use profile reports the location of an allocation that are live at the end of
 
 .link seven/inuse_objects.svg
 
-Here is a visulaisation of a block profile:
+Here is a visualisation of a block profile:
 
     % go test -run=XXX -bench=ClientServer -blockprofile=/tmp/b.p net/http
     % go tool pprof -svg http.test /tmp/b.p > block.svg
@@ -431,7 +427,7 @@ If you're a linux user, then `perf(1)` is a great tool for profiling application
 
 * Flame graph (cont.)
 
-flame graphs can consume data from many sources, including `pprof` (and `perf(1)`).
+Flame graphs can consume data from many sources, including `pprof` (and `perf(1)`).
 
 Uber have open sourced a tool call go-torch which automates the process, assuming you have the `/debug/pprof` endpoint, or you can feed it an existing profile.
 
