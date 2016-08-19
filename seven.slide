@@ -458,7 +458,7 @@ Captures with nanosecond precision:
 - system calls
 - GC events
 
-Execution traces are essentially not documented, see [[https://github.com/golang/go/issues/16526][github/go#16526]]
+Execution traces are essentially undocumented ☹️, see [[https://github.com/golang/go/issues/16526][github/go#16526]]
 
 * go tool trace (cont.)
 
