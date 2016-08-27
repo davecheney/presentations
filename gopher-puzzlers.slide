@@ -211,3 +211,8 @@ Also it would mean that an unnamed type had a method, which wouod mean a receive
 
 Worse a named slice type wouod not have a Len method. 
 
+* Size classes
+
+.code gopher-puzzlers/sizeclass.go
+
+
