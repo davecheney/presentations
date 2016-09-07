@@ -4,8 +4,8 @@ v1.0, 10th Oct, 2016
 
 == Introduction
 
-Roughly two years ago I stood on a stage not unlike this one this morning and told you about my opinions for how configuration options should be handeld in Go.
-The cornerstone of this presentation was Rob Pike's _Self referentiontion functions_ https://commandcenter.blogspot.com.au/2014/01/self-referential-functions-and-design.html[blog post].
+Roughly two years ago I stood on a stage not unlike this one this and told you about my opinions for how configuration options should be handeld in Go.
+The cornerstone of this presentation was Rob Pike's _Self referential functions_ https://commandcenter.blogspot.com.au/2014/01/self-referential-functions-and-design.html[blog post].
 
 In the past two years it's been wonderful to watch the idea mature from Rob's original blog post, to my presentation, to the gRPC project, who have continued to evolve this design pattern into what I consider to be its best form so far.
 
@@ -20,7 +20,7 @@ Before I being, I'll very quickly recap the functional options pattern
 ____
 func WithReticulatedSplines(c *Config) { ... }
 
-func NewTerrain(opts ...func(*Config)) {
+func NewTerrain(opts ...func(*Config)) *Terrain {
 	var config Config
 	for _, fn := range opts {
 		fn(&c)
@@ -44,36 +44,309 @@ func WithCities(n int) func(*Config) { ... }
 func main() {
      t := NewTerrain(WithCities(9))
 ____
-In this example we have a WithCities option, which lets us add a number of cities to the terrain model
+In this example we have a WithCities option, which lets us add a number of cities to the terrain model.
+Because WithCities takes an argument, we cannot simply pass WithCities to NewTerrain as the signature does not match.
+Instead we call WithCities, passing in the number of cities to create, and use the _result_ of evaluating this function as the value to pass to NewTerrain.
 
 == First Class functions
 
 So, what's going on here?
-We now have a function which returns a function
+Evaluating a function returns a value.
+____
+func Min(a, b float64) float64
+____
+We have functions that take two numbers and return a number
+____
+package bytes
+
+func NewReader(b []byte) *Reader
+____
+We have functions that take a slice, and return a pointer to a slice
+____
+func WithCities(n int) func(*Config)
+____
+We now have a function which returns a function which takes a Config
 
 == interface.Apply
 
+Perhaps another way to think about what is going on here is rewrite the functional option pattern as an interface.
+____
+type Option interface {
+	Apply(*Config)
+}
+
+func NewTerrain(opts ...Option) *Terrain {
+        var config Config
+        for _, opt := range opts {
+                opt.Apply(&c)
+        }
+____
+// transition from functional version to interface version
+
+So, rather than using a function type, we declare an interface with a single method, we'll call it Apply.
+Whenever we call NewTerrain we pass one or more values that implement the `Option` interface.
+Hopefully everyone is comfortable with this pattern.
+
+Ok, so this doesn't look too different to the first example, rather than ranging over a slice of functions and calling them, we range over a slice of interface values and call a method on each.
+Let's take a look at the other side, declaring an option.
+____
+type reticulatedSplines struct {}
+
+func (r *reticulatedSplines) Apply(c *Config) { ... }
+
+func WithReticulatedSplines() Option {
+	return new(reticulatedSplines)
+}
+____
+You'll immediately see that there is more code.
+Because we're passing around interface values, we need to declare a type to hold the `Apply` method.
+We also need to declare a _constructor_ function to create the `reticulatedSplines` option.
+____
+type cities struct {
+	cities int
+}
+
+func (c *cities) Apply(c *Config) { ... }
+
+func WithCities(n int) Option {
+	return &cities{
+		cities: n,
+	}
+}
+____
+
+Interfaces are important when you want to explicitly bind behaviour and 	
+
+== function / interface duality
+In 2015 Tomas Senart spoke about the duality of the a single method interface and a first class function. 
+You can see this play out in these examples; they are _functionaly_ equvilent, an interface with one method, and a function are interchangable.
+
+____
+func WithCities(n int) func(*Config) {
+	option := &cities{
+		cities: n,
+	}
+	return option.Apply
+}
+____
+We can take an interface value and return a single method as a function.
+____
+type option struct {
+	fn func(*Config)
+}
+
+func (o *option) Apply(c *Config) {
+	o.fn(c)
+}
+
+func ReticulatedSplines(c *Config) { ... } 
+
+func WithReticulatedSplines() Option {
+	return &option {
+		fn: ReticulatedSplines,
+	}
+}
+____
+And we can take a function and construct a value which implements a particular interface.
+
+So, for single functions and single method interfaces, they are comparable.
+But, surely you can see that dealing with functions as a first class citizen is more striaght forward.
+
 == Encapsulating Behaviour
 
-show how passing around functions allows you to pass behaviour to
-be executed, rather that data to be interpreted
+Ok, let's leave interfaces for a moment and talk about some other properties of first class functions.
 
-Passing functions allows you to declare code that will execute later. 
+Usually, when we invoke functions, or methods, we do so by passing around data.
 
-Func() isn't that special, because the only context it captures is the one it was created with. 
+The job of the function is to _interpret_ that data and take some action.
 
-But passing a function that takes an argument allows you to join the dots. 
+Passing around function values, allows you to pass behaviour to be executed, rather that data to be interpreted.
 
-Show func/interface duality earlier, then show the method Arg func(context) duality. 
+In effect, passing a function value allows you to declare code that will execute later.  
+
+// Func() isn't that special, because the only context it captures is the one it was created with. 
+
+// But passing a function that takes an argument allows you to join the dots. 
+
+// Show func/interface duality earlier, then show the method Arg func(context) duality. 
+
+To illustrate this, let's look at some examples.
 
 === Calculator
 
-Show a calcualtor that works on operations, 
+___
+type Calculator struct {
+	acc float64
+}
+
+const (
+	OP_ADD = << iota
+	OP_SUB
+	OP_MUL
+	OP_DIV
+)
+
+func (c *Calculator) Do(op int, v float64) float64 {
+	switch op {
+	case OP_ADD:
+		c.acc += v
+	case OP_SUB:
+		c.acc -= v
+	case OP_MUL:
+		c.acc *= v
+	default:
+		panic("unhandled operation")
+	}
+	return v
+}
+____
+Here is a simple calculator type.
+It has one method, Do, which takes an operation and an operand, `v`.
+
+Our calculator knows how to add, subtract, and multiply.
+If we wanted to implement division, we'd have to allocate a operation constant, then open up the code for Do and add the division operation.
+And what if we wanted to add square root, or exponentiation?
+
+Each time we do this, `Do` grows longer, gets harder to follow.
+Each time we do this, we have to encode into the `Do` method knowledge of how to _interpret_ each operation.
+
+Let's rewrite our calculator a little
+
+____
+type Calculator struct 
+	acc float64
+}
+
+func (c *Calculator) Do(op func(float64, float64) float64, v float64) {
+	c.acc = op(c.acc, v)
+	return c.acc
+}
+____
+So, as before we have a `Calculator`, which manages it's own accumulator.
+The `Calculator` has a Do method, which this time takes an function as the operation, and a value as the operand.
+The type of `op` is a function which takes two float64's and returns a third.
+
+So, how do we use the calculator in practice
+____
+func Add(a, b float64) float64 {
+	return a + b
+}
+
+func main() {
+	var c Calculator
+	fmt.Println(c.Do(Add, 100))	// 100
+	fmt.Println(c.Do(Add, 200))	// 300
+}
+____
+What's happening here?
+We construct a calculator, then call it, passing the Add function, technically the address of the `Add` function.
+c.Do is going call the function we pass in, with the operand we provide.
+
+What about the other operations?
+____
+func Sub(a, b float64) float64 {
+	return a - b
+}
+
+func Mul(a, b float64) float64 {
+	return a * b
+}
+
+func main() {
+	var c Calculator
+	c.Do(Add, 5)
+	c.Do(Sub, 3)
+	fmt.Println(c.Do(Mul, 8)) 	// 16
+}
+____
+Ok, how can we extend our calculator to other operations like squareroot or exponentiation.
+____
+func Exp(b, n) float64 {
+	... 
+}
+
+func Main() {
+	var c Calculator
+	c.Do(Add, 8)
+	c.Do(Exp, 3) // ...
+}
+____
+Exponentiation is easy, but the square root of the accumulator takes no operand.
+Maybe we just cheat and ignore the operand
+____
+func Srqt(n, _ float64) float64 {
+	return math.Sqrt(n)
+}
+
+func Main() {
+	var c Calculator
+	c.Do(Add, 16)
+	c.Do(Sqrt, 0) // operand ignored
+}
+____
+That's a bit gross, can we do better?
+I think we can.
+____
+func Add(n float64) func(float64) float64 {
+	return func(acc float64) flaot64 {
+		return acc + n
+	}
+}
+
+func (c *Calculator) Do(op func(float64) float64) float64 {
+	c.acc = op(c.acc)
+	return c.acc
+}
+
+func main() {
+	var c Calculator 
+	c.Do(Add(10))
+	c.Do(Add(20)) 	// 30
+}
+____
+Let's redefine Add from a function that is called with two values and returns the sum, to a function which _returns_ a function that takes a value and returns a value.
+
+Now we call calc.Do with a the _result_ of evaluating Add(10), which is a function which takes a value and returns 10 more than the value.
+
+Subtraction and multiplication are similarly easy to implement
+____
+func Sub(n float64) func(float64) float64 {
+	return func(acc flaot64) float64 {
+		return acc - n
+	}
+}
+
+func Mul(n float64) func(float64) float64 {
+	return func(acc float64) float64 {
+		return acc * n
+	}
+}
+____	
+But what about squareroot?
+Now that we've resolved
+
+
+func Sqrt() func(float64, flaot64) float64 
+
+- show var args.
+
+So, what does this example show?
+We started with a model of hard coded, interpreted logic, moved to a functional model, where we pass in the behavoiur we want, then by taking it a step further generalised it to work for operations with an unknown number of arguments.
 
 === Actor model
 
+Let's change tracks a little and talk about why most of us are here at a Go confernce; concurrency.
+
+[quotei, Rob Pike]
+Don't communicate by sharing memory, share memory by communcating
+
+Our first proverb.
+Don't mediate access to shared memory with locks and mutexes, instead communicate
+
 Show the actor model replacing a fan in of channels
 
+
+- where's the locking? Not needed, becauce the function we pass, the behaviour, is executed _in the context_ of the caller.
 
 == Taking it further
 
@@ -81,6 +354,8 @@ Show the actor model replacing a fan in of channels
 
 Is what we've been doing for the past 15 minutes functional programming?
 Not really/Sorta/No/It depends
+
+If you look closely at the examples we had, if you were the author of the function being passed around, there is scope for you to copy or take a refernence to some private state 
 
 == What's in a name
 

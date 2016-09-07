@@ -3,15 +3,11 @@ Golang Paris
 11 Oct 2016
 
 Dave Cheney
-Canonical
 dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
-
 * Who's read this book ?
-
-.html code.html
 
 .image gopher-puzzlers/java-puzzlers.jpg 461 _ 
 
@@ -49,7 +45,7 @@ You'd expect this to not compile
 
     type TING int
     
-    func Blort(t TING) {}
+ p   func Blort(t TING) {}
     
     func main() {
     	var i int = 200
@@ -215,4 +211,18 @@ Worse a named slice type wouod not have a Len method.
 
 .code gopher-puzzlers/sizeclass.go
 
+What will this code print?
 
+* Size classes (cont.)
+
+Everyone knows that slices are grown by doubling, but why is the cap 2048?
+
+Several things
+
+- Doubling a 1kb slice to 2kb wastes a lot of space
+
+* One, Two, Three
+
+.play gopher-puzzlers/one-two-three.go /START OMIT/,/END OMIT/
+
+What does this program print? Why? Will it always?
