@@ -11,7 +11,93 @@ http://dave.cheney.net/
 
 .image gopher-puzzlers/java-puzzlers.jpg 461 _ 
 
-* How well do you know your language ?
+* How well do you know your language?
+
+How well do you know Go?
+
+Hopefully this little quiz will surprise you, and maybe teach you something you didn't know about Go.
+
+* Maps
+
+# https://twitter.com/davecheney/status/364215899340804096
+
+Does this program compile?
+
+.play gopher-puzzlers/maps.go
+
+If it does, what does it print?
+
+# time.Duration
+
+   package time
+
+   type Duration int64
+
+# https://twitter.com/davecheney/status/444707522591477760
+
+# time.Duration (solution)
+
+If `time.Duration` was `uint64` then you could not write.
+
+   x:= -1 * 5 * time.Second
+
+* Space packing
+
+# https://twitter.com/davecheney/status/652278214195187712 
+
+How how much space do values of type `T` consume?
+
+.play gopher-puzzlers/space-packing.go
+
+_Hint_: if you said `4` or `8`, you'd be wrong.
+
+* Space packing (solution)
+
+For 32 bit platforms, the answer is 8.
+
+For 64 bit platforms, the answer is 16.
+
+Rearrange the file
+
+.play gopher-puzzlers/space-packing-ii.go
+
+* The size of things
+
+In this program, the size of variables of type `X` and `Y` in memory varies by platform.
+
+.play gopher-puzzlers/size-of-things.go
+
+By changing _only_one_line_ can you ensure that variables of type x, and y always consume 16 bytes on all platforms that Go 1.7 supports?
+
+* The size of things (cont.)
+
+The solution involves setting n to 4 on 32 bit platforms, and 2 on 64 bit using a constant expression.
+
+.play gopher-puzzlers/size-of-things-ii.go /START OMIT/,/END OMIT/
+
+^uint(0) gives you a number whose bits are all 1, then >> 63 shifts the number 63 binary places to the right. If we’re on a 64 bit platform, this evaluates to 1, shifting 4 one place to the right leaves 2, otherwise 32 ones shifted 63 places to the right gives zero, and 4 shifted right zero times is still 4.
+
+But there is an _even_smaller_ way to write this, can you guess?
+
+* The size of things (cont.)
+
+Credit: Paul Hankin
+
+.play gopher-puzzlers/size-of-things-iii.go /START OMIT/,/END OMIT/
+
+Question: If I change the first `const` to a `var`, will this code compile? Why/Why not?
+
+* Which is faster
+
+Which of these two benchmarks is faster?
+
+.code gopher-puzzlers/which-is-faster.go /START OMIT/,/END OMIT/
+
+* Which is faster (solution)
+
+It's a trap, they're both the same speed.
+
+.code gopher-puzzlers/which-is-faster.go /START OMIT/,/END OMIT/
 
 * Named and unnamed
 
@@ -105,7 +191,7 @@ Without using `recover`, can you suppress the panic message?
 
 * Missing panic (solution)
 
-.play gopher-puzzlers/missing-panic.go
+.play gopher-puzzlers/missing-panic2.go
 
 * Missing panic (cont.)
 
@@ -226,3 +312,6 @@ Several things
 .play gopher-puzzlers/one-two-three.go /START OMIT/,/END OMIT/
 
 What does this program print? Why? Will it always?
+
+* FD closing behind the scenes. 
+

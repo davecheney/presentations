@@ -385,3 +385,13 @@ FCF aren't unique to Go, but they bring us tremendous expressive power
 FCF aren't somethign to be afraid of, they're a tool we should all have in our toolkit
 
 FCF, like the other powerful features Go offers, should be used with restraint; just as it is possible to make an overcomplicated program with the overuse of channels, it's possible to make an impenetrable program with an overuse of FCFs. But that does not mean you shouldn't use them at all just use them in moderation.
+
+== Function/Interface duality
+
+== Functional Composition
+
+Interfaces compose, you can take one interface value wrap or replace it with another and produce a more powerful version.
+
+Functions also compose for the same reason, 
+
+Types, specifically structures do no compose, you cannot take a T and embed that in a Q and use that Q in place of a T.
