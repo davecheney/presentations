@@ -18,7 +18,7 @@ var (
 )
 
 func (
-        seven() int { return 7 }
+	seven() int { return 7 }
 )
 
 // END OMIT
