@@ -95,6 +95,22 @@ TODO: explain why this works.
 
 Question: If I change the first `const` to a `var`, will this code compile? Why/Why not?
 
+* One liners
+
+This program is incorrect.
+
+.play gopher-puzzlers/one-liner.go
+
+By _adding_only_ *one* _line_ can you make it print the correct answer?
+
+* One liners (a solution)
+
+Consider this solution.
+
+.play gopher-puzzlers/one-liner-ii.go
+
+TODO: why
+
 * Which is faster
 
 Which of these two benchmarks is faster?
