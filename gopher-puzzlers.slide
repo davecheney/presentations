@@ -7,11 +7,11 @@ dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
-* Who's read this book ?
+* Who's read this book?
 
 .image gopher-puzzlers/java-puzzlers.jpg 461 _ 
 
-* How well do you know your language?
+* Gopher Puzzlers
 
 How well do you know Go?
 
@@ -27,19 +27,23 @@ Does this program compile?
 
 If it does, what does it print?
 
-# time.Duration
+* time.Duration
 
-   package time
+`time.Duration` is defined to be an `int64`
 
-   type Duration int64
+ package time
+ 
+ type Duration int64
+
+What would happen if it was defined to be a `uint64`?
 
 # https://twitter.com/davecheney/status/444707522591477760
 
-# time.Duration (solution)
+* time.Duration (solution)
 
 If `time.Duration` was `uint64` then you could not write.
 
-   x:= -1 * 5 * time.Second
+.play gopher-puzzlers/duration.go
 
 * Space packing
 
@@ -95,9 +99,15 @@ Which of these two benchmarks is faster?
 
 * Which is faster (solution)
 
-It's a trap, they're both the same speed.
+It's a trap, they're both the same speed (at least in Go 1.7).
+
+However, if we reorganise the functions, they will reverse themselves.
 
 .code gopher-puzzlers/which-is-faster.go /START OMIT/,/END OMIT/
+
+_Lesson_: Modern processors are very sensitive to code layout and alignment. When you're down in the `ns`, little things like this can make a difference.
+
+TODO: show ASM to prove they are the same.
 
 * Named and unnamed
 
@@ -120,8 +130,8 @@ Why is this even a thing ?
 
 Well, if it wasn't, then you wouldn't be able to write things like
 
-    	type stack []uintptr
-	var st stack = make([]uintptr, 20)
+ type stack []uintptr
+ var st stack = make([]uintptr, 20)
 
 * Named and unnamed (cont.)
 
@@ -129,25 +139,24 @@ There is a bigger point here, unamed types are _very_ common in Go. We almost do
 
 You'd expect this to not compile
 
-    type TING int
-    
- p   func Blort(t TING) {}
-    
-    func main() {
-    	var i int = 200
-    	Blort(i)
-    }
+ type TING int
+ 
+ func Blort(t TING) {}
+ 
+ func main() {
+         var i int = 200
+         Blort(i)
+ }
 
 But would you expect this to compile?
 
-    type TING int
-    
-    func Blort(t TING) {}
-    
-    func main() {
-    	Blort(200)
-    }
-
+ type TING int
+ 
+ func Blort(t TING) {}
+ 
+ func main() {
+         Blort(200)
+ }
 
 * Two hundred
 
@@ -216,14 +225,6 @@ This is something that cannot be fixed without breaking backward compat.
 - Probably not a serious problem, you can do this in almost every language.
 - Someone replacing
 
-* Unicode package name
-
-Can you use Unicode as a package name
-
-Can you use emoji as a package name?
-
-TODO: which of these package names are valid ?
-
 * Panicing mutex
 
 What happens when mutex unlock panics, https://github.com/golang/go/issues/13879.
@@ -236,11 +237,7 @@ Why
 
 What's the difference. 
 
-* hide a panic
-
-Close os.Stderr, and then hit a panic.
-
-* keywords 
+* Keywords 
 
 Which of these three functions will not compile
 
@@ -287,7 +284,7 @@ Package names must be valid [[https://golang.org/ref/spec#identifier][_identifie
 
 .code gopher-puzzlers/hmm.go
 
-`ಠ` is a _letter_, underscore is also consider a letter.
+`ಠ` is a _letter_, underscore is also considered a letter.
 
 .code gopher-puzzlers/hmm-ii.go
 
@@ -329,5 +326,5 @@ Several things
 
 What does this program print? Why? Will it always?
 
-* FD closing behind the scenes. 
+# * FD closing behind the scenes. 
 
