@@ -257,33 +257,49 @@ func C(val, default string) string {
 
 * Declarations
 
-Which of 
+Which of the following are valid declarations?
 
-Type (
+.code gopher-puzzlers/declarations.go 
 
+* Declarations (solution)
 
-)
+There are two invalid declarations
 
-Import (
+`import` is a valid declaration, but it must directly follow `package`.
 
+`func` cannot be used in this form because of the ambiguitity with the method syntax.
 
-)
+* Package names
 
-Const (
+Which of these is a valid package name?
 
-)
+.code gopher-puzzlers/hmm.go
 
-Var (
+.code gopher-puzzlers/hmm-ii.go
 
+.code gopher-puzzlers/hmm-iii.go
 
-)
+.code gopher-puzzlers/hmm-iv.go
 
-func (
+* Packages names (solution)
 
-)
+Package names must be valid [[https://golang.org/ref/spec#identifier][_identifiers_]].
 
-Is not valid go syntax?
-How many other declarations cannot use this form?
+.code gopher-puzzlers/hmm.go
+
+`ಠ` is a _letter_, underscore is also consider a letter.
+
+.code gopher-puzzlers/hmm-ii.go
+
+`100` is a _number_, which is allowed, but identifers _must_ start with a _letter_.
+
+.code gopher-puzzlers/hmm-iii.go
+
+`ಠ` is a _letter_, `~` is _not_ a letter.
+
+.code gopher-puzzlers/hmm-iv.go
+
+`すし` is an identifier, it's Japanese for _sushi_.
 
 * Why isn't Len a method on a slice?
 
