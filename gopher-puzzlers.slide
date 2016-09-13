@@ -1,5 +1,5 @@
 Gopher Puzzlers
-Golang Paris
+How well do you know your language?
 11 Oct 2016
 
 Dave Cheney
@@ -34,6 +34,8 @@ If it does, what does it print?
  package time
  
  type Duration int64
+
+This seems silly, `int64` allows negative numbers, but negative durations don't make sense.
 
 What would happen if it was defined to be a `uint64`?
 
@@ -320,27 +322,23 @@ Package names must be valid [[https://golang.org/ref/spec#identifier][_identifie
 
 `すし` is an identifier, it's Japanese for _sushi_.
 
-* Why isn't Len a method on a slice?
-
-Stylistic 
-
-Also it would mean that an unnamed type had a method, which wouod mean a receiver with an unnamed type. 
-
-Worse a named slice type wouod not have a Len method. 
-
 * Size classes
 
-.code gopher-puzzlers/sizeclass.go
+.play gopher-puzzlers/sizeclass.go
 
 What will this code print?
 
 * Size classes (cont.)
 
-Everyone knows that slices are grown by doubling, but why is the cap 2048?
+Everyone knows that slices are grown by doubling, but why _isn't_ the cap 2048?
 
-Several things
+Doubling a 1kb slice to 2kb wastes a lot of space.
 
-- Doubling a 1kb slice to 2kb wastes a lot of space
+To counter this, the runtime manages _small_ areas of memory with something called a sizeclass.
+
+Rather than powers of two, sizeclasses are a set of allocation sizes that fit the most common allocations without the exponential overhead of a power of two.
+
+.play gopher-puzzlers/sizeclass-ii.go
 
 * One, Two, Three
 
