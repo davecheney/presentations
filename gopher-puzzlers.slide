@@ -57,13 +57,15 @@ _Hint_: if you said `4` or `8`, you'd be wrong.
 
 * Space packing (solution)
 
-For 32 bit platforms, the answer is 8.
+For 32 bit platforms, the answer is 8. For 64 bit platforms, the answer is 16.
 
-For 64 bit platforms, the answer is 16.
-
-Rearrange the file
+Let's rearrange the structure and see if that changes anything.
 
 .play gopher-puzzlers/space-packing-ii.go
+
+* Space packing (cont.)
+
+TODO: explain WTF is going on.
 
 * The size of things
 
@@ -71,7 +73,7 @@ In this program, the size of variables of type `X` and `Y` in memory varies by p
 
 .play gopher-puzzlers/size-of-things.go
 
-By changing _only_one_line_ can you ensure that variables of type x, and y always consume 16 bytes on all platforms that Go 1.7 supports?
+By changing _only_one_line_ can you ensure that variables of type x, and y always consume *16* bytes on all platforms that Go 1.7 supports?
 
 * The size of things (cont.)
 
@@ -89,6 +91,8 @@ Credit: Paul Hankin
 
 .play gopher-puzzlers/size-of-things-iii.go /START OMIT/,/END OMIT/
 
+TODO: explain why this works.
+
 Question: If I change the first `const` to a `var`, will this code compile? Why/Why not?
 
 * Which is faster
@@ -103,7 +107,7 @@ It's a trap, they're both the same speed (at least in Go 1.7).
 
 However, if we reorganise the functions, they will reverse themselves.
 
-.code gopher-puzzlers/which-is-faster.go /START OMIT/,/END OMIT/
+.code gopher-puzzlers/which-is-faster-ii.go /START OMIT/,/END OMIT/
 
 _Lesson_: Modern processors are very sensitive to code layout and alignment. When you're down in the `ns`, little things like this can make a difference.
 
