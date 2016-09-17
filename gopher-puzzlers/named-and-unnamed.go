@@ -1,6 +1,5 @@
 package main
 
-// START OMIT
 type stack []uintptr
 
 func callers() stack {
@@ -10,5 +9,3 @@ func callers() stack {
 func main() {
 	callers()
 }
-
-// END OMIT
