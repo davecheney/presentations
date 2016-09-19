@@ -16,8 +16,7 @@ So I'm here today to tell you, and show you, that you don't need to fear first c
 == Recap
 
 Before I being, I'll very quickly recap the functional options pattern
-
-____
+----
 func WithReticulatedSplines(c *Config) { ... }
 
 func NewTerrain(opts ...func(*Config)) *Terrain {
@@ -31,46 +30,48 @@ func NewTerrain(opts ...func(*Config)) *Terrain {
 func main() {
       t := NewTerrain(WithReticulatedSplines)
 }
-____
-
+----
 We start with some options, expressed as functions which take a pointer to a `Config` structure, we pass those functions to some constructure type functiontion, in this case called NewTerrain, and inside the body of that function each option function is invoked in order, passing in a reference to some Config object.
 
 Ok, everyone should be familar with this pattern.
 
 Where the concern came was an option function that took some parameters.
-____
+----
 func WithCities(n int) func(*Config) { ... }
 
 func main() {
      t := NewTerrain(WithCities(9))
-____
+     ...
+}
+----
 In this example we have a WithCities option, which lets us add a number of cities to the terrain model.
 Because WithCities takes an argument, we cannot simply pass WithCities to NewTerrain as the signature does not match.
-Instead we call WithCities, passing in the number of cities to create, and use the _result_ of evaluating this function as the value to pass to NewTerrain.
+Instead we evaluate WithCities, passing in the number of cities to create, and use the _result_ of this function as the value to pass to NewTerrain.
 
 == First Class functions
 
 So, what's going on here?
 Evaluating a function returns a value.
-____
+----
 func Min(a, b float64) float64
-____
+----
 We have functions that take two numbers and return a number
-____
+----
 package bytes
 
 func NewReader(b []byte) *Reader
-____
-We have functions that take a slice, and return a pointer to a slice
-____
+----
+We have functions that take a slice, and return a pointer to a structure.
+----
 func WithCities(n int) func(*Config)
-____
-We now have a function which returns a function which takes a Config
+----
+We now have a function which returns a function.
+The type of the function that is returned from `Cities` is a function which takes a pointer to a `Config`.
 
 == interface.Apply
 
 Perhaps another way to think about what is going on here is rewrite the functional option pattern as an interface.
-____
+----
 type Option interface {
 	Apply(*Config)
 }
@@ -80,16 +81,17 @@ func NewTerrain(opts ...Option) *Terrain {
         for _, opt := range opts {
                 opt.Apply(&c)
         }
-____
-// transition from functional version to interface version
-
-So, rather than using a function type, we declare an interface with a single method, we'll call it Apply.
+        ...
+}
+----
+Rather than using a function type, we declare an interface, we'll call it `Option` with a single method, called `Apply`.
 Whenever we call NewTerrain we pass one or more values that implement the `Option` interface.
+Inside `NewTerrain`, just as before, we loop over the slice of options and call their `Apply` method.
 Hopefully everyone is comfortable with this pattern.
 
 Ok, so this doesn't look too different to the first example, rather than ranging over a slice of functions and calling them, we range over a slice of interface values and call a method on each.
 Let's take a look at the other side, declaring an option.
-____
+----
 type reticulatedSplines struct {}
 
 func (r *reticulatedSplines) Apply(c *Config) { ... }
@@ -97,11 +99,11 @@ func (r *reticulatedSplines) Apply(c *Config) { ... }
 func WithReticulatedSplines() Option {
 	return new(reticulatedSplines)
 }
-____
+----
 You'll immediately see that there is more code.
 Because we're passing around interface values, we need to declare a type to hold the `Apply` method.
 We also need to declare a _constructor_ function to create the `reticulatedSplines` option.
-____
+----
 type cities struct {
 	cities int
 }
@@ -113,24 +115,30 @@ func WithCities(n int) Option {
 		cities: n,
 	}
 }
-____
+----
+Now to write `WithCities` using our `Option` interface we need to do a bit more work because in the functional version the value of `n`, the number of cities to create, was lexically captured -- this is why first class functions are also known as _closures_ -- for us.
+
+In out `Option` interface version, we need to declare
+
+we need to record the number of cities to create.
+To do this 
 
 Interfaces are important when you want to explicitly bind behaviour and 	
 
-== function / interface duality
+== Function / Interface duality
+
 In 2015 Tomas Senart spoke about the duality of the a single method interface and a first class function. 
 You can see this play out in these examples; they are _functionaly_ equvilent, an interface with one method, and a function are interchangable.
-
-____
+----
 func WithCities(n int) func(*Config) {
 	option := &cities{
 		cities: n,
 	}
 	return option.Apply
 }
-____
+----
 We can take an interface value and return a single method as a function.
-____
+----
 type option struct {
 	fn func(*Config)
 }
@@ -146,7 +154,7 @@ func WithReticulatedSplines() Option {
 		fn: ReticulatedSplines,
 	}
 }
-____
+----
 And we can take a function and construct a value which implements a particular interface.
 
 So, for single functions and single method interfaces, they are comparable.
@@ -174,7 +182,7 @@ To illustrate this, let's look at some examples.
 
 === Calculator
 
-___
+----
 type Calculator struct {
 	acc float64
 }
@@ -199,7 +207,7 @@ func (c *Calculator) Do(op int, v float64) float64 {
 	}
 	return v
 }
-____
+----
 Here is a simple calculator type.
 It has one method, Do, which takes an operation and an operand, `v`.
 
@@ -211,8 +219,7 @@ Each time we do this, `Do` grows longer, gets harder to follow.
 Each time we do this, we have to encode into the `Do` method knowledge of how to _interpret_ each operation.
 
 Let's rewrite our calculator a little
-
-____
+----
 type Calculator struct 
 	acc float64
 }
@@ -221,13 +228,13 @@ func (c *Calculator) Do(op func(float64, float64) float64, v float64) {
 	c.acc = op(c.acc, v)
 	return c.acc
 }
-____
+----
 So, as before we have a `Calculator`, which manages it's own accumulator.
 The `Calculator` has a Do method, which this time takes an function as the operation, and a value as the operand.
 The type of `op` is a function which takes two float64's and returns a third.
 
 So, how do we use the calculator in practice
-____
+----
 func Add(a, b float64) float64 {
 	return a + b
 }
@@ -237,13 +244,13 @@ func main() {
 	fmt.Println(c.Do(Add, 100))	// 100
 	fmt.Println(c.Do(Add, 200))	// 300
 }
-____
+----
 What's happening here?
 We construct a calculator, then call it, passing the Add function, technically the address of the `Add` function.
 c.Do is going call the function we pass in, with the operand we provide.
 
 What about the other operations?
-____
+----
 func Sub(a, b float64) float64 {
 	return a - b
 }
@@ -258,10 +265,10 @@ func main() {
 	c.Do(Sub, 3)
 	fmt.Println(c.Do(Mul, 8)) 	// 16
 }
-____
+----
 Ok, how can we extend our calculator to other operations like squareroot or exponentiation.
-____
-func Exp(b, n) float64 {
+----
+func Exp(b, n float64) float64 {
 	... 
 }
 
@@ -270,10 +277,10 @@ func Main() {
 	c.Do(Add, 8)
 	c.Do(Exp, 3) // ...
 }
-____
+----
 Exponentiation is easy, but the square root of the accumulator takes no operand.
-Maybe we just cheat and ignore the operand
-____
+Maybe we just cheat and ignore the operand.
+----
 func Srqt(n, _ float64) float64 {
 	return math.Sqrt(n)
 }
@@ -283,10 +290,10 @@ func Main() {
 	c.Do(Add, 16)
 	c.Do(Sqrt, 0) // operand ignored
 }
-____
+----
 That's a bit gross, can we do better?
 I think we can.
-____
+----
 func Add(n float64) func(float64) float64 {
 	return func(acc float64) flaot64 {
 		return acc + n
@@ -303,15 +310,15 @@ func main() {
 	c.Do(Add(10))
 	c.Do(Add(20)) 	// 30
 }
-____
+----
 Let's redefine Add from a function that is called with two values and returns the sum, to a function which _returns_ a function that takes a value and returns a value.
 
-Now we call calc.Do with a the _result_ of evaluating Add(10), which is a function which takes a value and returns 10 more than the value.
+Now we call `calc.Do` with a the _result_ of evaluating Add(10), which is a function which takes a value, our calculators accumulator, and returns 10 more than the value.
 
-Subtraction and multiplication are similarly easy to implement
-____
+Subtraction, multiplication, and exponentiation are similarly easy to implement.
+----
 func Sub(n float64) func(float64) float64 {
-	return func(acc flaot64) float64 {
+	return func(acc float64) float64 {
 		return acc - n
 	}
 }
@@ -321,56 +328,86 @@ func Mul(n float64) func(float64) float64 {
 		return acc * n
 	}
 }
-____	
+----	
 But what about squareroot?
-Now that we've resolved
+Now that our calculator operates on functions which take and return a single value, we 
+----
+func Sqrt() func(float64) float64 {
+	return func(n float64) float64 {
+		return math.Sqrt(n)
+	}
+}
 
+func main() {
+        var c Calculator
+        c.Do(Add(2))
+        c.Do(Sqrt)   // 1.41421356237
+}
+----
+Hopefully you also noticed that the signature of our `Sqrt` function is the same as `math.Sqrt`, so we can make this code smaller by _resuing_ any function from the `math` package.
+----
 
-func Sqrt() func(float64, flaot64) float64 
-
-- show var args.
-
+func main() {
+        var c Calculator
+        c.Do(Add(2))
+        c.Do(math.Sqrt)   // 1.41421356237
+}
+----
 So, what does this example show?
-We started with a model of hard coded, interpreted logic, moved to a functional model, where we pass in the behavoiur we want, then by taking it a step further generalised it to work for operations with an unknown number of arguments.
+We started with a model of hard coded, interpreted logic, moved to a functional model, where we pass in the behaviour we want, then by taking it a step further generalised it to work for operations with an unknown number of arguments.
 
 === Actor model
 
-Let's change tracks a little and talk about why most of us are here at a Go confernce; concurrency.
+Let's change tracks a little and talk about why most of us are here at a Go conference; concurrency.
 
-[quotei, Rob Pike]
+Suppose we're building a chat server, the next Hipchat or Slack, but we'll start small for the moment.
+----
+include::do-not-fear-first-class-functions/mutex.go[]
+----
+Here's the first cut of the heart of any chat system.
+We have a way to register new connections, remove old ones, and send a message to all the open connections.
+
+Is this what you'd call idiomatic Go code?
+Maybe?
+
+[quote, Rob Pike]
 Don't communicate by sharing memory, share memory by communcating
 
 Our first proverb.
-Don't mediate access to shared memory with locks and mutexes, instead communicate
+Don't mediate access to shared memory with locks and mutexes, instead communicate by sharing memory.
+
+So let's apply this advice to our chat server.
+----
+include::do-not-fear-first-class-functions/channels.go[]
+----
 
 Show the actor model replacing a fan in of channels
 
+----
+include::do-not-fear-first-class-functions/actor.go[]
+----
+
+----
+include::do-not-fear-first-class-functions/actor-ii.go[]
+----
+
+----
+include::do-not-fear-first-class-functions/actor-iii.go[]
+----
 
 - where's the locking? Not needed, becauce the function we pass, the behaviour, is executed _in the context_ of the caller.
 
 == Taking it further
 
-== Impure functions
+Hopefully by now I've convinced you of the power of first class functions.
 
-Is what we've been doing for the past 15 minutes functional programming?
-Not really/Sorta/No/It depends
+First class functions aren't new or novel, many historical languges have offered them, even C, and in fact it was only somewhere along the lines of removing pointers did programmers in the Java stream of the language tree loose access to first class functions.
 
-If you look closely at the examples we had, if you were the author of the function being passed around, there is scope for you to copy or take a refernence to some private state 
+And true to Go's orthogonality, first class functions, just like any type, can have methods attached to them, and this allows us to do amazing things.
 
-== What's in a name
-
-(if time) talk about how avoiding _naming_ a function gives you
-more flexibility
-
-- quote "knowing something's true name gives you the power over it"
-
-coupling, if you give something a name, then everyone has to agree on the name, and you agree on the name by everyone importing the package that the name is defined in.
-
-This creates a strong source code coupling
-
-A function value is equal only to itself, and nil
-
-But a function value can be assigned to any variable of an equal type. 
+----
+include::do-not-fear-first-class-functions/maps.go[]
+----
 
 == Closures
 
@@ -386,12 +423,19 @@ FCF aren't somethign to be afraid of, they're a tool we should all have in our t
 
 FCF, like the other powerful features Go offers, should be used with restraint; just as it is possible to make an overcomplicated program with the overuse of channels, it's possible to make an impenetrable program with an overuse of FCFs. But that does not mean you shouldn't use them at all just use them in moderation.
 
-== Function/Interface duality
+== Conclusion
 
-== Functional Composition
+first class functions are very powerful, but, if you consider the fundamentals that go is built on, -- everything is a value -- then they shouldn't be foreign to you
 
-Interfaces compose, you can take one interface value wrap or replace it with another and produce a more powerful version.
+fcf's aren't just shorter to use, and more expressive, they are more reusable because in general, they do not have a name
 
-Functions also compose for the same reason, 
+fcf's aren't new or novel, many historical languges have offered them, even C, and in fact it was only somewhere along the lines of removing pointers did programmers in the Java stream of the language tree loose access to first class functions
 
-Types, specifically structures do no compose, you cannot take a T and embed that in a Q and use that Q in place of a T.
+our contemporaries, like javascript, rust, python? have access to this feature
+
+and finally, as you saw, Go's functions, just like any other type, can have their own methods, and this allows us to do amazing things.
+
+go programmers shouldn't be afraid of first class functions
+
+If you can learn to use pointers, you can learn to use first class functions.
+They aren't hard, just a little unfamiliar, and unfamiliarity is something that can be overcome
