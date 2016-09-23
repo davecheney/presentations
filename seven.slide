@@ -1,5 +1,6 @@
 Seven ways to profile a Go program
-GolangUK
+GoBridge remote meetup
+22 Sep 2016
 
 Dave Cheney
 Himself
@@ -123,7 +124,7 @@ Most of you know about `go`build`-x` that shows each command the go tool invokes
 Idea: combine `-toolexec` and `/usr/bin/time` to profile the entire build.
 
 DEMO:
-	go build -toolexec="/usr/bin/time" cmd/compile/internal/gc
+	`go`build`-toolexec="/usr/bin/time"`cmd/compile/internal/gc`
 
 * №2 GODEBUG
 
