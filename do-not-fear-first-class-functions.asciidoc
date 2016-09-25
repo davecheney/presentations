@@ -7,36 +7,19 @@ v1.0, 10th Oct, 2016
 Roughly two years ago I stood on a stage not unlike this one this and told you about my opinions for how configuration options should be handeld in Go.
 The cornerstone of this presentation was Rob Pike's _Self referential functions_ https://commandcenter.blogspot.com.au/2014/01/self-referential-functions-and-design.html[blog post].
 
-In the past two years it's been wonderful to watch the idea mature from Rob's original blog post, to my presentation, to the gRPC project, who have continued to evolve this design pattern into what I consider to be its best form so far.
+In the past two years it has been wonderful to watch the idea mature from Rob's original blog post, to my presentation, to the gRPC project, who have continued to evolve this design pattern into what I consider to be its best form so far.
 
-But, a few months ago, when I was talking to Gophers at a conference in London, several of them noted, independently, that while _they_ understood the notion of a function that returns a function they were worried that other Go programmers, insinuating that possibly less experienced Go programmers would not be able to understand this style of programming.
+But, a few months ago, when I was talking to Gophers at a conference in London, several of them noted independently that while _they_ understood the notion of a function that _returns_ a function they were worried that other Go programmers, insinuating that possibly less experienced programmers, would not be able to understand this style of programming.
 
-So I'm here today to tell you, and show you, that you don't need to fear first class functions.
+So I'm here today to tell you, and show you, that you do not need to fear first class functions.
 
 == Recap
 
-Before I begin, I'll very quickly recap the functional options pattern
+To begin, I'll very quickly recap the functional options pattern
 ----
-func WithReticulatedSplines(c *Config) { ... }
-
-type Terrain {
-	config Config
-}
-
-func NewTerrain(opts ...func(*Config)) *Terrain {
-	var t Terrain
-	for _, fn := range opts {
-		fn(&t.Config)
-	}
- 	return &t
-}
-
-func main() {
-        t := NewTerrain(WithReticulatedSplines)
-        ....
-}
+include::do-not-fear-first-class-functions/options.go[]
 ----
-We start with some options, expressed as functions which take a pointer to a `Config` structure, we pass those functions to some constructure type function, in this case called `NewTerrain`, and inside the body of that function each option function is invoked in order, passing in a reference to its `Config` value.
+We start with some options, expressed as functions which take a pointer to a `Config` structure, we pass those functions to some constructor type function, in this case called `NewTerrain`, and inside the body of that function each option function is invoked in order, passing in a reference to its `Config` value.
 
 Ok, everyone should be familar with this pattern.
 
@@ -173,52 +156,21 @@ But, surely you can see that dealing with functions as a first class citizen is 
 
 Ok, let's leave interfaces for a moment and talk about some other properties of first class functions.
 
-Usually, when we invoke functions, or methods, we do so by passing around data.
-
+Usually, when we invoke functions, or methods, we do so by passing around data. 
 The job of the function is to _interpret_ that data and take some action.
 
 Passing around function values, allows you to pass behaviour to be executed, rather that data to be interpreted.
-
 In effect, passing a function value allows you to declare code that will execute later.  
-
-// Func() isn't that special, because the only context it captures is the one it was created with. 
-
-// But passing a function that takes an argument allows you to join the dots. 
-
-// Show func/interface duality earlier, then show the method Arg func(context) duality. 
 
 To illustrate this, let's look at some examples.
 
 === Calculator
 
 ----
-type Calculator struct {
-	acc float64
-}
-
-const (
-	OP_ADD = << iota
-	OP_SUB
-	OP_MUL
-	OP_DIV
-)
-
-func (c *Calculator) Do(op int, v float64) float64 {
-	switch op {
-	case OP_ADD:
-		c.acc += v
-	case OP_SUB:
-		c.acc -= v
-	case OP_MUL:
-		c.acc *= v
-	default:
-		panic("unhandled operation")
-	}
-	return v
-}
+include::do-not-fear-first-class-functions/calc.go[]
 ----
 Here is a simple calculator type.
-It has one method, Do, which takes an operation and an operand, `v`.
+It has one method, +Do+, which takes an operation and an operand, `v`.
 
 Our calculator knows how to add, subtract, and multiply.
 If we wanted to implement division, we'd have to allocate a operation constant, then open up the code for Do and add the division operation.
