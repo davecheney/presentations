@@ -190,11 +190,16 @@ func (c *Calculator) Do(op func(float64, float64) float64, v float64) float64 {
 	return c.acc
 }
 ----
-So, as before we have a `Calculator`, which manages it's own accumulator.
-The `Calculator` has a Do method, which this time takes an function as the operation, and a value as the operand.
-The type of `op` is a function which takes two float64's and returns a third.
+Ok, this signature is quite intimidating, so let's break it down.
 
-So, how do we use the calculator in practice
+- As before we have a `Calculator`, which manages it's own accumulator.
+- The `Calculator` has a Do method, which this time takes an function as the operation, and a value as the operand.
+- The type of `op` is a function which takes two float64's and returns a third.
+- The valye of `v` is simply a float64.
+
+Whenever `Do` is called, it invokes the operation provided passing in both it's accumuator and the value of v.
+
+So, how do we use this new `Calculator` in practice?
 ----
 func Add(a, b float64) float64 {
 	return a + b
@@ -227,20 +232,10 @@ func main() {
 	fmt.Println(c.Do(Mul, 8)) 	// 16
 }
 ----
-Ok, how can we extend our calculator to other operations like squareroot or exponentiation.
-----
-func Exp(b, n float64) float64 {
-	return math.E
-}
+It turns out they aren't too hard either.
 
-func Main() {
-	var c Calculator
-	c.Do(Add, 8)
-	c.Do(Exp, 3) // ...
-}
-----
-Exponentiation is easy, but the square root of the accumulator takes no operand.
-Maybe we just cheat and ignore the operand.
+Ok, how can we extend our calculator to other operations like squareroot?
+
 ----
 func Srqt(n, _ float64) float64 {
 	return math.Sqrt(n)
@@ -252,6 +247,11 @@ func Main() {
 	c.Do(Sqrt, 0) // operand ignored
 }
 ----
+It turns out there is a problem.
+Square root take one argument, not two. 
+But our calculator requires an operation that has two arguments.
+
+Maybe we just cheat and ignore the operand.
 That's a bit gross, can we do better?
 I think we can.
 ----
@@ -274,9 +274,9 @@ func main() {
 ----
 Let's redefine Add from a function that is called with two values and returns the sum, to a function which _returns_ a function that takes a value and returns a value.
 
-Now we call `calc.Do` with a the _result_ of evaluating Add(10), which is a function which takes a value, our calculators accumulator, and returns 10 more than the value.
+Now we call `calc.Do` with a the _result_ of evaluating `Add(10)`, which is a function which takes a value, our calculators accumulator, and returns 10 more than the value.
 
-Subtraction, multiplication, and exponentiation are similarly easy to implement.
+Subtraction and multiplication are similarly easy to implement.
 ----
 func Sub(n float64) func(float64) float64 {
 	return func(acc float64) float64 {
@@ -321,6 +321,7 @@ We started with a model of hard coded, interpreted logic, moved to a functional 
 === Actor model
 
 Let's change tracks a little and talk about why most of us are here at a Go conference; concurrency.
+And to give due credit, the examples here are inspired by Bryan Boreham's talk from GolangUK.
 
 Suppose we're building a chat server, we plan to be the next Hipchat or Slack, but we'll start small for the moment.
 ----
@@ -328,7 +329,7 @@ include::do-not-fear-first-class-functions/mutex.go[]
 ----
 Here's the first cut of the heart of any chat system.
 We have a way to register new connections, remove old ones, and send a message to all the registered connections.
-And because this is a server, all of these methods may be called concurrently so we need to use a Mutex to protect the `conns` map and prevent data races.
+And because this is a server, all of these methods may be called concurrently so we need to use a `sync.Mutex` to protect the `conns` map and prevent data races.
 
 Is this what you'd call idiomatic Go code?
 Maybe?
@@ -344,18 +345,40 @@ So let's apply this advice to our chat server.
 include::do-not-fear-first-class-functions/channels.go[]
 ----
 Rather than using a mutex to serialise access to the ++Mux++'s `conns` map, we can give that job to a goroutine, and communicate with the goroutine via channels.
+
+Hopefully this pattern is familar to some of you. Maybe you've written code like this.
+
+Rather than using a mutex to serialise access to the `conn` map, `loop` will wait until it receives an operation, in the form of a value sent over a channel, on one of the `add`, `remove`, or `sendMsg` channels.
+We don't need a mutex any more, because the the shared state, the `conn` map is now only mutated inside the `loop` function.
+
+We can even make even stronger guarentees because we know that at any time, the goroutine running `loop` will be in one of four states
+
+- waiting for a channel to become ready.
+- adding to the conns map.
+- removing from the conns map.
+- iterating over the conns map to send a message to all clients.
+
+It _cannot_ be mutated outside the `loop` function, even by code in the same package.
+And if `loop` exits, we can throw away the conn map because there is noone left to listen to those channels
+
+But, there's still a lot of hard coded logic here.
+`loop` only knows how to do three things; add, remove and broadcast a message.
+As with the `Calculator` example above, adding new features to our `Mux` type will involve creating a channel, adding a helper to send the data over the channel, and extending the `select` logic inside `loop` to process that message.
+
+So, just like our previous `Calculator` we can rewrite our `Mux` to use first class functions to pass around behaviour to be executed, not dead data to be interpreted.
 ----
 include::do-not-fear-first-class-functions/actor.go[]
 ----
-Hopefully this pattern is familar to some of you. Maybe you've written code like this.
+Let's look at what has changed.
 
-Now locking is no longer needed because `conns` is never shared. 
-Instead other goroutines interact with `loop` via various channels.
+Previously each of the methods on `Mux` would send data over their respective channel to be _interpreted_ by `loop`.
+Now, each method sends the _operation_ to be executed over a single channel to loop.
 
-But there are a few problems still to fix. The most pressing is the error handling in `SendMsg` is missing; an error writing to a connection will not be communicated back to the caller.
+In this case the signature of the operation is a function which takes a map of `net.Addr`'s to `net.Conn`'s.
+In a real program 
 
-Let's 
-
+But there are a few problems still to fix.
+The most pressing is the lack of error handling in `SendMsg`; an error writing to a connection will not be communicated back to the caller.
 ----
 include::do-not-fear-first-class-functions/actor-ii.go[]
 ----
@@ -367,7 +390,7 @@ include::do-not-fear-first-class-functions/actor-iii.go[]
 
 - where's the locking? Not needed, becauce the function we pass, the behaviour, is executed _in the context_ of the caller.
 
-== Taking it further
+== One more thing
 
 Hopefully by now I've convinced you of the power of first class functions.
 

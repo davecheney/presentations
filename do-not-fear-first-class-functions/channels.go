@@ -1,8 +1,6 @@
 package main
 
 type Mux struct {
-	conns map[net.Addr]net.Conn
-
 	add     chan net.Conn
 	remove  chan net.Addr
 	sendMsg chan string
@@ -21,6 +19,7 @@ func (m *Mux) SendMsg(msg string) error {
 }
 
 func (m *Mux) loop() {
+	conns := make(map[net.Addr]net.Conn)
 	for {
 		select {
 		case conn := <-m.add:

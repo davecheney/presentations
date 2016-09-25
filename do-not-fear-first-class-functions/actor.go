@@ -1,27 +1,24 @@
 package main
 
 type Mux struct {
-	conns map[net.Addr]net.Conn
-
 	ops chan func(*Mux)
 }
 
 func (m *Mux) Add(conn net.Conn) {
-	m.ops <- func(m *Mux) {
-		m.conns[conn.RemoteAddr()] = conn
+	m.ops <- func(m map[net.Addr]net.Conn) {
+		m[conn.RemoteAddr()] = conn
 	}
 }
 
 func (m *Mux) Remove(addr net.Addr) {
-	m.ops <- func(m *Mux) {
-		delete(m.conns, addr)
+	m.ops <- func(m map[net.Addr]net.Conn) {
+		delete(m, addr)
 	}
-
 }
 
 func (m *Mux) SendMsg(msg string) error {
-	m.ops <- func(m *Mux) {
-		for _, conn := range m.conns {
+	m.ops <- func(m map[net.Addr]net.Conn) {
+		for _, conn := range m {
 			io.WriteString(conn, msg)
 		}
 	}
@@ -29,7 +26,8 @@ func (m *Mux) SendMsg(msg string) error {
 }
 
 func (m *Mux) loop() {
+	conns := make(map[net.Addr]net.Conn)
 	for _, op := range m.ops {
-		op(m)
+		op(conns)
 	}
 }
