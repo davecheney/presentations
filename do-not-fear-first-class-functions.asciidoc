@@ -9,7 +9,7 @@ The cornerstone of my presentation was Rob Pike's _Self referential functions_ h
 
 Over the last two years it has been wonderful to watch this idea mature from Rob's original blog post, to my presentation, to the gRPC project, who have continued to evolve this design pattern into what I consider to be its best form to date.
 
-But, when I was talking to Gophers at a conference in London a few months ago, several of them expressed a concernt that while _they_ understood the notion of a function that _returns_ a function, the technique that powers function options, they were worried that other Go programmers--I suspect insinuating possibly less experienced programmers--would not be able to understand this style of programming.
+But, when I was talking to Gophers at a conference in London a few months ago, several of them expressed a concern that while _they_ understood the notion of a function that _returns_ a function, the technique that powers function options, they were worried that other Go programmers--I suspect insinuating possibly less experienced programmers--would not be able to understand this style of programming.
 
 And this made me sad, because I consider Go's support of first class functions to be a gift, and a very powerful one at that.
 So I'm here today to tell you, and show you, that you do not need to fear first class functions.
@@ -23,7 +23,7 @@ include::do-not-fear-first-class-functions/options.go[]
 We start with some options, expressed as functions which take a pointer to a `Config` structure.
 We pass those functions to some constructor type function, in this case called `NewTerrain`, and inside the body of that function each option function is invoked in order, passing in a reference to its `Config` value.
 
-Ok, everyone should be familar with this pattern.
+Ok, everyone should be familiar with this pattern.
 
 Where I believe the concern comes from is when you need an option function that takes parameters.
 ----
@@ -121,12 +121,12 @@ Now to write `WithCities` using our `Option` interface we need to do a bit more 
 
 In our `Option` interface version, we need to declare a type to hold the count of cities and we need to do that assignment manually during construction.
 
-Finally, putting it all together, we call `NewTerrian` with the results of evaluating `WithReticulatedSplines` and `WithCities`.
+Finally, putting it all together, we call `NewTerrain` with the results of evaluating `WithReticulatedSplines` and `WithCities`.
 
 == Function / Interface duality
 
 In 2015 Tomas Senart spoke at GopherCon about the duality of a first class function and an interface with one method.
-You can see this play out in the previous example; an interface with one method, and a function are interchangable.
+You can see this play out in the previous example; an interface with one method, and a function are interchangeable.
 ----
 func WithCities(n int) func(*Config) {
 	option := &cities{
@@ -182,7 +182,7 @@ Our calculator knows how to add, subtract, and multiply.
 If we wanted to implement division, we'd have to allocate an operation constant, then open up the code for `Do` and add the division operation.
 What if we wanted to add square root, or exponentiation?
 
-Each time we do this, `Do` grows longer, gets harder to follow, becase each time we add an operation, we have to encode into the `Do` method knowledge of how to _interpret_ that operation.
+Each time we do this, `Do` grows longer, gets harder to follow, because each time we add an operation, we have to encode into the `Do` method knowledge of how to _interpret_ that operation.
 
 Let's rewrite our calculator a little
 ----
@@ -200,9 +200,9 @@ This signature is quite intimidating, so let's break it down.
 - As before we have a `Calculator`, which manages its own accumulator.
 - The `Calculator` has a Do method, which this time takes an function as the operation, and a value as the operand.
 - The type of `op` is a function which takes two float64's and returns a third.
-- The valye of `v` is simply a float64.
+- The value of `v` is simply a float64.
 
-Whenever `Do` is called, it invokes the operation provided passing in both it's accumuator and the value of v.
+Whenever `Do` is called, it invokes the operation provided passing in both it's accumulator and the value of v.
 
 So, how do we use this new `Calculator`? By declaring operations as functions.
 ----
@@ -240,7 +240,7 @@ func main() {
 What about the other operations?
 It turns out they aren't too hard either.
 
-Ok, now we can extend our calculator to other operations like squareroot.
+Ok, now we can extend our calculator to other operations like square root.
 ----
 func Srqt(n, _ float64) float64 {
 	return math.Sqrt(n)
@@ -294,7 +294,7 @@ func Mul(n float64) func(float64) float64 {
 	}
 }
 ----	
-But what about squareroot?
+But what about square root?
 Now that our calculator operates on functions which take and return one value, implementing square root now avoids having to fit the awkward syntax of the previous calculator.
 ----
 func Sqrt() func(float64) float64 {
@@ -340,7 +340,7 @@ Is this what you'd call idiomatic Go code?
 Maybe?
 
 [quote, Rob Pike]
-Don't communicate by sharing memory, share memory by communcating
+Don't communicate by sharing memory, share memory by communicating
 
 Our first proverb.
 Don't mediate access to shared memory with locks and mutexes, instead communicate by sharing memory.
@@ -351,7 +351,7 @@ include::do-not-fear-first-class-functions/channels.go[]
 ----
 Rather than using a mutex to serialise access to the ++Mux++'s `conns` map, we can give that job to a goroutine, and communicate with the goroutine via channels.
 
-Hopefully this pattern is familar to you.
+Hopefully this pattern is familiar to you.
 
 Rather than using a mutex to serialise access to the `conn` map, `loop` will wait until it receives an operation, in the form of a value sent over a channel, on one of the `add`, `remove`, or `sendMsg` channels and apply the relevant operation.
 We don't need a mutex any more, because the shared state, our `conns` map, is now only mutated inside the `loop` function.
