@@ -4,12 +4,12 @@ v1.0, 10th Oct, 2016
 
 == Introduction
 
-Roughly two years ago I stood on a stage, not unlike this one, and told you my opinion for how configuration options should be handled in Go.
+Two years ago I stood on a stage, not unlike this one, and told you my opinion for how configuration options should be handled in Go.
 The cornerstone of my presentation was Rob Pike's _Self referential functions_ https://commandcenter.blogspot.com.au/2014/01/self-referential-functions-and-design.html[blog post].
 
-Over the last two years it has been wonderful to watch this idea mature from Rob's original blog post, to my presentation, to the gRPC project, who have continued to evolve this design pattern into what I consider to be its best form to date.
+Since then it has been wonderful to watch this idea mature from Rob's original blog post, to my presentation, to the gRPC project, who have continued to evolve this design pattern into what I consider to be its best form to date.
 
-But, when I was talking to Gophers at a conference in London a few months ago, several of them expressed a concern that while _they_ understood the notion of a function that _returns_ a function, the technique that powers function options, they were worried that other Go programmers--I suspect insinuating possibly less experienced programmers--would not be able to understand this style of programming.
+But, when I was talking to Gophers at a conference in London a few months ago, several of them expressed a concern that while _they_ understood the notion of a function that _returns_ a function, the technique that powers functional options, they were worried that other Go programmers--I suspect insinuating less experienced Go programmers--would not be able to understand this style of programming.
 
 And this made me sad, because I consider Go's support of first class functions to be a gift, and a very powerful one at that.
 So I'm here today to tell you, and show you, that you do not need to fear first class functions.
@@ -21,26 +21,26 @@ To begin, I'll very quickly recap the functional options pattern
 include::do-not-fear-first-class-functions/options.go[]
 ----
 We start with some options, expressed as functions which take a pointer to a `Config` structure.
-We pass those functions to some constructor type function, in this case called `NewTerrain`, and inside the body of that function each option function is invoked in order, passing in a reference to its `Config` value.
+We pass those functions to a constructor, in this case called `NewTerrain`, and inside the body of that function each option function is invoked in order, passing in a reference to its `Config` value.
 
 Ok, everyone should be familiar with this pattern.
 
-Where I believe the concern comes from is when you need an option function that takes parameters.
+Where I believe the confusion comes from is when you need an option function which take a parameter.
 ----
-func WithCities(n int) func(*Config) { ... }
+func WithCities(n int) func(*Config)
 
 func main() {
         t := NewTerrain(WithCities(9))
         ...
 }
 ----
-In this example we have a `WithCities` option, which lets us add a number of cities to the terrain model.
+For example, we have `WithCities`, which lets us add a number of cities to the terrain model.
 Because `WithCities` takes an argument, we cannot simply pass `WithCities` to `NewTerrain` as the signature does not match.
 Instead we evaluate `WithCities`, passing in the number of cities to create, and use the _result_ of this function as the value to pass to `NewTerrain`.
 
 == First Class functions
 
-So, what's going on here?
+What's going on here?
 Let's break it down.
 
 Evaluating a function returns a value.
@@ -61,10 +61,11 @@ func WithCities(n int) func(*Config)
 ----
 We now have a function which returns a function.
 The type of the function that is returned from `Cities` is a function which takes a pointer to a `Config`.
+This ability to treat functions as regular values leads to their name, first class functions.
 
 == interface.Apply
 
-Perhaps another way to think about what is going on here is rewrite the functional option pattern using an interface.
+Another way to think about what is going on here is rewrite the functional option pattern using an interface.
 ----
 type Option interface {
 	Apply(*Config)
@@ -78,10 +79,9 @@ func NewTerrain(options ...Option) *Terrain {
         // ...
 }
 ----
-Rather than using a function type, we declare an interface, we'll call it `Option` with a single method, called `Apply`.
+Rather than using a function type, we declare an interface, we'll call it `Option` with a single method, `Apply`.
 Whenever we call `NewTerrain` we pass one or more values that implement the `Option` interface.
 Inside `NewTerrain`, just as before, we loop over the slice of options and call their `Apply` method.
-Hopefully everyone is comfortable with this pattern.
 
 Ok, so this doesn't look too different to the first example, rather than ranging over a slice of functions and calling them, we range over a slice of interface values and call a method on each.
 If you have a background in Java, you'll be very familiar with this pattern.
