@@ -9,12 +9,12 @@ type Terrain struct {
 func NewTerrain(options ...func(*Config)) *Terrain {
 	var t Terrain
 	for _, option := range options {
-		option(&t.Config)
+		option(&t.config)
 	}
 	return &t
 }
 
 func main() {
 	t := NewTerrain(WithReticulatedSplines)
-	// ....
+	// [ simulation intensifies ]
 }

@@ -2,9 +2,9 @@ package main
 
 import "fmt"
 
-type M func(key string) string
+type Map func(key string) string
 
-func (m M) Add(k, v string) M {
+func (m Map) Add(k, v string) M {
 	return func(key string) string {
 		if k == key {
 			return v
@@ -14,9 +14,9 @@ func (m M) Add(k, v string) M {
 }
 
 func main() {
-	m := M(func(string) string { return "" })
-	fmt.Println(m("george"))
+	m := Map(func(string) string { return "" })
+	fmt.Println(m("george")) // ""
 
 	m = m.Add("george", "lion")
-	fmt.Println(m("george"))
+	fmt.Println(m("george")) // "lion"
 }
