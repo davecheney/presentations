@@ -1,15 +1,15 @@
 package world
 
-func WithReticulatedSplines(c *Config) {}
+func WithReticulatedSplines(c *Config)
 
 type Terrain struct {
 	config Config
 }
 
-func NewTerrain(opts ...func(*Config)) *Terrain {
+func NewTerrain(options ...func(*Config)) *Terrain {
 	var t Terrain
-	for _, fn := range opts {
-		fn(&t.Config)
+	for _, option := range options {
+		option(&t.Config)
 	}
 	return &t
 }
