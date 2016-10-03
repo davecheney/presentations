@@ -9,7 +9,7 @@ The cornerstone of my presentation was Rob Pike's _Self referential functions_ h
 
 Since then it has been wonderful to watch this idea mature from Rob's original blog post, to my presentation, to the gRPC project, who have continued to evolve this design pattern into what I consider to be its best form to date.
 
-But, when I was talking to Gophers at a conference in London a few months ago, several of them expressed a concern that while _they_ understood the notion of a function that _returns_ a function, the technique that powers functional options, they were worried that other Go programmers--I suspect insinuating less experienced Go programmers--would not be able to understand this style of programming.
+But, when I was talking to Gophers at a conference in London a few months ago, several of them expressed a concern that while _they_ understood the notion of a function that _returns_ a function, the technique that powers functional options, they were worried that other Go programmers--I suspect less experienced Go programmers--would not be able to understand this style of programming.
 
 And this made me sad, because I consider Go's support of first class functions to be a gift, and a very powerful one at that.
 So I'm here today to tell you, and show you, that you do not need to fear first class functions.
