@@ -16,7 +16,7 @@ func (m *Mux) SendMsg(msg string) {
 
 func (m *Mux) loop() {
 	conns := make(map[net.Addr]net.Conn)
-	for _, op := range m.ops {
+	for op := range m.ops {
 		op(conns)
 	}
 }
