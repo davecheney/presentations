@@ -1,7 +1,7 @@
 package main
 
 type Mux struct {
-	ops chan func(*Mux)
+	ops chan func(map[net.Addr]net.Conn)
 }
 
 func (m *Mux) Add(conn net.Conn) {
