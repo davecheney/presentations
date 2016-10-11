@@ -121,11 +121,9 @@ Question: If I change the first `const` to a `var`, will this code compile?
 
 # https://twitter.com/davecheney/status/652278214195187712 
 
-How how much space do values of type `T` consume on 32bit and 64bit platforms?
+How much space do values of type `T` consume?
 
 .play gopher-puzzlers/space-packing.go
-
-_Hint_: if you said `4` and `8`, you'd be wrong.
 
 * Space packing (solution)
 
@@ -168,7 +166,7 @@ Well, if it wasn't, then you wouldn't be able to write things like
 
 * Named and unnamed (cont.)
 
-There is a bigger point here, unamed types are _very_ common in Go.
+There is a bigger point here, [[https://golang.org/ref/spec#Types][unamed types]] are _very_ common in Go.
 
 You'd may not expect this to not compile
 
@@ -177,6 +175,16 @@ You'd may not expect this to not compile
 But would you expect this to compile?
 
 .play gopher-puzzlers/named-and-unnamed-iv.go /START OMIT/,/END OMIT/
+
+* Named and unnamed (cont.)
+
+Here are some common _unnamed_ types; `struct{}`, `[]string`, `interface{}` `map[string]bool`, `[20]float32`, etc. 
+
+This is important because of the [[https://golang.org/ref/spec#Assignability][Assignability]] rules:
+
+"x's type V and T have identical underlying types and at least one of V or T is _not_a_named_type._ "
+
+.play gopher-puzzlers/named-and-unnamed-v.go /START OMIT/,/END OMIT/
 
 * Two hundred
 

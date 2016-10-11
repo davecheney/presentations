@@ -1,12 +1,13 @@
 package main
 
 // START OMIT
-type TING int
+type T []int
 
-func Blort(t TING) {}
+func F(t T) {}
 
 func main() {
-	Blort(200)
+	var q []int
+	F(q)
 }
 
 // END OMIT
