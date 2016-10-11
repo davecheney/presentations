@@ -12,20 +12,20 @@ type Mux struct {
 }
 
 func (m *Mux) Add(conn net.Conn) {
-	mu.Lock()
-	defer mu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.conns[conn.RemoteAddr()] = conn
 }
 
 func (m *Mux) Remove(addr net.Addr) {
-	mu.Lock()
-	defer mu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	delete(m.conns, addr)
 }
 
 func (m *Mux) SendMsg(msg string) error {
-	mu.Lock()
-	defer mu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	for _, conn := range m.conns {
 		if err := io.WriteString(conn, msg); err != nil {
 			return err

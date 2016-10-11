@@ -7,12 +7,16 @@ import (
 // START OMIT
 func main() {
 	x := []int{100, 200, 300, 400, 500, 600, 700}
-	twohundred := &x[1]
+	y := &x[1]
 	x = append(x, 800)
 	for i := range x {
 		x[i]++
 	}
-	fmt.Println(*twohundred)
+	z := &x[1]
+	for i := range x {
+		x[i]++
+	}
+	fmt.Println(*y, *z)
 }
 
 // END OMIT

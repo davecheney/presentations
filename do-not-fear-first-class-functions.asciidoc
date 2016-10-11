@@ -123,39 +123,8 @@ In our `Option` interface version, we need to declare a type to hold the count o
 
 Finally, putting it all together, we call `NewTerrain` with the results of evaluating `WithReticulatedSplines` and `WithCities`.
 
-== Function / Interface duality
-
 In 2015 Tomas Senart spoke at GopherCon about the duality of a first class function and an interface with one method.
-You can see this play out in the previous example; an interface with one method, and a function are interchangeable.
-----
-func WithCities(n int) func(*Config) {
-	option := &cities{
-		cities: n,
-	}
-	return option.Apply
-}
-----
-We can take an interface value and return a single method as a function.
-----
-type option struct {
-	fn func(*Config)
-}
-
-func (o *option) Apply(c *Config) {
-	o.fn(c)
-}
-
-func ReticulatedSplines(c *Config) { ... } 
-
-func WithReticulatedSplines() Option {
-	return &option {
-		fn: ReticulatedSplines,
-	}
-}
-----
-And we can take a function and construct a value which implements a particular interface.
-
-So, for single functions and single method interfaces, they are functionally identical.
+You can see this play out in this example; an interface with one method, and a function, are interchangeable.
 But, as you can see, dealing with functions as a first class citizen is much less code.
 
 == Encapsulating Behaviour
@@ -260,7 +229,7 @@ Maybe we just cheat and ignore the operand.
 That's a bit gross, I think we can do better.
 ----
 func Add(n float64) func(float64) float64 {
-	return func(acc float64) flaot64 {
+	return func(acc float64) float64 {
 		return acc + n
 	}
 }
@@ -355,17 +324,6 @@ Hopefully this pattern is familiar to you.
 
 Rather than using a mutex to serialise access to the `conn` map, `loop` will wait until it receives an operation, in the form of a value sent over a channel, on one of the `add`, `remove`, or `sendMsg` channels and apply the relevant operation.
 We don't need a mutex any more, because the shared state, our `conns` map, is now only mutated inside the `loop` function.
-////
-We can even make even stronger guarentees because we know that at any time, the goroutine running `loop` will be in one of four states
-
-- waiting for a channel to become ready.
-- adding to the conns map.
-- removing from the conns map.
-- iterating over the conns map to send a message to all clients.
-
-It _cannot_ be mutated outside the `loop` function, even by code in the same package.
-And if `loop` exits, we can throw away the conn map because there is noone left to listen to those channels
-////
 
 But, there's still a lot of hard coded logic here.
 `loop` only knows how to do three things; add, remove and broadcast a message.
@@ -402,15 +360,6 @@ To do this we pass a "lookup function" to `loop`, which will look in the map pro
 In the rest of the function we check to see if the result was nil, the zero value when doing the map lookup, meaning the address was not a known client, and return an error if that occurs.
 Otherwise we now have a reference to the client and we can call `io.WriteString` to send them a message.
 
-////
-== One more thing
-
-Hopefully by now I've convinced you of the power of first class functions.
-Before I conclude I want to give you an example of Go's orthogonality, because first class functions, just like any type, can have methods attached to them, and this allows us to do amazing things.
-----
-include::do-not-fear-first-class-functions/maps.go[]
-----
-////
 == Conclusion
 
 - First class functions bring us tremendous expressive power.
@@ -422,6 +371,8 @@ But that does not mean you shouldn't use them at all; just use them in moderatio
 - First class functions are something that every Go programmer should have in their toolbox.
 First class functions aren't unique to Go, and Go programmers shouldn't be afraid of them.
 First class functions are very powerful, but, if you consider the fundamentals that go is built on, -- everything is a value -- then they shouldn't be foreign to you.
-- If you can learn to use pointers, you can learn to use first class functions.
+- If you can learn to use interfaces, you can learn to use first class functions.
 They aren't hard, just a little unfamiliar, and unfamiliarity is something that can be overcome with exposure.
+
+So next time you define an API that has just one method, as yourself, should this really just be a function?
 

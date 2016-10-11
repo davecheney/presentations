@@ -1,5 +1,9 @@
 package main
 
+type Mux struct {
+	ops chan func(*Mux)
+}
+
 func (m *Mux) PrivateMsg(addr net.Addr, msg string) error {
 	result := make(chan net.Conn, 1)
 	m.ops <- func(m map[net.Addr]net.Conn) {

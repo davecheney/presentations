@@ -2,6 +2,8 @@ package world
 
 func WithReticulatedSplines(c *Config)
 
+type Config struct{}
+
 type Terrain struct {
 	config Config
 }

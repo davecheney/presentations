@@ -4,7 +4,7 @@ import "fmt"
 
 type Map func(key string) string
 
-func (m Map) Add(k, v string) M {
+func (m Map) Add(k, v string) Map {
 	return func(key string) string {
 		if k == key {
 			return v

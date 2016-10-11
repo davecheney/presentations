@@ -1,5 +1,10 @@
 package main
 
+import (
+	"io"
+	"net"
+)
+
 type Mux struct {
 	add     chan net.Conn
 	remove  chan net.Addr

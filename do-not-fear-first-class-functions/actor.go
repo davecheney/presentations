@@ -1,5 +1,10 @@
 package main
 
+import (
+	"io"
+	"net"
+)
+
 type Mux struct {
 	ops chan func(*Mux)
 }

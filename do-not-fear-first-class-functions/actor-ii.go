@@ -1,5 +1,9 @@
 package main
 
+type Mux struct {
+	ops chan func(*Mux)
+}
+
 func (m *Mux) SendMsg(msg string) {
 	result := make(chan error, 1)
 	m.ops <- func(m map[net.Addr]net.Conn) {

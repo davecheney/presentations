@@ -27,6 +27,52 @@ Does this program compile?
 
 If it does, what does it print?
 
+* Maps (solution)
+
+Yes, it does compile. 
+
+Here is the same program rewritten to be more explicit.
+
+.play gopher-puzzlers/maps2.go
+
+* init, init, init
+
+Does this program compile?
+
+.play gopher-puzzlers/init.go
+
+* init, init, init (cont.)
+
+Does this program compile?
+
+.play gopher-puzzlers/initb.go
+
+* init, init, init (cont.)
+
+Yes.
+
+`func`init()` is special, it is the _only_ function declaration that can appear multiple times _per_package_.
+
+* init, init, init (cont.)
+
+How does this work? During compilation the compiler rewrites the name of each init function with a unique suffix.
+
+We can observe this suffix with `runtime.Callers` and in panic messages.
+
+.play gopher-puzzlers/init3.go
+
+* init, init, init (cont.)
+
+.play gopher-puzzlers/init2.go
+
+Question: What is the order that init functions will be called? Always?
+
+* init, init, init (cont.)
+
+Last question. Does this code compile?
+
+.play -edit gopher-puzzlers/init4.go
+
 * time.Duration
 
 `time.Duration` is defined to be an `int64`
@@ -46,6 +92,54 @@ What would happen if it was defined to be a `uint64`?
 If `time.Duration` was `uint64` then you could not write.
 
 .play gopher-puzzlers/duration.go
+
+* One liners
+
+This program is incorrect.
+
+.play gopher-puzzlers/one-liner.go
+
+By _adding_only_ *one* _line_ can you make it print the correct answer?
+
+* One liners (a solution)
+
+Consider this solution.
+
+.play gopher-puzzlers/one-liner-ii.go
+
+Take away: `copy` returns the number of elements it copied from the source to the destination.
+
+* The size of things
+
+In this program, the size of variables of type `X` and `Y` in memory varies by platform.
+
+.play gopher-puzzlers/size-of-things.go
+
+By changing _only_one_line_ can you ensure that variables of type x, and y always consume *16* bytes on all platforms that Go 1.7 supports?
+
+* The size of things (cont.)
+
+The solution involves setting n to 4 on 32 bit platforms, and 2 on 64 bit using a constant expression.
+
+.play gopher-puzzlers/size-of-things-ii.go /START OMIT/,/END OMIT/
+
+`^uint(0)` gives you a number whose bits are all 1, then `>>`63` shifts the number 63 places to the right. If we’re on a 64 bit platform, this evaluates to 1, shifting 4 one place to the right leaves 2, otherwise 32 ones shifted 63 places to the right gives zero, and 4 shifted right zero times is still 4.
+
+But there is an _even_smaller_ way to write this, can you guess?
+
+* The size of things (cont.)
+
+Credit: Paul Hankin
+
+.play -edit gopher-puzzlers/size-of-things-iii.go /START OMIT/,/END OMIT/
+
+`^uint(32)` is 4294967289 on 32bit platforms, it's the same as `^uint32(6)`
+
+4294967289 divideded by 7 is 613566755, with a remainder (modulo) of 4.
+
+`^uint64(6)`%`7` is left as an exercise to the reader.
+
+Question: If I change the first `const` to a `var`, will this code compile? Why/Why not?
 
 * Space packing
 
@@ -67,57 +161,15 @@ Let's rearrange the structure and see if that changes anything.
 
 * Space packing (cont.)
 
-The answer is, reflection.
+.play gopher-puzzlers/space-packing-iii.go
 
-Even though the field has no name, it can still be accessed via reflection.
+To prevent the gc from following an invalid pointer, zero width values at the end of structs are considered to be 1 byte wide.
 
-Even though a `struct{}` consumes no space, it must not occupy the same address as another field of a different size.
+* Space packing (cont.)
 
+So, what the compiler sees is 
 
-
-* The size of things
-
-In this program, the size of variables of type `X` and `Y` in memory varies by platform.
-
-.play gopher-puzzlers/size-of-things.go
-
-By changing _only_one_line_ can you ensure that variables of type x, and y always consume *16* bytes on all platforms that Go 1.7 supports?
-
-* The size of things (cont.)
-
-The solution involves setting n to 4 on 32 bit platforms, and 2 on 64 bit using a constant expression.
-
-.play gopher-puzzlers/size-of-things-ii.go /START OMIT/,/END OMIT/
-
-^uint(0) gives you a number whose bits are all 1, then >> 63 shifts the number 63 binary places to the right. If we’re on a 64 bit platform, this evaluates to 1, shifting 4 one place to the right leaves 2, otherwise 32 ones shifted 63 places to the right gives zero, and 4 shifted right zero times is still 4.
-
-But there is an _even_smaller_ way to write this, can you guess?
-
-* The size of things (cont.)
-
-Credit: Paul Hankin
-
-.play gopher-puzzlers/size-of-things-iii.go /START OMIT/,/END OMIT/
-
-TODO: explain why this works.
-
-Question: If I change the first `const` to a `var`, will this code compile? Why/Why not?
-
-* One liners
-
-This program is incorrect.
-
-.play gopher-puzzlers/one-liner.go
-
-By _adding_only_ *one* _line_ can you make it print the correct answer?
-
-* One liners (a solution)
-
-Consider this solution.
-
-.play gopher-puzzlers/one-liner-ii.go
-
-Take away: `copy` returns the number of elements it copied from the source to the destination.
+.play gopher-puzzlers/space-packing-iv.go
 
 * Named and unnamed
 
@@ -127,16 +179,6 @@ Does this code compile ?
 
 - Yes: Why?
 - No: Why not?
-
-* Addition
-
-What does this program print?
-
-.play gopher-puzzlers/addition.go
-
-* Addition
-
-.play gopher-puzzlers/addition-ii.go
 
 * Named and unnamed (cont.)
 
@@ -168,25 +210,51 @@ What does this program print ?
 
 * Two hundred (cont.)
 
-It prints `200`.
-
-On the first line of `main`, `x` is initalised to a slice of `int`s. 
-
-What is the length and capacity of that slice?
-
-On the second line we take the address of the 2nd element in `x`.
-
-On the third line we append another element to `x`. Based on `x`'s capacity, `append` will have to allocate a new backing array and copy the contents of the previously backing array first.
-
-Now we have two backing arrays, the first is referenced via the pointer to its 2nd element stored in `twohundred`, the second is referenced by the slice variable `x`.
+It prints `200` and `202`.
 
 Take away: taking the address of an element of a slice, or subslicing a slice or string will keep the _entire_ backing array alive.
+
+* Missing panic
+
+This program prints a panic message to the screen.
+
+.play gopher-puzzlers/missing-panic.go
+
+Without using `recover`, can you suppress _just_ the panic message? 
+
+We still want the program to exit with a non zero exit code.
+
+_Hint_: adding a `return` before the `panic` statement is not the answer.
+
+* Missing panic (solution)
+
+.play gopher-puzzlers/missing-panic2.go
+
+* Missing panic (cont.)
+
+What's going on here.
+
+- fd 2 is considered by the runtime to be stderr, [[https://github.com/golang/go/blob/master/src/runtime/write_err.go][panic messages are written to it]].
+
+- fd 2 is initalised as [[https://github.com/golang/go/blob/master/src/os/file.go#L56][os.Stderr]] by the os package.
+
+- If we close os.Stderr, file descriptior 2 is now closed so the write of the panic message.
+
+* Missing panic (cont.)
+
+This is something that cannot be fixed without breaking backward compat.
+
+- Maybe `os.Stderr` should not be a `*os.File`.
+
+- Probably still has to retain a `Close` method.
+
+- You can redirect panic messages to another location by replacing fd 2.
 
 * Snowman or poop
 
 On _Linux_ what will this program print ?
 
-.code gopher-puzzlers/snowman-or-poop.go /START OMIT/,/END OMIT/
+.play gopher-puzzlers/snowman-or-poop.go /START OMIT/,/END OMIT/
 
 * Snowman or poop (cont.)
 
@@ -208,69 +276,33 @@ Question: Why is it important to sleep for a short time before `r.Close()` ?
 
 Question: Why is it important to call `w.Close()` ? What could happen if we don't ?
 
-* Missing panic
-
-This program prints a panic message to the screen.
-
-.play gopher-puzzlers/missing-panic.go
-
-Without using `recover`, can you suppress _just_ the panic message?
-
-_Hint_: add a `return` before the `panic` statement is not the answer.
-
-* Missing panic (solution)
-
-.play gopher-puzzlers/missing-panic2.go
-
-* Missing panic (cont.)
-
-What's going on here.
-
-- fd 2 is considered by the runtime to be stderr, panic messages are written to it. TODO(dfc) add link to runtime code
-
-- fd 2 is initalised as os.Stderr by the os package. TODO(dfc) code sample and link to os code
-
-- If we close os.Stderr, file descriptior 2 is now closed so the write of the panic message
-
-* Missing panic (cont.)
-
-This is something that cannot be fixed without breaking backward compat.
-
-- Maybe `os.Stderr` should not be a `*os.File`.
-
-- Probably still has to retain a `Close` method.
-
-- You can redirect panic messages to another location by replacing fd 2.
-
-- Probably not a serious problem, you can do this in almost every language.
-- Someone replacing
-
 * Panicing mutex
 
-What happens when mutex unlock panics, https://github.com/golang/go/issues/13879.
+What happens when you run this program?
 
-* Semaphores
+.play gopher-puzzlers/mutex.go
 
-Two different ways of implementing a semaphore
+* Panicing mutex (cont.)
 
-Why
-
-What's the difference. 
+.link https://github.com/golang/go/issues/13879 Credit: Roger Peppe
 
 * Keywords 
 
-Which of these three functions will not compile
+Which of these three functions will not compile?
 
-func A(string string) string {
-    return string+string
-    }
+.play -edit gopher-puzzlers/keywords.go /START OMIT/,/END OMIT/
 
-func B(l len) int
+* Keywords (solution)
 
-func C(val, default string) string {
-    If val == " 
+`default` is a [[https://golang.org/ref/spec#Keywords][keyword]], it may not be used as identifier.
 
-/// ...
+`string` and `len` are [[https://golang.org/ref/spec#Predeclared_identifiers][predeclared identifiers]].
+
+Predeclared identifiers are at the so called [[https://golang.org/ref/spec#Blocks][_universe_block_]], so you can can shadow them inside smaller scopes, including the _package_block_.
+
+ps. Don't do this:
+
+.play gopher-puzzlers/keywords2.go
 
 * Declarations
 
@@ -285,6 +317,34 @@ There are two invalid declarations
 `import` is a valid declaration, but it must directly follow `package`.
 
 `func` cannot be used in this form because of the ambiguitity with the method syntax.
+
+* Size classes
+
+.play gopher-puzzlers/sizeclass.go
+
+What will this code print?
+
+* Size classes (cont.)
+
+Everyone knows that slices are grown by doubling, but why _isn't_ the cap 2048?
+
+Doubling a 1kb slice to 2kb wastes a lot of space.
+
+To counter this, the runtime manages _small_ areas of memory with something called a sizeclass.
+
+Rather than powers of two, sizeclasses are a set of allocation sizes that fit the most common allocations without the exponential overhead of a power of two.
+
+.play gopher-puzzlers/sizeclass-ii.go
+
+* One, Two, Three
+
+.play gopher-puzzlers/one-two-three.go /START OMIT/,/END OMIT/
+
+What does this program print? Why? Will it always?
+
+* One, Two, Three (cont.)
+
+.play gopher-puzzlers/one-two-three-ii.go /START OMIT/,/END OMIT/
 
 * Package names
 
@@ -318,29 +378,22 @@ Package names must be valid [[https://golang.org/ref/spec#identifier][_identifie
 
 `すし` is an identifier, it's Japanese for _sushi_.
 
-* Size classes
+* Bonus
 
-.play gopher-puzzlers/sizeclass.go
+Package names are identifiers, so everything that is a _valid_ package name could also be a valid function, variable, constant or type name.
 
-What will this code print?
+So, if we wrote a package using these identifiers;
 
-* Size classes (cont.)
+.code gopher-puzzlers/bonus.go
 
-Everyone knows that slices are grown by doubling, but why _isn't_ the cap 2048?
+What will it look like on godoc.org?
 
-Doubling a 1kb slice to 2kb wastes a lot of space.
+.link https://godoc.org/github.com/davecheney/p
 
-To counter this, the runtime manages _small_ areas of memory with something called a sizeclass.
+* Bonus (solution).
 
-Rather than powers of two, sizeclasses are a set of allocation sizes that fit the most common allocations without the exponential overhead of a power of two.
+ಠ, the Kannada letter ṭha, and す, the Hiragana letter su, are not upper case letters.
 
-.play gopher-puzzlers/sizeclass-ii.go
+.play gopher-puzzlers/bonus2.go /START OMIT/,/END OMIT/
 
-* One, Two, Three
-
-.play gopher-puzzlers/one-two-three.go /START OMIT/,/END OMIT/
-
-What does this program print? Why? Will it always?
-
-# * FD closing behind the scenes. 
-
+They're not considered lower case either, but that's another story.
