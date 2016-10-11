@@ -7,7 +7,7 @@ import (
 
 // START OMIT
 func main() {
-	const n = ^uint(6) % 7
+	const n = ^uint(6) % 7 // HL
 	type X [n]uint
 	type Y [n]int
 

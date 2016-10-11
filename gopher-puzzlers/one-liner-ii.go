@@ -4,7 +4,7 @@ import "fmt"
 
 func f(a int, b uint) {
 	var min = 0
-	min = copy(make([]struct{}, a), make([]struct{}, b))
+	min = copy(make([]struct{}, a), make([]struct{}, b)) // HL
 	fmt.Printf("The min of %d and %d is %d\n", a, b, min)
 }
 

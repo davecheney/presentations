@@ -7,7 +7,7 @@ import (
 
 // START OMIT
 func main() {
-	const n = 4 >> (^uint(0) >> 63)
+	const n = 4 >> (^uint(0) >> 63) // HL
 	type X [n]uint
 	type Y [n]int
 

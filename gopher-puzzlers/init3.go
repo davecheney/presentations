@@ -1,9 +1,7 @@
 package main
 
-import (
-	"fmt"
-	"runtime"
-)
+import "fmt"
+import "runtime"
 
 func init() {
 	var pcs [1]uintptr

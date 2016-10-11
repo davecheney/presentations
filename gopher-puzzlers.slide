@@ -49,13 +49,9 @@ Does this program compile?
 
 * init, init, init (cont.)
 
-Yes.
+`func`init()` is special, it is the _only_ function declaration that can appear multiple times _per_package_. How does this work?
 
-`func`init()` is special, it is the _only_ function declaration that can appear multiple times _per_package_.
-
-* init, init, init (cont.)
-
-How does this work? During compilation the compiler rewrites the name of each init function with a unique suffix.
+During compilation the compiler rewrites the name of each init function with a unique suffix.
 
 We can observe this suffix with `runtime.Callers` and in panic messages.
 
@@ -72,26 +68,6 @@ Question: What is the order that init functions will be called? Always?
 Last question. Does this code compile?
 
 .play -edit gopher-puzzlers/init4.go
-
-* time.Duration
-
-`time.Duration` is defined to be an `int64`
-
- package time
- 
- type Duration int64
-
-This seems silly, `int64` allows negative numbers, but negative durations don't make sense.
-
-What would happen if it was defined to be a `uint64`?
-
-# https://twitter.com/davecheney/status/444707522591477760
-
-* time.Duration (solution)
-
-If `time.Duration` was `uint64` then you could not write.
-
-.play gopher-puzzlers/duration.go
 
 * One liners
 
@@ -139,17 +115,17 @@ Credit: Paul Hankin
 
 `^uint64(6)`%`7` is left as an exercise to the reader.
 
-Question: If I change the first `const` to a `var`, will this code compile? Why/Why not?
+Question: If I change the first `const` to a `var`, will this code compile?
 
 * Space packing
 
 # https://twitter.com/davecheney/status/652278214195187712 
 
-How how much space do values of type `T` consume?
+How how much space do values of type `T` consume on 32bit and 64bit platforms?
 
 .play gopher-puzzlers/space-packing.go
 
-_Hint_: if you said `4` or `8`, you'd be wrong.
+_Hint_: if you said `4` and `8`, you'd be wrong.
 
 * Space packing (solution)
 
@@ -196,11 +172,11 @@ There is a bigger point here, unamed types are _very_ common in Go.
 
 You'd may not expect this to not compile
 
-.code gopher-puzzlers/named-and-unnamed-iii.go /START OMIT/,/END OMIT/
+.play gopher-puzzlers/named-and-unnamed-iii.go /START OMIT/,/END OMIT/
 
 But would you expect this to compile?
 
-.code gopher-puzzlers/named-and-unnamed-iv.go /START OMIT/,/END OMIT/
+.play gopher-puzzlers/named-and-unnamed-iv.go /START OMIT/,/END OMIT/
 
 * Two hundred
 
@@ -240,42 +216,6 @@ What's going on here.
 
 - If we close os.Stderr, file descriptior 2 is now closed so the write of the panic message.
 
-* Missing panic (cont.)
-
-This is something that cannot be fixed without breaking backward compat.
-
-- Maybe `os.Stderr` should not be a `*os.File`.
-
-- Probably still has to retain a `Close` method.
-
-- You can redirect panic messages to another location by replacing fd 2.
-
-* Snowman or poop
-
-On _Linux_ what will this program print ?
-
-.play gopher-puzzlers/snowman-or-poop.go /START OMIT/,/END OMIT/
-
-* Snowman or poop (cont.)
-
-`os.Pipe` calls `pipe(2)` and returns two `*os.File` values. We called them `r` for reader and `w` for writer, but in truth they are bi-directional.
-
-If either end can be a reader _and_ a writer _and_ a closer, why does it matter which end calls close ?
-
-.link https://github.com/golang/go/issues/10001
-
-* Snowman or poop (cont.)
-
-It gets worse. Closing an fd returns it to the processes table of free file descriptors. Suddenly that read(2) on fd 7 is reading a different fd.
-
-.link http://man7.org/linux/man-pages/man2/close.2.html#NOTES
-
-* Snowman or poop (cont.)
-
-Question: Why is it important to sleep for a short time before `r.Close()` ?
-
-Question: Why is it important to call `w.Close()` ? What could happen if we don't ?
-
 * Panicing mutex
 
 What happens when you run this program?
@@ -300,7 +240,7 @@ Which of these three functions will not compile?
 
 Predeclared identifiers are at the so called [[https://golang.org/ref/spec#Blocks][_universe_block_]], so you can can shadow them inside smaller scopes, including the _package_block_.
 
-ps. Don't do this:
+ps. _please_ don't do this.
 
 .play gopher-puzzlers/keywords2.go
 
@@ -320,21 +260,25 @@ There are two invalid declarations
 
 * Size classes
 
-.play gopher-puzzlers/sizeclass.go
-
 What will this code print?
+
+.play gopher-puzzlers/sizeclass.go /START OMIT/,/END OMIT/
+
+Okay, what about this version?
+
+.play gopher-puzzlers/sizeclassb.go /START OMIT/,/END OMIT/
 
 * Size classes (cont.)
 
-Everyone knows that slices are grown by doubling, but why _isn't_ the cap 2048?
+Everyone knows that slices are grown by doubling, so but why _isn't_ the cap 2048 for both examples?
 
-Doubling a 1kb slice to 2kb wastes a lot of space.
+1024 is a magic cutoff value, where append switches from doubling, to growing to the next available _size_class_.
 
-To counter this, the runtime manages _small_ areas of memory with something called a sizeclass.
+Size classes make small (less than an operating system page) cheaper.
 
-Rather than powers of two, sizeclasses are a set of allocation sizes that fit the most common allocations without the exponential overhead of a power of two.
+Rather than powers of two, sizeclasses are a set of allocation caches that fit the most common allocations without the exponential overhead of a power of two. Doing this there is never more than 12.5% of overhead in each sizeclass page.
 
-.play gopher-puzzlers/sizeclass-ii.go
+.play -edit gopher-puzzlers/sizeclass-ii.go
 
 * One, Two, Three
 
@@ -344,11 +288,15 @@ What does this program print? Why? Will it always?
 
 * One, Two, Three (cont.)
 
+"For all the cases in the statement, the channel operands of receive operations and the channel and right-hand-side expressions of send statements are evaluated exactly once, in source order, upon entering the "select" statement."
+
+.link https://golang.org/ref/spec#Select_statements
+
 .play gopher-puzzlers/one-two-three-ii.go /START OMIT/,/END OMIT/
 
 * Package names
 
-Which of these is a valid package name?
+Which of these four examples are valid package names?
 
 .code gopher-puzzlers/hmm.go
 
@@ -380,7 +328,7 @@ Package names must be valid [[https://golang.org/ref/spec#identifier][_identifie
 
 * Bonus
 
-Package names are identifiers, so everything that is a _valid_ package name could also be a valid function, variable, constant or type name.
+Package names are identifiers, so everything that is a valid package name is also be a valid function, variable, constant or type name.
 
 So, if we wrote a package using these identifiers;
 
