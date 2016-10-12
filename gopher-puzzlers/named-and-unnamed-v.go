@@ -11,6 +11,8 @@ func main() {
 
 	y = x // HL
 	F(x)  // HL
+
+	_ = y // keep the compiler happy
 }
 
 // END OMIT

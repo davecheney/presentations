@@ -109,7 +109,7 @@ Credit: Paul Hankin
 
 .play -edit gopher-puzzlers/size-of-things-iii.go /START OMIT/,/END OMIT/
 
-`^uint(32)` is 4294967289 on 32bit platforms, it's the same as `^uint32(6)`
+`^uint(6)` is 4294967289 on 32bit platforms, it's the same as `^uint32(6)`
 
 4294967289 divided by 7 is 613566755, with a remainder (modulo) of 4.
 
@@ -196,7 +196,13 @@ What does this program print ?
 
 It prints `200` and `202`.
 
-Take away: taking the address of an element of a slice, or subslicing a slice or string will keep the _entire_ backing array alive.
+`x` starts with a length _and_ a capacity of 7.
+
+Appending to `x` must grow the slice, and this causes the backing array to be copied.
+
+However, `y` continues to point at the 2nd element of the original backing array.
+
+Take away: taking the address of an element of a slice, or sub slicing a slice or string will keep the _entire_ backing array alive.
 
 * Missing panic
 
@@ -222,7 +228,7 @@ What's going on here.
 
 - fd 2 is initalised as [[https://github.com/golang/go/blob/master/src/os/file.go#L56][os.Stderr]] by the os package.
 
-- If we close os.Stderr, file descriptior 2 is now closed so the write of the panic message.
+- If we close os.Stderr, file descriptor 2 is now closed so the write of the panic message.
 
 * Panicing mutex
 
@@ -278,13 +284,13 @@ Okay, what about this version?
 
 * Size classes (cont.)
 
-Everyone knows that slices are grown by doubling, so but why _isn't_ the cap 2048 for both examples?
+Everyone knows that slices are grown by doubling, so but why _isn't_ the cap for both examples 2048?
 
-1024 is a magic cutoff value, where append switches from doubling, to growing to the next available _size_class_.
+1024 is a magic cutoff value, where `append` switches from doubling to growing to the next available _size_class_.
 
-Size classes make small (less than an operating system page) cheaper.
+Size classes make small (less than an operating system page) cheaper by preallocating pages of N sized things together.
 
-Rather than powers of two, sizeclasses are a set of allocation caches that fit the most common allocations without the exponential overhead of a power of two. Doing this there is never more than 12.5% of overhead in each sizeclass page.
+Rather than powers of two, sizeclasses are a set of allocation caches that fit the most common allocations without the exponential overhead of a power of two. Doing this there is never more than 12.5% ofi wasted space in each size class page.
 
 .play -edit gopher-puzzlers/sizeclass-ii.go
 
