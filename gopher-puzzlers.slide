@@ -145,6 +145,14 @@ So, what the compiler sees is
 
 .play gopher-puzzlers/space-packing-iv.go
 
+* Zero
+
+Does this program compile?
+
+.play gopher-puzzlers/zero.go
+
+Credit: [[https://twitter.com/peter_szilagyi/status/786206846696644608][Péter Szilágyi]]
+
 * Named and unnamed
 
 Does this code compile ?
@@ -244,8 +252,8 @@ What happens when you run this program?
 
 .play -edit gopher-puzzlers/boom.go
 
-- What does this program always print?
 - What does this program sometimes print?
+- What does this program always print?
 - What does this program never print?
 
 Credit: [[https://twitter.com/peter_szilagyi/status/786210562229178370][Péter Szilágyi]]
