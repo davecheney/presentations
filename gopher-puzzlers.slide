@@ -240,6 +240,16 @@ What happens when you run this program?
 
 .link https://github.com/golang/go/issues/13879 Credit: Roger Peppe
 
+* How to defuse an atomic bomb
+
+.play -edit gopher-puzzlers/boom.go
+
+- What does this program always print?
+- What does this program sometimes print?
+- What does this program never print?
+
+Credit: [[https://twitter.com/peter_szilagyi/status/786210562229178370][Péter Szilágyi]]
+
 * Keywords 
 
 Which of these three functions will not compile?
@@ -257,6 +267,7 @@ Predeclared identifiers are at the so called [[https://golang.org/ref/spec#Block
 ps. _please_ don't do this.
 
 .play gopher-puzzlers/keywords2.go
+
 
 * Declarations
 
