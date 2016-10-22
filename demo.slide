@@ -14,7 +14,7 @@ This slide deck introduces you to Go
 
 It all starts with `println`.
 
-.play demo/demo.go /START4 OMIT/,/END4 OMIT/
+.play -edit demo/demo.go /START4 OMIT/,/END4 OMIT/
 
 This is a runnable program, press the *run* button in the bottom corner.
 
@@ -22,7 +22,7 @@ This is a runnable program, press the *run* button in the bottom corner.
 
 Let's introduce a little more Go
 
-.play demo/demo.go /START3 OMIT/,/END3 OMIT/
+.play -edit demo/demo.go /START3 OMIT/,/END3 OMIT/
 
 This is a runnable program, press the *run* button in the bottom corner.
 
@@ -30,7 +30,7 @@ This is a runnable program, press the *run* button in the bottom corner.
 
 Let's introduce functions, this is the `main` function.
 
-.play demo/demo.go /START2 OMIT/,/END2 OMIT/
+.play -edit demo/demo.go /START2 OMIT/,/END2 OMIT/
 
 This is a runnable program, press the *run* button in the bottom corner.
 
@@ -38,7 +38,7 @@ This is a runnable program, press the *run* button in the bottom corner.
 
 The `fmt` package is imported by our program.
 
-.play demo/demo.go /START1 OMIT/,/END1 OMIT/
+.play -edit demo/demo.go /START1 OMIT/,/END1 OMIT/
 
 This is a runnable program, press the *run* button in the bottom corner.
 
@@ -46,7 +46,7 @@ This is a runnable program, press the *run* button in the bottom corner.
 
 Just like the `fmt` package, our program lives in a package called `main`.
 
-.play demo/demo.go 
+.play -edit demo/demo.go 
 
 This is a runnable program, press the *run* button in the bottom corner.
 
