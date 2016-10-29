@@ -155,7 +155,7 @@ Each time we do this, `Do` grows longer, gets harder to follow, because each tim
 
 Let's rewrite our calculator a little
 ----
-type Calculator struct 
+type Calculator struct {
 	acc float64
 }
 
