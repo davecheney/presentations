@@ -1,0 +1,529 @@
+= Learning to experiment by building obsolete computers
+Dave Cheney <dave@cheney.net>
+v1.0, 3rd Dec, 2016
+
+== Introduction
+
+Hello!
+
+My name is David.
+I'm a software programmer and hardware enthusiast from Sydney, Australia.
+
+Normally I travel around the world and try to convince people to use the Go programming language.
+
+// insert picture of gopher(s)
+
+But today I'm here for something entirely different.
+I'm delighted to be here to present two retro computer simulation computer projects that I completed between 2014 and 2015.
+
+== Dedication
+
+This talk is dedicated to the memory of Andrew Stone who started the Raspberry Pi meetup group in Sydney which gave me the skills and inspiration to attempt these projects. 
+
+= Apple I simulators
+
+This first project was a simulator of the Apple I, using an arduino platform, actually the atmega 1284p chip which sits between the atmega 328p from the arduino uno, and the 2480p on the arduino mega. `
+
+== What is the 6502
+
+The legendary 6502 microprocessor design by Chuck Peddle and introduced in 1975 by MOS technology.
+
+The 6502 was _the_ CPU for the 1970's and well into the 1980's. 
+
+Nintendo Famicon
+
+VIC-20, C-64
+
+Atari 2600, Atari 400 and 800
+
+Apple II, and before it the Apple-I
+
+This is what we're going to focus on.
+
+== Apple I
+
+The Apple 1 was essentially a 6502 computer with 4k of RAM and 256 bytes of ROM.
+The inclusion of a 6821 PIA and a Signetics video encoder meant that the Apple 1 shipped with its own 2400 baud dumb terminal built in.
+Just supply your own keyboard, composite monitor, and you were in business.
+
+The good news is we can emulate the RAM, ROM, PIA, and all the glue logic with an Arduino.
+
+=== The hardware
+
+To validate the idea that an Ardunio could provide a stable clock for the 6502, I started by breadboarding the project.
+
+The result was a success, with a tight assembly loop I was able to generate a 1Mhz clock with a roughly 50% duty cycle.  So it was on to a prototype.
+
+The protoshield has 0.1 inch connectors for the 40 pins on the 6502 and the 40 something pins on the Ardunio Mega’s expansion header allowing me to jumper between the 6502 and the Arduino.
+The strange jumper block presents $EA on the data bus unconditionally, this is called free running mode.
+
+Because I wanted to use an LCD panel for debugging and the patch wires on the protoshield would not fit under the LCD shield I mounted the shield backwards and upside down, which retained the same pin outs (including 5v on the top). I called this prototype design the “sidecar”.
+
+=== Clock
+
+The Arduino provides the ϕ0 clock signal as part of the main loop() function.
+The 6502 interacts with the outside world on the falling edge of this clock (actually a few ns after ϕ0, the falling edge of ϕ2).
+It produces the address and read/write signals on the rising edge of ϕ0.
+
+This means the basic model is, arduino raises ϕ0, reads the address on the bus, we then decode the the address and depending on the state of the read write line either store the data on the data pins, or restore the data to the data pins. 
+
+Different 6502 models have different requirements for the minimum and maximum length of each phase of ϕ0.
+The original NMOS 6502 required a clock of at least 100khz to avoid loosing internal CPU state, which made single stepping more complicated.
+With the Rockwell 65c02 I am using the ϕ0 low phase must not exceed 5μs, but the clock signal can remain high indefinitely (the fully static WDC 6502 removes any restriction on a minimum clock).
+
+We can use this property to generate a stable ϕ0 low around 500 ns (the minimum instruction time on a 16Mhz Atmega is 62.5ns), then raise ϕ0 and do our processing, even take an interrupt.
+Because I have the 4Mhz 65c02 version, we can even make the ϕ0 low period shorter, to allow our high pulse to take longer in an effort to reach the 1Mhz clock target.
+
+Laughton Electronics has published a fantastic page if you want to learn more about the 6502 timings.
+
+=== Ram
+
+The Apple 1 divided the 6502’s address space into 16 4k banks which could be assigned to RAM, ROM, or I/O.
+
+The 2560 includes 8kb of SRAM, so we dedicate 4k to be the bottom bank of ram starting at $0000, which is more than enough for a usable replica.
+For Apple 1’s with 8kb of ram, the second bank of ram was usually strapped to $E000 and used for BASIC.
+The nice property of this is we can replace the $E000 bank with a ROM image mapped to that location (BASIC did not expect to be able to write to memory at $E000) and achieve the same effect without providing another 4k of RAM.
+
+=== ROM
+
+The original 256 byte Woz monitor rom is provided at $FF00.
+For simplicities sake the ROM is mirrored at every page in the $F000 address space.
+
+I have tested a few of the popular ROM images like A1Assembler and Applesoft-lite but only include the Woz monitor rom in the source distribution.
+Enterprising readers should have little difficulty modifying the source code to include additional ROM images.
+
+=== Input and output
+
+The Apple 1 interfaces to the keyboard and screen via four registers from the 6821 PIA chip mapped into the address space at $D000.
+
+When a key is pressed on the keyboard, the high bit of $D011 is latched high, this can be detected by the 6502 ROM monitor which then reads $D010 to fetch the keycode, which is conveniently encoded as 7bit ASCII.
+
+Output is similar, the 6502 polls $D013 until the PIA reports that the video encoder is not busy then the character to write to the screen is placed in $D012.
+
+It is straight forward to map these reads and writes to these addresses to the Arduino serial port.
+Again for simplicity, the PIA is mirrored to every page in $D000.
+
+=== The speed
+
+Assuming a 50% duty cycle for the ϕ0 clock, a 16Mhz Atmel has 8 cycles to decode the address and read/write the data.
+This is basically impossible.
+However, as I am using a Rockwell 65c02 cpu, which is CMOS, and a higher speed grade than the original NMOS based 6502, we can cheat and shorten the ϕ2 low, trading that time for a longer ϕ2 high pulse.
+
+Using my trusty Bitscope Micro, I can probe the ϕ2 clock.
+You can see the asymetry between the high and low phases.
+The high phase is currently 2.8μs, or around 45 cycles for the Arduino.
+This equates to a clock speed of just under 300khz, which is very usable.
+
+Here is a short video showing the mega6502 running a short BASIC program in debug mode.
+
+Here is a screen capture showing David Schmenk’s 30th birthday demo for the Apple 1.
+
+=== Prototype
+
+For the next step in my Apple 1 replica project I decided I wanted to replace the Arduino Mega board with a bare Atmega MPU with the goal of producing a two chip solution — just the Atmel and the 6502, no glue logic or external support chips.
+
+I had been stockpiling parts for this phase of the project for a while now, so I sat down to lay out the board based on a small 5×7 cm perfboard.
+
+Perfboard sketch
+
+The trickiest piece was fitting the crystal and load capacitors into the design without disrupting to many of the other traces.
+It worked out well so I decided to add ICSP and FTDI headers and tried my hand at laying out the board using Fritzing.
+
+Fritzing layout
+
+The picture above is one of several designs I tried in Fritzing.
+
+The finished product
+
+While I’m waiting for my PCBs to be delivered I decided to build a simplified version.
+The FTDI and ISCP headers have been left off as they are readily accessible from the headers on the left hand side.
+
+It worked, first time.
+
+=== The final product
+
+I’m smitten with the 1284p.
+It feels like the right compromise between the pin starved 328 and the unfriendly 2540 series.
+The 1284p supports more SRAM than either of its counterparts and ships in a package large enough that you get a full 24 pins of IO.
+
+This experiment gave me the skills and the confidence to continue to design my replica project around the 1284p.
+I had originally intended to build the replica in two boards, possibly adding a third with some SRAM.
+Routing the upper 6502 board will be harder than the lower 1284p board, so I may have to wait til my Fritzing samples return to judge the feasibility of that approach.
+
+== Links
+
+- Hack a day
+
+= avr11: simulating minicomputers on microcontrollers
+
+For my second project I want to describe a simulator of the PDP-11/40 that I built using Arduino hardware.
+
+== Why the PDP-11?
+
+The PDP-11 is the most important minicomputer of the 1970’s.
+
+The PDP-11 was the machine that Ken Thompson and Dennis Ritchie developed Unix and the C programming language.
+Every computer you interact with today can trace itself back to the work of Ken and Dennis and the architectural style of the PDP-11.
+
+== Not just UNIX
+
+The PDP-11 was the predecessor to the VAX-11/780.
+
+Dave Cutler, the author of VMS, the other operating system for the 11/780 decamped to Microsoft after a struggle over the next generation of VAX hardware.
+Cutler took VMS when he left Digital forming the conceptual basis of Windows NT.
+
+So, what better way to learn about the PDP-11, and the history of C and Unix, than to build a simulator of the machine that started it all ?
+
+As a historical artefact it has tremendous importance for anyone who is interested in computer programming or retro computing.
+
+== The documentation is amazing
+
+Bitsavers.org has every user manual, every reference manual, and most of the schematics for all of the DEC PDP line of computers.
+They also have disk images, tape images, everything you will need
+DEC Diagnostics
+
+== The software
+
+The software started as Julian Scmitt's pdp11.js project (link)
+
+I translated the javascript to Go, then to C++ for the Arduino environment
+
+I don't have time to go into the JS -> Go -> C++ translation here, but you can read a presentation I wrote about this a few years ago.
+
+http://go-talks.appspot.com/github.com/davecheney/gosyd/pdp11a.slide
+
+== Memory
+
+The PDP-11 had an address space of 128 kilo words
+
+Each word is 16 bits, so in today's language we'd say the address space is 256 kilo bytes of RAM
+
+If you've played with a microcontroller you'll know they don't have much memory, not even close
+
+Atmega 328p 2.5 kb of SRAM (Arduino)
+Atmega 2480 8 kb of SRAM (Arduino Mega)
+
+If that wasn't bad enough, the Arduino platform only has 64kb of address space, so even if we could build a memory board with 256kb of SRAM, the Arduino couldn't talk to it directly.
+
+But it turns out there is a solution, and to talk about it we need to talk about how memory works in the PDP-11.
+
+== The Bus
+
+The PDP-11 architecture is very interesting.
+All the the major system components work asynchronously, co-ordinating access via the shared UNIBUS backplane.
+Julius’ simulator used this property and callbacks on timers to simulate components like the disk and console operating asynchronously.
+
+Possibly a little bit different to the way of thinking about computers today, with the CPU at the top of the tree and everything descending from it.
+
+It almost looks like an ethernet network, with various terminals all communicating across a shared bus.
+There are no hard guarentees about who will have priority or how much bandwidth you will have.
+
+Because of this the "speed" of the PDP-11 is defined by how fast its memory works; faster memory, faster computer.
+This is totally different to the 6502, which requires memory speed to be about twice as fast as its clock speed.
+
+Because of this property we only need to simulate the instruction decoding and execution which operate on the 8 internal registers of the PDP-11 (plus a few other system registers), and memory can be implemented externaly.
+
+Projects like the http://hackaday.com/2012/03/28/building-the-worst-linux-pc-ever/ and http://ioccc.org/2013/cable3/hint.html gave me confidence that such an approach was possible.
+
+== Memory, version 0
+
+In Schmidt’s original javascript simulator, and my port to Go, the 128 kilowords (256 kilobytes) of memory connected to the PDP-11 is modeled using an array.
+This is a very common technique as most simulators execute on machines that have many more resources than the machines they impersonate.
+
+The first version of the simulator I wrote did use a simple array for UNIBUS memory.
+
+____
+#define MEMSIZE 2048
+uint16_t memory[MEMSIZE];
+____
+
+Using an Atmega2560 I was able to create a memory of 4096 bytes, which was enough to bring up the simulator and run the short 29 word bootstrap program which loaded the V6 Unix bootloader into memory.
+
+Sadly the bootloader would fault the simulated CPU almost immediately as the first thing the bootloader does is zero the entire address space, quickly running past the end of the array and overwriting something important.
+
+However, this did let me get to the point that the CPU and RK11 drive simulators were working well, not to mention figuring out how to write a large multi file program using the Arduino IDE environment.
+
+== Memory, version 1
+
+At this point I’m sort of telling the story backwards.
+I had found a product which would give me far more memory than I needed for this project, but it took several weeks to arrive and comes as a kit, which will involve some tricky SMD soldering.
+
+In the interim I found myself during the Christmas to New Years break with a simulator that I felt was working well enough to try something more adventurous if I could only find some way to emulate the backing array for the core memory.
+I didn’t really care about speed, I just wanted to see if the simulator could handle the more complicated instructions of the Unix kernel.
+
+“Why not use the SD card?” I said to myself.
+I was after all already loading some of the blocks off the RK05 disk pack image from the card, so why not just make another image file and make that back the core memory.
+The mini SD card probably wouldn’t last very long, but I have a pile of cheap cards so why not try it.
+
+ void pdp11::unibus::write8(uint32_t a, uint16_t v) {
+    if (a < 0760000) {
+       if (a & 1) {
+         core.seek(a);
+         core.write(v & 0xff);
+         //memory[a >> 1] &= 0xFF;
+         //memory[a >> 1] |= v & 0xFF << 8;
+
+All it took was setting up a new SD::File, called `core` and rewriting the access to the memory array with seeks and writes to the backing file (obviously doing the same for the read paths).
+
+Amazingly it worked, on the second or third attempt, and although it was very slow I was able to use this technique to boot the simulator a very long way into the Unix boot process.
+I posted a video of the bootup to instagram.
+
+http://instagram.com/p/jTJjhFGeJh/
+
+Even more amazingly I didn’t wear out the mini SD card, and still haven’t. This is probably mostly due to the wear leveling built into the card2 but I also stumbled into a fortuitous property of the SD card itself, and the Arduino drivers on top.
+
+All SD cards, well certainly SD and mini SD cards, mandate that you read and write to them in units of pages. Pages happen to be 512 bytes, a unit which clearly descends from the days of CF cards which emulated IDE drives.
+
+This means the Arduino SD class maintains a buffer of 512 bytes, (which comes out of your precious SRAM allotment) that in effect operated as a cache for my horrible all swap based memory system. For example, when the bootloader program zeros all the memory in the machine, rather than writing to the SD card 253,952 times3, the number of writes was probably much smaller, say 500 writes.
+
+Obviously as it was not designed for this purpose the cache would fail badly during a later part of the bootup where the kernel code is copied (about 90 kilowords of it) from one memory area to another. Each read or write would land on a different SD card page, causing it to flush the old buffer, read in the new buffer, then reverse the process.
+
+But it worked, and gave me confidence to investigate some more ambitious designs for a memory solution.
+
+== Memory, version 2
+
+In version 1 of the design I (ab)used the onboard mini SD card to simulate the entire address space. This was a very 1950’s solution and came with matching performance.
+
+Adding memory directly to the arduino is complicated because of the lack of physical address space and IO lines to drive the memory.
+
+However SRAM chips come with a variety of interfaces, including SPI.
+There is a common SRAM chip, the Microchip 23K256, which is a 32 kilobyte chip with an SPI interface.
+The 23K256 isn’t as common in Arduino designs because of one major flaw; it’s a 3v3 part.
+This would mean adding a level converter to the shield and being careful not to drop 5 volts across any of the pins on the chip.
+
+There was also the problem of capacity.
+To get to 256 kilobytes I would need 8 chips on the same SPI bus, and a logic level converter, not counting the onboard SPI devices like the micro SD card and the Wiznet ethernet chip that come with the Ethermega.
+This was likely to get more complicated than I was planning on, so I continued to look for an alternative SRAM part.
+
+Luckily I didn’t have to look very far.
+The Microchip 23LC1024 has 4 times the capacity, and can operate at 5 volts.
+This meant I would only need two chips to get 256kb and would only need to dedicate two pins to driving the Chip Select lines on the SRAM ICs.
+
+As I live in Australia, there is a difference between choosing the part you want, and actually being able to buy it.
+While most of the Microchip stock appeared to be in the UK, I found the last two chips in stock at a Element 14, and ordered them straight away. Spares? Pfft, those are for people with no self confidence.
+
+Spelunking on the Arduino forums had yielded some war stories and a nice SpiSRAM library to interface with the chips. It also came with a small ram test sketch.
+
+My first attempts to integrate the 23LC1024s on the breadboard wasn’t very successful.
+Even though I follow the application note I wasn’t able to get the chips to reliably pass the SRAM test.
+Sometimes the data would be written perfectly, other times it would just be garbage.
+
+By default the 16Mhz Atmel parts drive the SPI pins at 4Mhz.
+From reading other blogs it was clear that this sort of frequency is outside what the breadboard is designed for, not to mention the large patch leads between the Ethermega and the breadboard.
+
+Increasing the SPI divider to slow down the transactions sort of worked, but it was clear I wouldn’t be able to hook the SRAM up to the avr11 in this condition so I’d need to build a proper shield to hold the ICs.
+
+=== SPIRam shield
+
+A few days and another trip to Jaycar later, I had all the parts I needed.
+A few hours bodging at the local hacker space and I had reproduced my design onto a prototyping shield allocating pins D6 and D7 as the chip select pins.
+
+I took the shield home, plugged in the chips and both banks worked first time!
+Getting cocky I loaded the avr11 sketch and discovered that the micro SD card had failed to initialise, WTF!
+Reloading the sketch, the SD card worked fine, but the SRAM test showed garbage.
+
+The source of the problem turned out to be the default state of the digital pins on the Arduino.
+The way SPI works is all the components on the SPI bus share three lines, MISO (master in, slave out), MOSI (master out, slave in), and SCLK (a clock line driven by the master).
+Additionally every device has its own Chip Select line which must be held high to inhibit the device unless you want to talk to it.
+
+To talk to an individual device, you lower the CS line connected to that chip and read and write data on MOSI/MISO, toggling the SCLK line.
+All the other devices which have their CS lines high are supposed to hold their MISO and MOSI at a high impedance and ignore transactions on the bus.
+
+The problem is, when the Arduino resets, all the digital lines are set to input and are low; you don’t want an Arduino with no sketch loaded suddenly sending 5volts out of every digital pin.
+In effect all the Chip Select lines could be active, meaning all the components are listening to the transaction and trying to interact with the master.
+
+The solution I came up with was to ensure that all the digital pins are set to output and held high before calling any of the SD.begin() or SPI.begin() functions.
+
+void setup(void) {
+  // setup all the SPI pins, ensure all the devices are deselected
+  pinMode(4, OUTPUT); digitalWrite(4, HIGH);    // micro sd
+  pinMode(6, OUTPUT); digitalWrite(6, HIGH);    // bank0
+  pinMode(7, OUTPUT); digitalWrite(7, HIGH);    // bank1
+  pinMode(10, OUTPUT); digitalWrite(10, HIGH);  // wiznet
+  pinMode(53, OUTPUT); digitalWrite(53, HIGH);  // atmega2560 SS line
+  ... more setup code
+
+In effect this disables all the SPI devices until their various begin() functions were called to configure them.
+
+== Input Output
+
+Like the 6502, the PDP-11 processor uses memory mapped io. 
+
+A range of addresses, at the top of the address space, called the IO Page represent 
+
+The two devices
+
+- talk about the RK05
+- talk about the console IO
+
+== Performance
+
+Because avr11 runs directly on the Atmega 2560 microcontroller, there is no simple way to measure the performance of various pieces of code externally.
+
+I am aware that Atmel studio contains a fairly accurate simulator, but that package only runs on Windows.
+It also wasn’t clear if it can simulate the microSD card and xmem boards that avr11 requires.
+That left me needing to improvise some way of measuring the relative performance of avr11 while I made changes to the code.
+
+The solution I came up with was a counter that increments every time cpu::step(), the function that processes one instruction, is called.
+The counter is defined as uint16_t so rolls over every 2^16 instructions. Combined with the built in millis() function, which prints the number of milliseconds since reset, I had a crude way of timing how long avr11 takes to dispatch instructions.
+
+    cpu::step();
+    if (INSTR_TIMING && (++instcounter == 0)) {
+      Serial.println(millis());
+    }
+
+From there the process became very iterative.
+Each evening I would spend a few hours playing with various tweaks in the Go version of avr11, then I would transpose them over to the C++ code a piece at a time, testing as I went and watching the cycle count.
+
+TL;DR – Instruction dispatch was an average of 144 microseconds with the mmu disabled1, 160 with the mmu enabled.
+It is now 60 microseconds with the mmu disabled, and a few microseconds more with the mmu enabled. 2.4x improvement.
+
+The first big improvement came from switching from the Arduino SD classes to the SdFat library.
+SdFat gives you more control over the interactions with the card, and also lets you set the speed of the SPI bus, on 16 Mhz Atmels, to full speed, rather then the previous 1/2 speed maximum.
+This gave me an 8-10% improvement in memory access times to the SPI SRAM shield.
+
+The next big improvement came from switching from the SPI SRAM shield to a Rugged Circuits’ QuadRAM board.
+This eliminates the SPI bus entirely by extending the address space of the Atmega 2560 to the full 64 kilobytes and adding banking to access up to 512 kilobytes.
+This gave another 20% improvement.
+
+After that things got harder.
+The remaining 30 microsecond improvements came from careful rewriting of all the hot paths and reducing the data types involved to their smallest possible type.
+
+=== A surprising discovery
+
+The most surprising discovery of all was made as I started to comment out pieces of the code to get a baseline for the inner loop of the simulator.
+
+After whittling it down to simply fetching the instruction at the current PC I’d arrived at a baseline of 21 microseconds. That is just under 50 kilohertz simulated performance; not great, especially considering this isn’t processing the instruction.
+
+Digging a little further I discovered that this one shift to set the correct memory bank costs 4-5 microseconds. Out of a total time of 21 microseconds, that is close to 25% in just one line.
+
+  if (a < 0760000 ) {     
+    // a >> 15 costs nearly 5 usec !!
+    uint8_t bank = a >> 15;
+    xmem::setMemoryBank(bank, false);
+    return intptr[(a & 0x7fff) >> 1];
+  }
+
+In retrospect this shouldn’t have been a surprise. The Atmega processor is an 8 bit processor. It has some provisions for 16 bit quantities, but they are expensive. 32 bit quantities probably receive no hardware support, and I think in this instance avr-gcc is calling a helper function for the unaligned shift.
+
+A quick hack using a cast and some shifts shaved 4 microseconds off the inner loop, clearly attributable to this inefficient shift. The proper fix will probably involve more radical surgery using a union datatype.
+
+=== Conclusion
+
+If this post has a moral, it would have to be
+
+   Don’t guess, always profile your code.
+
+As for the performance of avr11, it stands a 16 kilohertz simulated clock speed. Possibly with some extreme C surgery this can be improved to 20 kilohertz.
+Past that, the possibilities running on the Atmega 2560 look grim.
+
+// The PDP-11/40 I am simulating has an 18 bit address space. However the CPU is only 16 bit and cannot directly generate 18 bit addresses so a memory management unit is used to rewrite addresses as they leave for the UNIBUS. The MMU adds a small overhead to memory reads and writes when enabled. In the original hardware that was somewhere on the order of 90 nanoseconds. In simulation it’s probably under 5 microseconds.
+
+== More accurate profiling
+
+After my last post a commenter suggested that my counter based approach could be improved.
+It had a high overhead, and, as I discovered, was overstating the performance of the simulator.
+
+Rather than counting the time throught the instruction loop, which involved 16bit quantities, Joey suggested that I raise a pin when I enter the instruction loop, and lower it at the end. This would give me a "clock" of sorts that I could time with a frequency counter.
+
+Doing some calibration at the local hacker space with some other frequency counters and generators I believe the counter is accurate in the hundreds of kilohertz range, so certainly good enough for the job at hand.
+
+=== The results
+
+As I mentioned in a previous post there are two important timing points in the avr11 bootup cycle. The first is sitting at the
+
+ @
+ 
+prompt, waiting for someone to type `unix`.
+At this point the program is executing from a low area of memory and the MMU is not enabled.
+At this stage avr11 running on the Atmega 2560 was processing 15,477 instruction/second.
+
+Once unix is entered and the kernel has booted to the
+
+ #
+
+prompt, the simulation rate drops to around 13,337 instructions/second.
+Executing a simple command like DATE, the simulation drops again to between 10,500 and 11,000 instructions/second.
+
+=== Arduino Due
+
+As much as I love the minimalist idea of building a ’70’s era mini computer on an 8 bit microcontroller, it looks like this just isn’t going to be practical to build a usable simulator on the 16mhz Atmel 2560.
+
+So, it was time to bring out the big guns.
+A quick visit to the Little Bird Electronics store and I had an Arduino Due on order.
+
+The SAM3X chip at the heart of the Arduino Due is a full 32bit ARM processor which runs the Thumb2 instruction set. It also runs at a much higher clock rate, 84Mhz, vs the 16Mhz of the Atmega parts, and has more onboard ram, 96kb, which is enough to run the simulator, although the full 256kb is required for UNIX.
+
+The night the Arduino Due arrived I modified avr11 to run on it. The result, with just a recompilation of the code for the SAM3X processor; 88,000 instructions/second.
+
+Depending on how you cut it, this is between 5 and 8 times faster
+
+=== So just how fast was a PDP-11/40
+
+I recently came across Appendix C, in the 1972 PDP-11/40 processor handbook which provides formulas for calculating instruction timings taking into account the time to fetch the operands and process the instructions.
+
+Source and destination operand times depending on the mode (register, indirect, register indirect, absolute, etc)
+Source and destination operand times depending on the mode (register, indirect, register indirect, absolute, etc)
+
+Screenshot from 2014-02-16 12:20:55
+Sample instruction timings, these times are in addition to the time to fetch the source and destination operand.
+
+So, now we can compute how long a PDP-11/40 took to execute an instruction, maybe this could be used to give some idea of how well avr11 was performing in simulation.
+
+Taking the instruction
+
+ADD R0, R1
+Which adds the value in R0 to R1 and stores the result back in R1 should take 0.99us as R0 and R1 are registers (mode 0). For this simple instruction, assuming ideal conditions; no interrupts, no contention on the UNIBUS, etc, means the PDP-11/40 could have executed 1 million 16bit ADDs per second.
+
+So, what can avr11 running on a 84Mhz Arduino Due do ?
+
+I modified avr11 to execute ADD R0, R1 over and over again (effectively disabling the program counter increment) and timed the results.
+
+Freq: 85344
+
+Well, that isn’t great, 8.5% of the real simulation speed. However, that was for a best case instruction with no operand overhead. What if the instruction was more complex, for example ADD (R0), (R1)2, add the value at the address stored in R0 to the value in the address at R1. Using the tables above the timing on a real PDP-11/40 would have been 3.32 microseconds, 3.32x times slower, just over 300,000 instructions a second.
+
+Altering avr11 to execute this new instruction sequence results in 63,492 instructions/second. Not exactly the result we were looking for, but putting the results into a table reveals something interesting.
+
+Instruction	PDP-11/40	avr11 (Arduino Due)	Relative performance
+ADD R0, R1	1,000,000 hz	85,344 hz	8.5%
+ADD (R0), (R1)	301,204 hz	63,493 hz	21%
+
+So, perhaps all is not lost. Maybe with a more realistic instruction stream the performance of avr11 is not in the single digits anymore. Being able to deliver 25%, 30% or even 40% of a real PDP-11/40 would be a significant milestone, and maybe one that is possible.
+
+The first is memory. The Due only has 96kb of SRAM, and while I can boot V6 UNIX in that tiny amount of memory, there is roughly 10.2 kilobytes of memory free for user programs once you get to the shell. For the short term I’ll have to revert to my SPI SRAM shield, modifying it to use the Arduino R3 spec’s IOREF pin rather than blindly dumping 5v across the input pins.
+
+The second problem is the micro SD card. This was a question I had dodged originally by using the Freetronics EtherMega, but as the Ardunio Due has no onboard microSD card adapter I’m going to use something like the Sparkfun microSD shield3.
+
+== Final form
+
+This is the final form of the Avr11, using an Arduino Duo, SPI Ram board and Sparkfun SDCard shield.
+
+== Links
+
+http://dave.cheney.net/projects/avr11
+http://go-talks.appspot.com/github.com/davecheney/gosyd/pdp11a
+
+== What did I learn
+
+I want to conclude this talk with a message. 
+
+None of my projects were that successful, they were both rather slow.
+But that doesn't matter, I learnt a huge amount doing it, circuit design. Spi, built a frequency Counter. Etc
+I also learnt more about how computers work, at a fundamental level
+
+Looking at these projects, they were fun, and challenging, and I learnt new skills and new tools, but ultimately both projects have sat on my shelf for over a year now.
+Neither of them are useful computers in the way that this computer here in front of my IS useful. 
+
+But I don't think that this matters. 
+
+Electronics is a hobby, not my job. 
+It's something I do for fun, when my job is not fun.
+
+I don't get paid to work on my hobbies, but that also means that I won't let anyone down if they do not work. 
+
+And this is the message I want you to take away from my talk.
+I want you to feel safe to experiment, to explore how something works by trying to replicate it, and most of all, do not stop yourself building a project because you are afraid that it may not be perfect. 
+
+Thank you. 
+
