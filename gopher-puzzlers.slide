@@ -261,16 +261,27 @@ Here are four expressions involving shift operations, which ones are valid?
 
 Answer: none of them are valid.
 
-.code gopher-puzzlers/shift.go /START1/,/END1/
+.code gopher-puzzlers/shift.go /START1 OMIT/,/END1 OMIT/
 
 Cannot shift by a negative number.
 
-.code gopher-puzzlers/shift.go /START2/,/END2/
+.code gopher-puzzlers/shift.go /START2 OMIT/,/END2 OMIT/
 
 Shifts must be an _unsigned_ number, `x` defaults to `int`.
 
-.code gopher-puzzlers/shift.go /START3/,/END3/
-.code gopher-puzzlers/shift.go /START4/,/END4/
+.code gopher-puzzlers/shift.go /START3 OMIT/,/END3 OMIT/
+
+This time we're shifting by an unsigned integer, but the value of `y` is `float64`, which means `1.0` is a float64, and `<<` is only defined on integers.
+
+* Do you even shift? (cont.)
+
+.code gopher-puzzlers/shift.go /START4 OMIT/,/END4 OMIT/
+
+The last one is complicated
+
+.code gopher-puzzlers/shift.go /START5 OMIT/,/END5 OMIT/
+
+.link https://github.com/golang/go/issues/14844
 
 * Tokens
 
