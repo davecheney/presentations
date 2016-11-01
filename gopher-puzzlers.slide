@@ -1,6 +1,6 @@
 Gopher Puzzlers
 How well do you know your language?
-11 Oct 2016
+17 Nov 2016
 
 Dave Cheney
 dave@cheney.net
@@ -248,6 +248,55 @@ What's going on here.
 
 Credit: [[https://twitter.com/peter_szilagyi/status/786210562229178370][Péter Szilágyi]]
 
+* Do you even shift?
+
+Here are four expressions involving shift operations, which ones are valid?
+
+.code gopher-puzzlers/shift.go /START1 OMIT/,/END1 OMIT/
+.code gopher-puzzlers/shift.go /START2 OMIT/,/END2 OMIT/
+.code gopher-puzzlers/shift.go /START3 OMIT/,/END3 OMIT/
+.code gopher-puzzlers/shift.go /START4 OMIT/,/END4 OMIT/
+
+* Do you even shift? (cont.)
+
+Answer: none of them are valid.
+
+.code gopher-puzzlers/shift.go /START1/,/END1/
+
+Cannot shift by a negative number.
+
+.code gopher-puzzlers/shift.go /START2/,/END2/
+
+Shifts must be an _unsigned_ number, `x` defaults to `int`.
+
+.code gopher-puzzlers/shift.go /START3/,/END3/
+.code gopher-puzzlers/shift.go /START4/,/END4/
+
+* Tokens
+
+Does this code compile?
+
+.play gopher-puzzlers/tokens.go
+
+_Credit_: fuuucl.am on golang-dev.
+
+* Tokens (cont.)
+
+Yes, it does compile. 
+
+If it did not, you would not be able to write 
+
+.play gopher-puzzlers/tokens-ii.go /START OMIT/,/END OMIT/
+
+When the input is broken into tokens, a semicolon is automatically inserted into the token stream immediately after a line's final token if that token is
+
+- an identifier
+- an integer, floating-point, imaginary, rune, or string literal
+- one of the keywords break, continue, fallthrough, or return
+- one of the operators and delimiters ++, --, ), ], or }
+
+.link https://golang.org/ref/spec#Semicolons
+
 * Keywords 
 
 Which of these three functions will not compile?
@@ -280,27 +329,27 @@ There are two invalid declarations
 
 `func` cannot be used in this form because of the ambiguity with the method syntax.
 
-* Size classes
-
-What will this code print?
-
-.play gopher-puzzlers/sizeclass.go /START OMIT/,/END OMIT/
-
-Okay, what about this version?
-
-.play gopher-puzzlers/sizeclassb.go /START OMIT/,/END OMIT/
-
-* Size classes (cont.)
-
-Everyone knows that slices are grown by doubling, so but why _isn't_ the cap for both examples 2048?
-
-1024 is a magic cutoff value, where `append` switches from doubling to growing to the next available _size_class_.
-
-Size classes make small (less than an operating system page) cheaper by preallocating pages of N sized things together.
-
-Rather than powers of two, sizeclasses are a set of allocation caches that fit the most common allocations without the exponential overhead of a power of two. Doing this there is never more than 12.5% ofi wasted space in each size class page.
-
-.play -edit gopher-puzzlers/sizeclass-ii.go
+#* Size classes
+#
+#What will this code print?
+#
+#.play gopher-puzzlers/sizeclass.go /START OMIT/,/END OMIT/
+#
+#Okay, what about this version?
+#
+#.play gopher-puzzlers/sizeclassb.go /START OMIT/,/END OMIT/
+#
+#* Size classes (cont.)
+#
+#Everyone knows that slices are grown by doubling, so but why _isn't_ the cap for both examples 2048?
+#
+#1024 is a magic cutoff value, where `append` switches from doubling to growing to the next available _size_class_.
+#
+#Size classes make small (less than an operating system page) cheaper by preallocating pages of N sized things together.
+#
+#Rather than powers of two, sizeclasses are a set of allocation caches that fit the most common allocations without the exponential overhead of a power of two. Doing this there is never more than 12.5% of wasted space in each size class page.
+#
+#.play -edit gopher-puzzlers/sizeclass-ii.go
 
 * One, Two, Three
 
@@ -348,22 +397,22 @@ Package names must be valid [[https://golang.org/ref/spec#identifier][_identifie
 
 `すし` is an identifier, it's Japanese for _sushi_.
 
-* Bonus
-
-Package names are identifiers, so everything that is a valid package name is also be a valid function, variable, constant or type name.
-
-So, if we wrote a package using these identifiers;
-
-.code gopher-puzzlers/bonus.go
-
-What will it look like on godoc.org?
-
-.link https://godoc.org/github.com/davecheney/p
-
-* Bonus (solution).
-
-ಠ, the Kannada letter ṭha, and す, the Hiragana letter su, are not upper case letters.
-
-.play gopher-puzzlers/bonus2.go /START OMIT/,/END OMIT/
-
-They're not considered lower case either, but that's another story.
+#* Bonus
+#
+#Package names are identifiers, so everything that is a valid package name is also be a valid function, variable, constant or type name.
+#
+#So, if we wrote a package using these identifiers;
+#
+#.code gopher-puzzlers/bonus.go
+#
+#What will it look like on godoc.org?
+#
+#.link https://godoc.org/github.com/davecheney/p
+#
+#* Bonus (solution).
+#
+#ಠ, the Kannada letter ṭha, and す, the Hiragana letter su, are not upper case letters.
+#
+#.play gopher-puzzlers/bonus2.go /START OMIT/,/END OMIT/
+#
+#They're not considered lower case either, but that's another story.
