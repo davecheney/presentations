@@ -1,0 +1,53 @@
+DEMO
+15 Jul 2015
+
+Dave Cheney
+dave@cheney.net
+http://dave.cheney.net/
+@davecheney
+
+* Introduction
+
+This slide deck introduces you to Go
+
+* Hello, world
+
+It all starts with `println`.
+
+.play -edit demo/demo.go /START4 OMIT/,/END4 OMIT/
+
+This is a runnable program, press the *run* button in the bottom corner.
+
+* Hello, world
+
+Let's introduce a little more Go
+
+.play -edit demo/demo.go /START3 OMIT/,/END3 OMIT/
+
+This is a runnable program, press the *run* button in the bottom corner.
+
+* Hello, world
+
+Let's introduce functions, this is the `main` function.
+
+.play -edit demo/demo.go /START2 OMIT/,/END2 OMIT/
+
+This is a runnable program, press the *run* button in the bottom corner.
+
+* Hello, world
+
+The `fmt` package is imported by our program.
+
+.play -edit demo/demo.go /START1 OMIT/,/END1 OMIT/
+
+This is a runnable program, press the *run* button in the bottom corner.
+
+* Hello, world
+
+Just like the `fmt` package, our program lives in a package called `main`.
+
+.play -edit demo/demo.go 
+
+This is a runnable program, press the *run* button in the bottom corner.
+
+
