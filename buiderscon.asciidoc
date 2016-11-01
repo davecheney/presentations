@@ -347,14 +347,43 @@ In effect this disables all the SPI devices until their various begin() function
 
 == Input Output
 
-Like the 6502, the PDP-11 processor uses memory mapped io. 
+We've talked about the Unibus previously with respect to the CPU and the memory.
+Like the 6502, the PDP-11 processor uses memory mapped IO.
 
-A range of addresses, at the top of the address space, called the IO Page represent 
+A range of addresses, at the top of the address space, called the IO Page represent the area that memory addresses are written and read that represent IO cards connected to the UNIBUS.
 
-The two devices
+The two devices required for our PDP-11 are the RK05 disk drive, and the NNN console.
+
+Interrupts are handled by setting a flag which is checked at the top of the main interpreter loop.
 
 - talk about the RK05
 - talk about the console IO
+
+=== The RK05 disk drive
+
+The RK05 disk drive is a 2.5 megabyte removable disk drive which stores the root file system for UNIX.
+
+The RK05 controller is a UNIBUS device that responds to commands over a few memory addresses in the IO page.
+
+From the point of view of our PDP simulator, it writes a command to an IO address, then waits for an interrupt telling it the disk opearation is complete. 
+The simulator cathes that write, sends it to the sd card where it reads the block from a file stored on the FAT file system, and sets the interrupt flag.
+
+There are many other IO devices in the PDP, but they all operate the same way.
+
+=== The serial console
+
+Our simulator also needs a way to communicate with the user via serial console.
+
+Just like the RK05 disk drive, the console works the same way, the PDP-11 writes a word to the memory address; we catch that word and copy it to the arduino serial port register.
+
+Similarly, when a character is received over the arduino serial port, we store that character in the address that it would be found in the memory address of the PDP and send an interrupt.
+
+=== Line clock
+
+The NNN console board also provides what is known as a line clock.
+
+The line clock sends an interrupt to the processor every 100 hz (or 120hz here in Japan) every time the sine wave of the AC power signal crosses zero volts.
+This provides the CPU with a way to tell the time (interrupt happens roughly ever 10ms), and the periodic interrupt allows the kernel to multi task between various processes running in the operating system.
 
 == Performance
 

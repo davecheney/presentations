@@ -238,16 +238,6 @@ What's going on here.
 
 - If we close os.Stderr, file descriptor 2 is now closed so the write of the panic message.
 
-* Panicing mutex
-
-What happens when you run this program?
-
-.play gopher-puzzlers/mutex.go
-
-* Panicing mutex (cont.)
-
-.link https://github.com/golang/go/issues/13879 Credit: Roger Peppe
-
 * How to defuse an atomic bomb
 
 .play -edit gopher-puzzlers/boom.go
@@ -275,7 +265,6 @@ Predeclared identifiers are at the so called [[https://golang.org/ref/spec#Block
 ps. _please_ don't do this.
 
 .play gopher-puzzlers/keywords2.go
-
 
 * Declarations
 
