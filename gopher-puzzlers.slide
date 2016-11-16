@@ -13,9 +13,9 @@ http://dave.cheney.net/
 
 * Gopher Puzzlers
 
-How well do you know Go?
+.image gopher-puzzlers/1e8ys6.jpg
 
-Hopefully this little quiz will surprise you, and maybe teach you something you didn't know about Go.
+Hopefully this little quiz will surprise you, and perhaps teach you something you didn't know about Go.
 
 * Maps
 
@@ -23,7 +23,7 @@ Hopefully this little quiz will surprise you, and maybe teach you something you 
 
 Does this program compile?
 
-.play gopher-puzzlers/maps.go
+.play -edit gopher-puzzlers/maps.go
 
 If it does, what does it print?
 
@@ -33,19 +33,19 @@ Yes, it does compile.
 
 Here is the same program rewritten to be more explicit.
 
-.play gopher-puzzlers/maps2.go
+.play -edit gopher-puzzlers/maps2.go
 
 * init, init, init
 
 Does this program compile?
 
-.play gopher-puzzlers/init.go
+.play -edit gopher-puzzlers/init.go
 
 * init, init, init (cont.)
 
 Does this program compile?
 
-.play gopher-puzzlers/initb.go
+.play -edit gopher-puzzlers/initb.go
 
 * init, init, init (cont.)
 
@@ -55,13 +55,13 @@ During compilation the compiler rewrites the name of each init function with a u
 
 We can observe this suffix with `runtime.Callers` and in panic messages.
 
-.play gopher-puzzlers/init3.go
+.play -edit gopher-puzzlers/init3.go
 
 * init, init, init (cont.)
 
-.play gopher-puzzlers/init2.go
+.play -edit gopher-puzzlers/init2.go
 
-Question: What is the order that init functions will be called? Always?
+Question: What is the order that init functions are called? Always?
 
 * init, init, init (cont.)
 
@@ -73,15 +73,17 @@ Last question. Does this code compile?
 
 This program is incorrect.
 
-.play gopher-puzzlers/one-liner.go
+.play -edit gopher-puzzlers/one-liner.go
 
 By _adding_only_ *one* _line_ can you make it print the correct answer?
+
+_Hint_: the code must be correctly Go formatted, smashing multiple statements onto one line is not the answer.
 
 * One liners (a solution)
 
 Consider this solution.
 
-.play gopher-puzzlers/one-liner-ii.go
+.play -edit gopher-puzzlers/one-liner-ii.go
 
 Take away: `copy` returns the number of elements it copied from the source to the destination.
 
@@ -89,7 +91,7 @@ Take away: `copy` returns the number of elements it copied from the source to th
 
 In this program, the size of variables of type `X` and `Y` in memory varies by platform.
 
-.play gopher-puzzlers/size-of-things.go
+.play -edit gopher-puzzlers/size-of-things.go
 
 By changing _only_one_line_ can you ensure that variables of type x, and y always consume *16* bytes on all platforms that Go 1.7 supports?
 
@@ -97,7 +99,7 @@ By changing _only_one_line_ can you ensure that variables of type x, and y alway
 
 The solution involves setting n to 4 on 32 bit platforms, and 2 on 64 bit using a constant expression.
 
-.play gopher-puzzlers/size-of-things-ii.go /START OMIT/,/END OMIT/
+.play -edit gopher-puzzlers/size-of-things-ii.go /START OMIT/,/END OMIT/
 
 `^uint(0)` gives you a number whose bits are all 1, then `>>`63` shifts the number 63 places to the right. If we’re on a 64 bit platform, this evaluates to 1, shifting 4 one place to the right leaves 2, otherwise 32 ones shifted 63 places to the right gives zero, and 4 shifted right zero times is still 4.
 
@@ -117,39 +119,39 @@ Credit: Paul Hankin
 
 Question: If I change the first `const` to a `var`, will this code compile?
 
-* Space packing
-
-# https://twitter.com/davecheney/status/652278214195187712 
-
-How much space do values of type `T` consume?
-
-.play gopher-puzzlers/space-packing.go
-
-* Space packing (solution)
-
-For 32 bit platforms, the answer is 8. For 64 bit platforms, the answer is 16.
-
-Let's rearrange the structure and see if that changes anything.
-
-.play gopher-puzzlers/space-packing-ii.go
-
-* Space packing (cont.)
-
-.play gopher-puzzlers/space-packing-iii.go
-
-To prevent the gc from following an invalid pointer, zero width values at the end of structs are considered to be 1 byte wide.
-
-* Space packing (cont.)
-
-So, what the compiler sees is 
-
-.play gopher-puzzlers/space-packing-iv.go
+#* Space packing
+#
+## https://twitter.com/davecheney/status/652278214195187712 
+#
+#How much space do values of type `T` consume?
+#
+#.play -edit gopher-puzzlers/space-packing.go
+#
+#* Space packing (solution)
+#
+#For 32 bit platforms, the answer is 8. For 64 bit platforms, the answer is 16.
+#
+#Let's rearrange the structure and see if that changes anything.
+#
+#.play -edit gopher-puzzlers/space-packing-ii.go
+#
+#* Space packing (cont.)
+#
+#.play -edit gopher-puzzlers/space-packing-iii.go
+#
+#To prevent the gc from following an invalid pointer, zero width values at the end of structs are considered to be 1 byte wide.
+#
+#* Space packing (cont.)
+#
+#So, what the compiler sees is 
+#
+#.play -edit gopher-puzzlers/space-packing-iv.go
 
 * Zero
 
 Does this program compile?
 
-.play gopher-puzzlers/zero.go
+.play -edit gopher-puzzlers/zero.go
 
 Credit: [[https://twitter.com/peter_szilagyi/status/786206846696644608][Péter Szilágyi]]
 
@@ -157,7 +159,7 @@ Credit: [[https://twitter.com/peter_szilagyi/status/786206846696644608][Péter S
 
 Does this code compile ?
 
-.play gopher-puzzlers/named-and-unnamed.go
+.play -edit gopher-puzzlers/named-and-unnamed.go
 
 - Yes: Why?
 - No: Why not?
@@ -178,11 +180,11 @@ There is a bigger point here, [[https://golang.org/ref/spec#Types][unamed types]
 
 You'd may not expect this to not compile
 
-.play gopher-puzzlers/named-and-unnamed-iii.go /START OMIT/,/END OMIT/
+.play -edit gopher-puzzlers/named-and-unnamed-iii.go /START OMIT/,/END OMIT/
 
 But would you expect this to compile?
 
-.play gopher-puzzlers/named-and-unnamed-iv.go /START OMIT/,/END OMIT/
+.play -edit gopher-puzzlers/named-and-unnamed-iv.go /START OMIT/,/END OMIT/
 
 * Named and unnamed (cont.)
 
@@ -192,13 +194,13 @@ This is important because of the [[https://golang.org/ref/spec#Assignability][As
 
 "x's type V and T have identical underlying types and at least one of V or T is _not_a_named_type._ "
 
-.play gopher-puzzlers/named-and-unnamed-v.go /START OMIT/,/END OMIT/
+.play -edit gopher-puzzlers/named-and-unnamed-v.go /START OMIT/,/END OMIT/
 
 * Two hundred
 
 What does this program print ?
 
-.play gopher-puzzlers/twohundred.go
+.play -edit gopher-puzzlers/twohundred.go
 
 * Two hundred (cont.)
 
@@ -216,7 +218,7 @@ Take away: taking the address of an element of a slice, or sub slicing a slice o
 
 This program prints a panic message to the screen.
 
-.play gopher-puzzlers/missing-panic.go
+.play -edit gopher-puzzlers/missing-panic.go
 
 Without using `recover`, can you suppress _just_ the panic message? 
 
@@ -226,7 +228,9 @@ _Hint_: adding a `return` before the `panic` statement is not the answer.
 
 * Missing panic (solution)
 
-.play gopher-puzzlers/missing-panic2.go
+.play -edit gopher-puzzlers/missing-panic2.go
+
+This is my answer.
 
 * Missing panic (cont.)
 
@@ -253,9 +257,14 @@ Credit: [[https://twitter.com/peter_szilagyi/status/786210562229178370][Péter S
 Here are four expressions involving shift operations, which ones are valid?
 
 .code gopher-puzzlers/shift.go /START1 OMIT/,/END1 OMIT/
+
 .code gopher-puzzlers/shift.go /START2 OMIT/,/END2 OMIT/
+
 .code gopher-puzzlers/shift.go /START3 OMIT/,/END3 OMIT/
+
 .code gopher-puzzlers/shift.go /START4 OMIT/,/END4 OMIT/
+
+Credit: Robert Griesemer
 
 * Do you even shift? (cont.)
 
@@ -287,7 +296,7 @@ The last one is complicated
 
 Does this code compile?
 
-.play gopher-puzzlers/tokens.go
+.play -edit gopher-puzzlers/tokens.go
 
 _Credit_: fuuucl.am on golang-dev.
 
@@ -297,7 +306,7 @@ Yes, it does compile.
 
 If it did not, you would not be able to write 
 
-.play gopher-puzzlers/tokens-ii.go /START OMIT/,/END OMIT/
+.play -edit gopher-puzzlers/tokens-ii.go /START OMIT/,/END OMIT/
 
 When the input is broken into tokens, a semicolon is automatically inserted into the token stream immediately after a line's final token if that token is
 
@@ -324,7 +333,9 @@ Predeclared identifiers are at the so called [[https://golang.org/ref/spec#Block
 
 ps. _please_ don't do this.
 
-.play gopher-puzzlers/keywords2.go
+.play -edit gopher-puzzlers/keywords2.go
+
+… and if you do, [[https://twitter.com/francesc/status/690394659609284608][blame Francesc]].
 
 * Declarations
 
@@ -344,11 +355,11 @@ There are two invalid declarations
 #
 #What will this code print?
 #
-#.play gopher-puzzlers/sizeclass.go /START OMIT/,/END OMIT/
+#.play -edit gopher-puzzlers/sizeclass.go /START OMIT/,/END OMIT/
 #
 #Okay, what about this version?
 #
-#.play gopher-puzzlers/sizeclassb.go /START OMIT/,/END OMIT/
+#.play -edit gopher-puzzlers/sizeclassb.go /START OMIT/,/END OMIT/
 #
 #* Size classes (cont.)
 #
@@ -364,7 +375,7 @@ There are two invalid declarations
 
 * One, Two, Three
 
-.play gopher-puzzlers/one-two-three.go /START OMIT/,/END OMIT/
+.play -edit gopher-puzzlers/one-two-three.go /START OMIT/,/END OMIT/
 
 What does this program print? Why? Will it always?
 
@@ -374,7 +385,7 @@ What does this program print? Why? Will it always?
 
 .link https://golang.org/ref/spec#Select_statements
 
-.play gopher-puzzlers/one-two-three-ii.go /START OMIT/,/END OMIT/
+.play -edit gopher-puzzlers/one-two-three-ii.go /START OMIT/,/END OMIT/
 
 * Package names
 
@@ -424,6 +435,6 @@ Package names must be valid [[https://golang.org/ref/spec#identifier][_identifie
 #
 #ಠ, the Kannada letter ṭha, and す, the Hiragana letter su, are not upper case letters.
 #
-#.play gopher-puzzlers/bonus2.go /START OMIT/,/END OMIT/
+#.play -edit gopher-puzzlers/bonus2.go /START OMIT/,/END OMIT/
 #
 #They're not considered lower case either, but that's another story.
