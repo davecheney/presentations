@@ -1,0 +1,51 @@
+= Go's hidden #pragma
+Dave Cheney <dave@cheney.net>
+v1.0, April 15th, 2017
+
+== Introduction
+
+Hello!
+
+My name is David.
+I'm a software programmer and hardware enthusiast from Sydney, Australia.
+
+This talk is about compiler directives; or as they are commonly known, _pragmas_.
+
+== A little history
+
+Before we talk about Go, let's talk a little about the history of the pragma directive.
+
+TODO insert history lesson
+
+== Does Go have pragmas?
+
+Now that we know
+
+You saw earlier that #pragma, like #include and #define are implemented in C style languages with a preprocessor.
+
+== A word of warning
+
+TODO find rant from Rob about compiler authors always adding pragmas
+
+== They're actually called pragms in the source
+
+// show link to https://github.com/golang/go/blob/master/src/cmd/compile/internal/gc/lex.go#L64
+
+== Conclusion
+
+Pragmas in Go have a rich history.
+They are used inside the runtime itself to gain a foothold to implement Go, including the garbage collector, in Go itself.
+You find pragmas used, sparingly, inside the standard library, although you'll never find them in godoc.
+
+Should you use these pragmas in your own programs?
+
+Well, maybe.
+
+Remember, magic comments are _not_ part of the language spec, if you use gopherjs, or llgo, or gccgo, your code will still compile, but may operate differently.
+So i'll close with the words of Russ Cox
+
+[quote, Russ Cox]
+If you use this, and it breaks, you get to keep both halves.
+
+Thank you.
+
