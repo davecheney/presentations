@@ -1,0 +1,81 @@
+= Concurrency made Easy
+Dave Cheney <dave@cheney.net>
+v1.0, May 25th, 2017
+
+== Introduction
+
+Hello!
+
+My name is David.
+I'm a software programmer and hardware enthusiast from Sydney, Australia.
+
+This talk is about concurrency and why it should be easy.
+
+== Channels
+
+Op n with jwz regex quote
+
+Tye that to channels and overue common when starting out
+
+Talk about channel axioms
+
+Think about channel send and receive, always use timeouts, know what happens if operation fails or blocks. Never start goroutine proverb 
+
+Ideal Channel sizes
+
+Talk about mutability
+
+Talk about happens before and safe points and reordering and what one goroutine can see from abother
+
+Talk about what rust git right and wrong
+
+Talk about ownership and resources. 
+
+== Memory ownership
+
+Over last few months I have been surveying popular go projects that popped up to see if they pass the race detector.
+Sadly, many project's tests fail.
+I'm not going to single anyone out, that is not the point of this talk.
+
+You may also argue that these projects are young and not "production ready" yet. 
+
+To which I refer you to the previous statement. Data races don't care about your stage of development, there are no such things as harmless data races. 
+
+So, clearly there is a general problem with Go programmers understanding the 
+
+I'm going to talk about the difference between go and rusts approach to data races, and how developers in general don't understand data races
+This is born out by the number of go projects that fail the race detector which means they've never tried
+Bexauae, not only don't they know about the race detector, but they don't even understand that races are a thing
+Ergo. By making concurrency easier, weve made it easier to get it wrong
+ Dαve Cheney
+ The. I spend some time talking about ways to write code that is less susceptible to data races.
+
+Only a problem in concurrent lanagueg because in sequential code you know precisely when none is using a resource any more. 
+
+== Writing race free code
+
+You have to, it's the law
+
+So, what are the strategies we can take to make race free code *look* correct
+ Ie, a convention to avoid data races, rather that a straight jacket.
+
+== Rust vs Go
+
+In go we use the race detector at run time
+
+In rust they use the borrow checker at compile time
+
+The implication is that iff your rust program compiles, it contains no data races, which is indeed true. 
+
+However this is a pesimostic view which is based on the worst case, every reference to a value will be shared with multiple threads. 
+
+The go model is a lighter touch, relying on convention for correctness and backing that with a tool, just as we do with vet and libt. In go a reference that is not shared outside a single goroutine is harmless. 
+
+This seems very much in keeping with the language goal of simplicity and a focus on large development teams who do not wish to get bogged down in the details. However, the experience of the last half a decade has shown me that programmers in general do not have a sound mental model of memory sharing between goroutines. 
+
+What we need is a set of conventions it guide developers towards a correct by default way of writing programs. It's not as fool proof as rusts correct by construction methodology, but we're also not making this our only line of defence as the race detector remains as a powerful tool. 
+
+This is consistent and informed by generally accepted notions of idiomatic code style, backstopped by got vet and lint. 
+
+
+

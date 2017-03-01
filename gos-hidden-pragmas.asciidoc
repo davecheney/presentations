@@ -9,7 +9,7 @@ Hello!
 My name is David.
 I'm a software programmer and hardware enthusiast from Sydney, Australia.
 
-This talk is about compiler directives; or as they are commonly known, _pragmas_.
+This talk is about compiler directives; or as they are commonly known, _pragmas_. 
 
 == A little history
 
@@ -30,10 +30,96 @@ TODO find rant from Rob about compiler authors always adding pragmas
 == They're actually called pragms in the source
 
 // show link to https://github.com/golang/go/blob/master/src/cmd/compile/internal/gc/lex.go#L64
+= Pragmas
+
+here are the pragmas that are recognised in Go 1.8.
+The list has changed over time, previous versions of Go understood fewer, and future versions of Go will understand a different set.
+
+
+== go:noescape
+
+- talk about how functions can be implemented in assembler
+
+normally not a problem, except when their interactes with the escape analyser
+
+i've talked about escape analysis at previous prestnations so I'll just focus on this one part here.
+
+escape analysis's job is to discover if a value escapes to the heap; that is, does it live longer than the lifetime of the function, so it cannot be stored on the stack.
+
+show example of syscall.Read
+
+talk about the throughput improvement
+
+Can you use this in your code; only with asm that does the same thing as syscall. syscll. 
+
+Note, you're buypassing the checks of the compiler, if you get this wrong you'll corrupt memory and no tool will be able to spot this
+
+== go:norace
+
+NFI
+
+== go:nosplit
+
+talk about the large amount of the runtime that was written in asm
+
+talk about the TEXTFLAG asm pragmas
+
+when the runtime was rewritten in Go, needed some way to say that a particular function
+
+== go:noinline
+
+== go:systemstack
+
+=== digression system stack vs goroutine stack
+
+I'm not using the word native stack here because that is a matter of perspective.
+From the POV of a goroutine, the system stack is foreign and it's own is native.
+From the POV of the os thread, the goroutine's stack is opaque, and it
+
+Sometimes in the runtime we need to run code that does not grow the stack, see nosplit, but can potentially use a lot of stack, or needs to run on the system thread because that is waht the underlying operation system expects.
+
+== so
+
+we used to have a trampoline function called system stack.
+runs go code on the thread's native stack.
+
+Now that the horse had truely bolted, the systemstack trampoline was rewritten to be a linker call with go:systemstack
+
+== go:nowritebarrier
+
+== go:nowritebarrierrec
+
+== go:yeswritebarrierrec
+
+== go:cgo_unsafe_args
+
+== go:uintptrescapes
+		// For the next function declared in the file
+		// any uintptr arguments may be pointer values
+		// converted to uintptr. This directive
+		// ensures that the referenced allocated
+		// object, if any, is retained and not moved
+		// until the call completes, even though from
+		// the types alone it would appear that the
+		// object is no longer needed during the
+		// call. The conversion to uintptr must appear
+		// in the argument list.
+		// Used in syscall/dll_windows.go.
+		return UintptrEscapes
+
+== go:notinheap
+
+== is +build a pragma
+
+One last thing, before we close.
+Go, or more speifically the go tool, has its own form of conditinal compilation in the form of +build tags.
+
+They follow their own rules, don't require `unsafe` 
+i argue not
 
 == Conclusion
 
-Pragmas in Go have a rich history.
+Pragmas in Go have a rich history, and I hope the retelling of this history has been interesting to you.
 They are used inside the runtime itself to gain a foothold to implement Go, including the garbage collector, in Go itself.
 You find pragmas used, sparingly, inside the standard library, although you'll never find them in godoc.
 
