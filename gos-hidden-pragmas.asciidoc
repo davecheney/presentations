@@ -15,11 +15,44 @@ This talk is about compiler directives; or as they are commonly known, _pragmas_
 
 Before we talk about Go, let's talk a little about the history of the pragma directive.
 
-TODO insert history lesson
+Many languages have the notion of a command, or directive that changes the way the source code is interpreted.
+
+=== Perl
+
+Perl has things like `use`
+
+    use strict;
+    use strict "vars";
+    use strict "refs";
+    use strict "subs";
+    use strict;
+    no strict "vars";
+
+Which enable features, or make the compiler interpret the source of the program differently
+
+http://perldoc.perl.org/index-pragmas.html
+
+=== Javascript
+
+Javascript is the same, ecmascript 5 extended the langauge with _optional_ modes like 
+
+    "use strict";
+
+Which enables "Strict Mode" when parsing your javascript source.
+
+=== Rust
+
+Rust is similar, they use their attributes and features syntax to enable _unstable_ features in the compiler or standard library
+
+=== C
+
+There are other examples from other languages, but C is the progenitor of the name pragma, because it comes from C's `#pragma` syntax.
+
+The name comes from 
 
 == Does Go have pragmas?
 
-Now that we know
+Now that we know a little bit of the history of p
 
 You saw earlier that #pragma, like #include and #define are implemented in C style languages with a preprocessor.
 
@@ -33,14 +66,56 @@ TODO find rant from Rob about compiler authors always adding pragmas
 = Pragmas
 
 here are the pragmas that are recognised in Go 1.8.
-The list has changed over time, previous versions of Go understood fewer, and future versions of Go will understand a different set.
+The list has changed over time, previous versions of Go understood a different set, and future versions of Go will understand a different set.
 
+I won't go into the pragmas that were added in the past and have been dropped, you can leave that as an exercise for yourself.
+
+== Syntax
+
+The directives we're talking about today take a specific for
+
+//xxx:directive
+
+Where `xxx` is the word `go`, although you can see that the Go team were at least considering future growth, even though they don't encourage it.
+
+It's also important to note that there is ++no space++ between the `//` and the `go` keyword. This is partly an accident of history, but it also makes it less likely to conflict with a regular comment.
+
+Again, if you get this syntax wrong there is no checking--not even vet--and in most cases you code _will_ compile, but might be slower, or behave unreliably.
 
 == go:noescape
 
-- talk about how functions can be implemented in assembler
+Early in Go's life, the parts that went into a complete Go program would include Go code, obviously, some C code from the run time, and some assembly code, again from the runtime and also the syscall package.
 
-normally not a problem, except when their interactes with the escape analyser
+The thing to take away from this was it was _expected_ that inside a package, you'd find functions which were _not_ implemented in Go.
+
+Now, normally this wouldn't be a problem, except when they interacts with the escape analyser.
+
+=== Escape analysis
+
+Who knows what escape analysis is?
+
+In Go it's very common to do somethign like this
+
+   func NewThing() (*Thing) {
+          t := Thing { Horses: 12, Goats: 9, Mice: 1000 }
+          return &t
+   }
+
+That is, inside `NewThing` we declare and initalise a new `Thing` variable, then return the _address_ of `t`.
+
+We do this so often inside Go it probably doesn't sink in that if you were to do something like this in C, the result would be massive memory corruption, because the address returned from `NewThing` would point to the location on the stack where `t` was temporariliy allocated.
+
+Now, in Go, being a memory safe language, this construct is safe--the compiler recognises that the address of `t` will be used after the function returns and quietly arranges for `t` to be allocated on the heap, not the stack.
+Technically we say that `t` escapes to the heap.
+There are a few reasons why this happens, but returning the address of a variable is the most common.
+
+Is everyone comfortable with this idea -- when the compiler sees that a variable's address will live beyond the lifetime of the function it is declared, the compiler moves the location where the variable is allocated from the stack to the heap.
+
+Obviously there is a cost; heap allocated variables have to be garbage collected when they are no longer reachable, stack allocated variables are automatically free'd when their function returns.
+Keep that in mind.
+
+Now 
+          
 
 i've talked about escape analysis at previous prestnations so I'll just focus on this one part here.
 
@@ -67,6 +142,8 @@ talk about the TEXTFLAG asm pragmas
 when the runtime was rewritten in Go, needed some way to say that a particular function
 
 == go:noinline
+
+https://go-review.googlesource.com/#/c/13911/
 
 == go:systemstack
 
@@ -128,10 +205,12 @@ Should you use these pragmas in your own programs?
 Well, maybe.
 
 Remember, magic comments are _not_ part of the language spec, if you use gopherjs, or llgo, or gccgo, your code will still compile, but may operate differently.
-So i'll close with the words of Russ Cox
+So i'll close with the words of Russ Cox, taken only slightly out of context
 
 [quote, Russ Cox]
-If you use this, and it breaks, you get to keep both halves.
+Again, not supported.  Sometimes that works, sometimes it doesn't. If it breaks you get to keep both pieces (for now).
+
+https://groups.google.com/d/msg/golang-nuts/UoYT9Y8tRwE/_G8a9ooS-P4J
 
 Thank you.
 
