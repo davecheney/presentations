@@ -209,63 +209,64 @@ https://groups.google.com/d/msg/golang-dev/k3G_rVrFkYo/hY4bk9NBbyoJ
 
 Early in Go's life, the parts that went into a complete Go program would include Go code, obviously, some C code from the run time, and some assembly code, again from the runtime and also the syscall package.
 
-The thing to take away from this was it was _expected_ that inside a package, you'd find functions which were _not_ implemented in Go.
+The thing to take away from this was it was _expected_ that inside a package, you'd occasionally find functions which were _not_ implemented in Go.
 
 Now, normally this wouldn't be a problem, except when they interacts with the escape analyser.
 
 === Escape analysis
 
-Who knows what escape analysis is?
+Who knows what I mean when I talk about escape analysis?
 
 In Go it's very common to do somethign like this
 
-   func NewThing() (*Thing) {
-          t := Thing { Horses: 12, Goats: 9, Mice: 1000 }
-          return &t
+   func NewBook() (*Book) {
+          b := Book{ Mice: 12, Men: 9 }
+          return &b
    }
 
-That is, inside `NewThing` we declare and initalise a new `Thing` variable, then return the _address_ of `t`.
+That is, inside `NewBook` we declare and initalise a new `Book` variable, then return the _address_ of `b`.
 
-We do this so often inside Go it probably doesn't sink in that if you were to do something like this in C, the result would be massive memory corruption, because the address returned from `NewThing` would point to the location on the stack where `t` was temporariliy allocated.
+We do this so often inside Go it probably doesn't sink in that if you were to do something like this in C, the result would be massive memory corruption, as the address returned from `NewBook` would point to the location on the stack where `b` was temporariliy allocated.
 
-Now, in Go, being a memory safe language, this construct is safe--the compiler recognises that the address of `t` will be used after the function returns and quietly arranges for `t` to be allocated on the heap, not the stack.
-Technically we say that `t` escapes to the heap.
+Now, in Go, being a memory safe language, this construct is safe.
+The compiler recognises that the address of `b` will be used after the function returns and quietly arranges for `b` to be allocated on the heap, not the stack.
+Technically we say that `b` _escapes_ to the heap.
 There are a few reasons why this happens, but returning the address of a variable is the most common.
 
-Is everyone comfortable with this idea -- when the compiler sees that a variable's address will live beyond the lifetime of the function it is declared, the compiler moves the location where the variable is allocated from the stack to the heap.
+Is everyone comfortable with this idea?
+The compiler sees that a variable's address will live beyond the lifetime of the function it is declared, and moves the location where the variable is allocated from the stack to the heap.
 
 Obviously there is a cost; heap allocated variables have to be garbage collected when they are no longer reachable, stack allocated variables are automatically free'd when their function returns.
 Keep that in mind.
 
 Now, lets consider a slightly different version of what we saw above
 
-    func Populate() {
-            t := Thing { Horses: 9, Goats: 1, Mice, 4 }
-            AddToHouse(&t)
+    func BuildLibrary() {
+            b := Book{Mice: 99: Men: 3}
+            AddToCollection(&b)
     }
  
-In this silly example, `Populate` declares a new `Thing` and passes its address to `AddToHouse`.
-So, the question for you is, "does `t` escape to the heap`?
+In this silly example, `BuildLibrary` declares a new `Book` and passes its address to `AddToCollection`.
+So, the question for you is, "does `b` escape to the heap"?
 
-And the answer is, "it depends". 
-It depends on what `AddToHouse` does with that pointer to a `Thing`.
+And the answer is, _it depends_ 
+It depends on what `AddToCollection` does with that pointer to a `Book`.
 If it does
 
-    t.Horses += 2
-    t.Mice = 0
+    b.Classification = "fiction"
 
-Then that's fine, `AddToHouse` can address those fields in `Thing` irrispective of if `*t` points to an address on the stack or on the heap.
+Then that's fine, `AddToCollection` can address those fields in `Book` irrispective of if `*b` points to an address on the stack or on the heap.
 
-However, if `AddToHouse` did something like this
+However, if `AddToCollection` did something like this
 
-     HouseOperations = append(HouseOperations, t)
+     AvailableForLoan = append(AvailableForLoan, b)
 
-That is, keep that pointer to a `t` and store it in some long lived slice, then that will have an impact on if the `t` declared in `Populate` should have been heap or stack allocated.
+That is, keep that pointer to a `b` and store it in some long lived slice, then that will have an impact on if the `b` declared in `BuildLibrary` should have been heap or stack allocated.
+This is the essence of Escape Analysis.
 
-And this is the essence of Escape Analysis.
 Escape Analysis analyises programs and find values that should be heap allocated; that is, they escape to the heap.
 And the analysis, as we saw, depends on where an address of a variable is passed to. 
-Escape analysis has to know what `AddToHouse` does, what funcitons it calls, and so on, to know if a value passed into it should be heap or stack allocated.
+Escape analysis has to know what `AddToCollection` does, what funcitons it calls, and so on, to know if a value passed into it should be heap or stack allocated.
 
 == syscall.Read
 
@@ -284,17 +285,12 @@ It depends on what happens inside `os.File.Read`, which it turns out calls down 
 And this is where it gets complicated, because `syscall.Read` calls down into `syscall.Syscall` to do the raw operating system syscall, and is implemented in assembly.
 And because `syscall.Syscall` is implemented in assembly, the compiler, which works on Go code, cannot "see" into that function, so it cannot "see" if the values passed to `syscall.Syscall` escape
 
-And this was the situation in https://github.com/golang/go/issues/4099. If you wanted to write a small bit of glue code in asm, like the bytes package, or the syscall pacakge, anything you passed to it would be forced to allocate on the heap.
+This was the situation in https://github.com/golang/go/issues/4099.
+If you wanted to write a small bit of glue code in asm, like the bytes package, or the syscall pacakge, anything you passed to it would be forced to allocate on the heap.
 
-And this is precisely what the `//go:noescape` pragma does.
-It says to the compiler, "the next function declaration you see, assume that none of the arguments escape"
-
-
-
-Can you use this in your code; only with asm that does the same thing as syscall. syscll. 
-
-Note, you're buypassing the checks of the compiler, if you get this wrong you'll corrupt memory and no tool will be able to spot this
-
+[quote, fd178d6a7]
+____
+++++
 commit fd178d6a7e62796c71258ba155b957616be86ff4
 Author: Russ Cox <rsc@golang.org>
 Date:   Tue Feb 5 07:00:38 2013 -0500
@@ -310,12 +306,75 @@ Date:   Tue Feb 5 07:00:38 2013 -0500
     R=golang-dev, dave, minux.ma, daniel.morsing, remyoudompheng, adg, agl, iant
     CC=golang-dev
     https://golang.org/cl/7289048
+++++
+____
+
+And this is precisely what the `//go:noescape` pragma does.
+It says to the compiler, "the next function declaration you see, assume that none of the arguments escape"
+
+[quote, Go 1.5, bytes/bytes_decl.go]
+____
+++++
+package bytes
+
+//go:noescape
+
+// IndexByte returns the index of the first instance of c in s, or -1 if c is not present in s.
+func IndexByte(s []byte, c byte) int // ../runtime/asm_$GOARCH.s
+++++
+____
+
+This is an example from Go 1.5.
+You can see that `bytes.IndexByte` is implemented in assembly, technically we call this a _forward declaration_, after the concept from C.
+By marking this function `//go:noescape`, it will not cause small stack allocated `[]byte` slices from escaping to the heap unnecissarily.
+
+=== Can you use ++//go:noescape++ in your code?
+
+Yes, but it should only be used on the forward declarations.
+
+Note, you're buypassing the checks of the compiler, if you get this wrong you'll corrupt memory and no tool will be able to spot this.
 
 == go:norace
 
-NFI
+Forking in a multithreaded program is complicated.
+Because the child process gets a complete, independent, copy of the parent's memory, things like locks, implemented as values in memory can be a problem when suddenly two copies of the same program see locks in different state.
+
+Fork/exec in the Go runtime is handled with care by the `syscall` package which coordinates to make sure that the runtime is in quescent state during the brief fork period.
+However, when the race runtime is in effect, this becomes harder. 
+I'll let the commit explain
+
+[quote, 8c195bdf]
+____
+++++
+// TODO(rsc): Remove. Put //go:norace on forkAndExecInChild instead.
+func isforkfunc(fn *Node) bool {
+	// Special case for syscall.forkAndExecInChild.
+	// In the child, this function must not acquire any locks, because
+	// they might have been locked at the time of the fork.  This means
+	// no rescheduling, no malloc calls, and no new stack segments.
+	// Race instrumentation does all of the above.
+	return myimportpath != "" && myimportpath == "syscall" && fn.Func.Nname.Sym.Name == "forkAndExecInChild"
+}
+++++
+____
+
+https://github.com/golang/go/commit/8c195bdf
+
+Which itself can be traced back to the original commit in 6g
+
+https://github.com/golang/go/commit/63e0ddc7
+
+Caused by exactly the problem described above.
+
+https://github.com/golang/go/issues/4840
+
+As Russ's comment shows above, the special casing in the compiler was removed in favor of a directive on the `syscall.forkAndExecInChild` functions in the `syscall` package.
 
 https://go-review.googlesource.com/16097
+
+== Should you use ++//go:norace++ in your own code?
+
+Unless you're working on the race detector code in the runtime, no.
 
 == go:nosplit
 
