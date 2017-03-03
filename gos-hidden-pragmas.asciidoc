@@ -48,11 +48,19 @@ Rust is similar, they use their attributes and features syntax to enable _unstab
 
 There are other examples from other languages, but C is the progenitor of the name pragma, because it comes from C's `#pragma` syntax.
 
-The name comes from 
+=== ALGOL 68
+
+The name _pragma_ comes from ALGOl 68, where they were called `pragmats`, for _pragmatic_.
+
+TODO https://en.wikipedia.org/wiki/Directive_(programming)
+
+When they were adopted by C, the name was shortened again, to `#pragma`, and due to the widespread use of C, became enshrined as the popular name; much like inline skates are called _Rollerblades_.
 
 == Does Go have pragmas?
 
-Now that we know a little bit of the history of p
+Now that we know a little bit of the history of pramas, we can ask the question
+
+> Does Go have pragmes?
 
 You saw earlier that #pragma, like #include and #define are implemented in C style languages with a preprocessor.
 
@@ -114,38 +122,208 @@ Is everyone comfortable with this idea -- when the compiler sees that a variable
 Obviously there is a cost; heap allocated variables have to be garbage collected when they are no longer reachable, stack allocated variables are automatically free'd when their function returns.
 Keep that in mind.
 
-Now 
-          
+Now, lets consider a slightly different version of what we saw above
 
-i've talked about escape analysis at previous prestnations so I'll just focus on this one part here.
+    func Populate() {
+            t := Thing { Horses: 9, Goats: 1, Mice, 4 }
+            AddToHouse(&t)
+    }
+ 
+In this silly example, `Populate` declares a new `Thing` and passes its address to `AddToHouse`.
+So, the question for you is, "does `t` escape to the heap`?
 
-escape analysis's job is to discover if a value escapes to the heap; that is, does it live longer than the lifetime of the function, so it cannot be stored on the stack.
+And the answer is, "it depends". 
+It depends on what `AddToHouse` does with that pointer to a `Thing`.
+If it does
 
-show example of syscall.Read
+    t.Horses += 2
+    t.Mice = 0
 
-talk about the throughput improvement
+Then that's fine, `AddToHouse` can address those fields in `Thing` irrispective of if `*t` points to an address on the stack or on the heap.
+
+However, if `AddToHouse` did something like this
+
+     HouseOperations = append(HouseOperations, t)
+
+That is, keep that pointer to a `t` and store it in some long lived slice, then that will have an impact on if the `t` declared in `Populate` should have been heap or stack allocated.
+
+And this is the essence of Escape Analysis.
+Escape Analysis analyises programs and find values that should be heap allocated; that is, they escape to the heap.
+And the analysis, as we saw, depends on where an address of a variable is passed to. 
+Escape analysis has to know what `AddToHouse` does, what funcitons it calls, and so on, to know if a value passed into it should be heap or stack allocated.
+
+== syscall.Read
+
+Ok, that's a lot of background. So let's get back to the `//go:noescape` pragma
+
+Now we know that the tree of functions below a single function affect whether a value escapes or not, consider this _very_ common situation.
+
+Some code calls this,
+
+   f, _ := os.Open("/tmp/foo")
+   buf := make([]byte, 4096)
+   n, err := f.Read(buf)
+
+Is `buf` allocated on the stack, or on the heap?
+It depends on what happens inside `os.File.Read`, which it turns out calls down into `syscall.Read`.
+And this is where it gets complicated, because `syscall.Read` calls down into `syscall.Syscall` to do the raw operating system syscall, and is implemented in assembly.
+And because `syscall.Syscall` is implemented in assembly, the compiler, which works on Go code, cannot "see" into that function, so it cannot "see" if the values passed to `syscall.Syscall` escape
+
+And this was the situation in https://github.com/golang/go/issues/4099. If you wanted to write a small bit of glue code in asm, like the bytes package, or the syscall pacakge, anything you passed to it would be forced to allocate on the heap.
+
+And this is precisely what the `//go:noescape` pragma does.
+It says to the compiler, "the next function declaration you see, assume that none of the arguments escape"
+
+
 
 Can you use this in your code; only with asm that does the same thing as syscall. syscll. 
 
 Note, you're buypassing the checks of the compiler, if you get this wrong you'll corrupt memory and no tool will be able to spot this
 
+commit fd178d6a7e62796c71258ba155b957616be86ff4
+Author: Russ Cox <rsc@golang.org>
+Date:   Tue Feb 5 07:00:38 2013 -0500
+
+    cmd/gc: add way to specify 'noescape' for extern funcs
+
+    A new comment directive //go:noescape instructs the compiler
+    that the following external (no body) func declaration should be
+    treated as if none of its arguments escape to the heap.
+
+    Fixes #4099.
+
+    R=golang-dev, dave, minux.ma, daniel.morsing, remyoudompheng, adg, agl, iant
+    CC=golang-dev
+    https://golang.org/cl/7289048
+
 == go:norace
 
 NFI
 
+https://go-review.googlesource.com/16097
+
 == go:nosplit
 
-talk about the large amount of the runtime that was written in asm
+Hopefully everyone here knows that Go does not use static allocations for a goroutine's stack.
+Instead each goroutine starts with a few kilobytes of stack and if necessary will grow its stack.
+I won't go into the details here, you can read about in these resources
 
-talk about the TEXTFLAG asm pragmas
+TODO link to OSCON presentation
 
-when the runtime was rewritten in Go, needed some way to say that a particular function
+So, for the purposes of this presentation this technique relies on each goroutine keeping track of its current stack usage, and during the function entry preamble it checks if there is enought stack space for the function to run.
+If not, the preamble traps into the runtime to grow, by copying, the current stack allocation.
+
+Now, this preamble is quite small, only a few instructions, a load from an offset of the current g register, which holds a pointer to the G structure, which represents the current goroutine, a compare against the stack usage for this function, which is a constant known at compile time, and a branch to the slow path, which is rare and easily predictable.
+
+It should also be noted that the stack check is inserted _by the linker_, not the compiler, so it applies to assembly fuctions and, while they existed, C functions.
+
+But sometimes even this overhead is unaccetable, and occasionally, as noted above, unsafe.
+So a mechanism exists to tell the linker, via an annotation in the compiled form of the function--what we thing about as the `.a` files in `$GOPATH/pkg`, called NOSPLIT.
+
+TODO link to annotations
+
+The name NOSPLIT harks back to the time when stack growths was handled not by copying, but by a technique called _segmented stacks_.
+Rather than the runtime copying the current stack to a larger area and fixing up all the pointers, the runtime would allocate a new stack _segment_, and adjust the calling frame so that when the funciton returned, it would free the stack segment and return to the previous. 
+So it could be said that when the stack grew, it did so by splitting across two segments, hence the name of the flag to prevent such behaviour, `NOSPLIT`.
+
+This technique was abandoned in Go 1.3 (TODO check), but the name remained as a historic curio.
+
+TODO check what we did for C code, did we have a pragma?
+
+https://groups.google.com/d/topic/golang-dev/riFzqp8AXRU/discussion
+
+    #pragma textflag 7
+    void function() {...}
+
+=== Where is //go:nosplit used in the runtime?
+
+When the runtime was rewritten in Go, needed some way to say that a particular function should not have the stack split check.
+This was often because taking a stack split, say in a signal handler, os/exec, syscall, or the runtime itself, could lead to recursive behaviour, or a crash.
+
+If a function, written in Go, or otherwise, uses nosplit, the compiler still has to ensure it's safe to run the function--we cannot let functions use more stack than they are allowed as they will almost certainly corrupt the heap or another goroutine's memory.
+
+TODO show examples from runtime/mgc.go
+
+To do this, the compiler maintains an invariant called the redzone.
+The Redzone is a 128byte TODO (check) allocation at the bottom of the stack frame which is guarneteed to be available.
+Or to put it another way, when the stack check runs at the top of each function, it checks that the space it needs, _plus_ the redzone, is available.
+
+TODO: check if the redzone comes out of the 2k allocation, or it is additional.
+
+The compiler keeps track of the stack requirements of each function and when it encounters a nosplit function it accumulates that functions stack needs against the redzone.
+In this way, carefully written nosplit functions can execute safely against the redzone buffer without causing the runtime to trap into the stack growth behaviour at inconvenient times.
+
+TODO: show //nosplit, and hitting the redzone.
+
+We occasionally hit this in the `-N`, no optimisation, build on the dashboard as the redzone is enough when optimisations are on, generally inlining small functions, but when inlinging disabled, stack frames are deeper and contain more allocations which are not optimised away.
+
+=== Can you use `//go:nosplit` in your own code?
+
+Can you use nosplit in your own functions; yes, but its probably not necesary.
+Small functions would benefit most from this optmisation are already good candidates for inlining, which is far more effective at eliminating the overhead of function calls than `//go:nosplit`.
+
+Of all the pragmas this one is the safest to misuse, as it will get spotted at compile time, and should generally not affect the correctness of your program, only the performance. 
 
 == go:noinline
 
+https://github.com/golang/go/issues/12312#issuecomment-134490892
+
+[quote, Rob Pike]
+____
+Seems reasonable but makes me nervous.
+
+I have a general issue about the proliferation of such things, as I fear the compiler guys will, as always, infect the language with annotations.
+____
+
+https://github.com/golang/go/issues/12312#issuecomment-137192328
+
+[quote, Rob Pike]
+"Useful" is always true for a feature request. The question is, does the usefulness justify the cost? The cost here is continued proliferation of magic comments, which are becoming too numerous already.
+
+Inlining is one of the key optimisations because it unlocks many other optimisations.
+Inlining also ameleorates the cost of the stack check preamble, and in fact all the overheads of a function call.
+
+Inlining is most effective with small, simple, functions as the effects of the function call overhead are small when considering a large complex function.
+
+However, what if you don't want a function inlined?
+You may want to do this if you want
+
+And it turned out this was the case when developing the new SSA backend.
+
+Previously the decision to control which functions could be inlined was made by a function inside the compiler called, `isHairy`.
+
+TODO link to is hairy at the time
+
+This looked at the statements inside a function and decided if they were to difficult to inline, two of those were if the funcition contained a defer statement, and a, possibly empty, `switch` statement.
+
+Prior to the SSA compiler, `switch{}` would prevent a function being inlined, whilst also optimising to nothing, and this was used heavily in compiler test fixtures to isolate individual operations.
+
+TODO link to test fixtures
+
+Just to be clear if your function contains a defer, it isn't currently inlined because that would change the point at which the defer would run, and perhaps prevent it running altogether.
+
+With the introduction of the SSA form `switch` was no longer considered _hairy_ and so `switch{}` stopped being a placeholder to prevent inlining.
+
+TODO: why is it not considered hairy
+
+The compiler devs debated how to represent the construct "please don't inline this function, ever", and settled on a new pragma.
+
 https://go-review.googlesource.com/#/c/13911/
 
+https://groups.google.com/d/topic/golang-dev/v9KV2k_rAWQ/discussion
+
+[quote, Keith Randall]
+We particularly need this feature on the SSA branch because if a function is inlined, the code contained in that function might switch from being SSA-compiled to old-compiler-compiled.  Without some sort of noinline mark the SSA-specific tests might not be testing the SSA backend at all.
+
+Can you use `//go:noinline` in your own code? Absolutely, although I cannot think of any reason to do so off hand.
+
+TODO: Show example of noinline.
+
+
 == go:systemstack
+
+
+But suffice to say, but default
 
 === digression system stack vs goroutine stack
 
@@ -162,11 +340,19 @@ runs go code on the thread's native stack.
 
 Now that the horse had truely bolted, the systemstack trampoline was rewritten to be a linker call with go:systemstack
 
-== go:nowritebarrier
+== go:nowritebarrier, go:nowritebarrierrec, go:yeswritebarrierrec
 
-== go:nowritebarrierrec
+TODO link to rick hudson's presentation
 
-== go:yeswritebarrierrec
+With the addition of the concurrent garbage collector in Go 1.5 came a new concept known as a write barrier.
+To explain what a write barrier is, we need to first talk about how memory works in multi chip and multi core computers.
+
+
+
+In the previous Go 1.4 world where your program would run until the heap was exhausted, then all the resources of the machine would be dedicated on marking and sweeping the heap, the garbage collector could make the straight forward assumption that while the garbage collector was running, the program -- or "mutator" as garbage c
+
+Again just like escape analysis the compiler works hard to eliminate write barriers where it can prove they are not necessary -- basically memory that is not visible outside the current goroutine.
+
 
 == go:cgo_unsafe_args
 
@@ -184,7 +370,21 @@ Now that the horse had truely bolted, the systemstack trampoline was rewritten t
 		// Used in syscall/dll_windows.go.
 		return UintptrEscapes
 
+https://go-review.googlesource.com/24551
+
 == go:notinheap
+
+== go:linkname
+
+https://go-review.googlesource.com/#/c/26651/
+
+== import "unsafe"
+
+One restriction the gc compiler makes is for the `//go:` pragmas is you must import the `unsafe` package for them to be recognised.
+This is arguably a reasonable restriction as using most of these pragmas incorrectly will result in an unstable program.
+It's also useful for others' auditing your code to know that if your program does not import `unsafe`, it is likely safe--baring data races of course
+
+TODO check if it errors, or just ignores.
 
 == is +build a pragma
 
@@ -197,7 +397,10 @@ i argue not
 == Conclusion
 
 Pragmas in Go have a rich history, and I hope the retelling of this history has been interesting to you.
+
+The wider story arc of pragmas in Go allowed the runtime authors to implement as much of the runtime as possible in Go, reducing the amount of assembly used, and eliminating C altogether.
 They are used inside the runtime itself to gain a foothold to implement Go, including the garbage collector, in Go itself.
+Pragmas allowed the runtime devs to extend, albeit it on the sly, the language just enough to meet the requirements of the problem.
 You find pragmas used, sparingly, inside the standard library, although you'll never find them in godoc.
 
 Should you use these pragmas in your own programs?
@@ -205,10 +408,10 @@ Should you use these pragmas in your own programs?
 Well, maybe.
 
 Remember, magic comments are _not_ part of the language spec, if you use gopherjs, or llgo, or gccgo, your code will still compile, but may operate differently.
-So i'll close with the words of Russ Cox, taken only slightly out of context
+So I'll close with the words of Russ Cox, taken only slightly out of context
 
 [quote, Russ Cox]
-Again, not supported.  Sometimes that works, sometimes it doesn't. If it breaks you get to keep both pieces (for now).
+Sometimes that works, sometimes it doesn't. If it breaks you get to keep both pieces (for now).
 
 https://groups.google.com/d/msg/golang-nuts/UoYT9Y8tRwE/_G8a9ooS-P4J
 
