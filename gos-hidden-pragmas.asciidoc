@@ -15,7 +15,7 @@ This talk is about compiler directives; or as they are commonly known, _pragmas_
 
 Before we talk about Go, let's talk a little about the history of the pragma directive.
 
-Many languages have the notion of a command, or directive that changes the way the source code is interpreted.
+Many languages have the notion of a command, or directive, that changes the way the source code is interpreted during compilation.
 
 === Perl
 
@@ -28,7 +28,7 @@ Perl has things like `use`
     use strict;
     no strict "vars";
 
-Which enable features, or make the compiler interpret the source of the program differently
+Which enable features, or make the compiler interpret the source of the program differently.
 
 http://perldoc.perl.org/index-pragmas.html
 
@@ -40,13 +40,44 @@ Javascript is the same, ecmascript 5 extended the langauge with _optional_ modes
 
 Which enables "Strict Mode" when parsing your javascript source.
 
+[quote]
+____
+The "use strict" Directive
+The "use strict" directive is new in JavaScript 1.8.5 (ECMAScript version 5).
+
+It is not a statement, but a literal expression, ignored by earlier versions of JavaScript.
+
+The purpose of "use strict" is to indicate that the code should be executed in "strict mode".
+____
+
 === Rust
 
 Rust is similar, they use their attributes and features syntax to enable _unstable_ features in the compiler or standard library
 
+https://doc.rust-lang.org/book/attributes.html
+
+    #[inline(always)]
+    fn super_fast_fn() {
+
+    #[cfg(target_os = "macos")]
+    mod macos_only {
+
 === C
 
 There are other examples from other languages, but C is the progenitor of the name pragma, because it comes from C's `#pragma` syntax.
+
+https://msdn.microsoft.com/en-us/library/2e70t5y1.aspx
+
+    #pragma pack(2)  
+    struct T {  
+       int i;  
+       short j;  
+       double k;  
+    };  
+
+Which spawned a host of compiler specific extentions, the `__builtin` set of exensions.
+
+https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
 
 === ALGOL 68
 
@@ -62,35 +93,119 @@ Now that we know a little bit of the history of pramas, we can ask the question
 
 > Does Go have pragmes?
 
-You saw earlier that #pragma, like #include and #define are implemented in C style languages with a preprocessor.
+You saw earlier that `#pragma`, like `#include` and `#define` are implemented in C style languages with a preprocessor.
+But, Go does not have a preprocessor, or macros.
+So, does Go have pragmas?
 
-== A word of warning
+=== Yes, Go has pragmas
 
-TODO find rant from Rob about compiler authors always adding pragmas
+It turns out that, yes, Go does have pragmas.
+They are implemented by the _compiler_ as comments.
+Here are some examples:
+
+[quote,syscall/syscall_linux_amd64.go]
+____
+++++
+//go:noescape
+func gettimeofday(tv *Timeval) (err Errno)
+++++
+____
+
+[quote, cmd/compile/internal/gc/testdata/arith.go]
+____
+++++
+//go:noinline
+func lshNop1(x uint64) uint64 {
+        // two outer shifts should be removed
+        return (((x << 5) >> 2) << 2)
+}
+++++
+____
+
+[quote, runtime/atomic_pointer.go] 
+____
+++++
+//go:nosplit
+func atomicstorep(ptr unsafe.Pointer, new unsafe.Pointer) {
+        writebarrierptr_prewrite((*uintptr)(ptr), uintptr(new))
+        atomic.StorepNoWB(noescape(ptr), new)
+}
+++++
+____
 
 == They're actually called pragms in the source
 
-// show link to https://github.com/golang/go/blob/master/src/cmd/compile/internal/gc/lex.go#L64
-= Pragmas
+https://github.com/golang/go/blob/master/src/cmd/compile/internal/gc/lex.go#L64
 
-here are the pragmas that are recognised in Go 1.8.
+== A word of warning
+
+Before we continue, I want to offer a word of caution.
+Pragmas are _not_ part of the language, you're really only own if you choose to use them.
+
+At a higher level, even the idea of adding pragmas to the language caused much debate, especially after the first few created a precident.
+
+https://github.com/golang/go/issues/12312#issuecomment-134490892
+
+[quote, Rob Pike]
+____
+Seems reasonable but makes me nervous.
+
+I have a general issue about the proliferation of such things, as I fear the compiler guys will, as always, infect the language with annotations.
+____
+
+https://github.com/golang/go/issues/12312#issuecomment-137192328
+
+[quote, Rob Pike]
+"Useful" is always true for a feature request. The question is, does the usefulness justify the cost? The cost here is continued proliferation of magic comments, which are becoming too numerous already.
+
+I'll leave you to make your own judgement if Rob's comment was curmudegonly, or precient.
+
+== Pragmas
+
+Here are the pragmas that are recognised in Go 1.8.
 The list has changed over time, previous versions of Go understood a different set, and future versions of Go will understand a different set.
+
+* ++//go:nointerface++
+* ++//go:noescape++
+* ++//go:norace++
+* ++//go:nosplit++
+* ++//go:noinline++
+* ++//go:systemstack++
+* ++//go:nowritebarrier++
+* ++//go:nowritebarrierrec++
+* ++//go:yeswritebarrierrec++
+* ++//go:cgo_unsafe_args++
+* ++//go:uintptrescapes++
+* ++//go:go:notinheap++
 
 I won't go into the pragmas that were added in the past and have been dropped, you can leave that as an exercise for yourself.
 
 == Syntax
 
-The directives we're talking about today take a specific for
+Directives in Go comments take a precice syntax which has the general form
 
+++++
 //xxx:directive
+++++
 
 Where `xxx` is the word `go`, although you can see that the Go team were at least considering future growth, even though they don't encourage it.
 
-It's also important to note that there is ++no space++ between the `//` and the `go` keyword. This is partly an accident of history, but it also makes it less likely to conflict with a regular comment.
+It's also important to note that there is *no space* between the `//` and the `go` keyword.
+This is partly an accident of history, but it also makes it less likely to conflict with a regular comment.
 
-Again, if you get this syntax wrong there is no checking--not even vet--and in most cases you code _will_ compile, but might be slower, or behave unreliably.
+Again, if you get this syntax wrong there is no checking--not even vet--and in most cases you code _will_ compile, but might be slower, or behave incorrectly.
 
-== go:noescape
+Lastly, some of these directives require you to do one or more of the following:
+
+* import the `unsafe` package.
+* compile with the undocumented `-+` flag.
+* be part of the `runtime` package.
+
+Depending on these conditions if you get it wrong your directive might be ignored, or you'll get a compile error.
+
+https://groups.google.com/d/msg/golang-dev/k3G_rVrFkYo/hY4bk9NBbyoJ
+
+== ++//go:noescape++
 
 Early in Go's life, the parts that went into a complete Go program would include Go code, obviously, some C code from the run time, and some assembly code, again from the runtime and also the syscall package.
 
@@ -265,20 +380,6 @@ Small functions would benefit most from this optmisation are already good candid
 Of all the pragmas this one is the safest to misuse, as it will get spotted at compile time, and should generally not affect the correctness of your program, only the performance. 
 
 == go:noinline
-
-https://github.com/golang/go/issues/12312#issuecomment-134490892
-
-[quote, Rob Pike]
-____
-Seems reasonable but makes me nervous.
-
-I have a general issue about the proliferation of such things, as I fear the compiler guys will, as always, infect the language with annotations.
-____
-
-https://github.com/golang/go/issues/12312#issuecomment-137192328
-
-[quote, Rob Pike]
-"Useful" is always true for a feature request. The question is, does the usefulness justify the cost? The cost here is continued proliferation of magic comments, which are becoming too numerous already.
 
 Inlining is one of the key optimisations because it unlocks many other optimisations.
 Inlining also ameleorates the cost of the stack check preamble, and in fact all the overheads of a function call.
