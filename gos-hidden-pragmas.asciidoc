@@ -156,7 +156,9 @@ ____
 https://github.com/golang/go/issues/12312#issuecomment-137192328
 
 [quote, Rob Pike]
+____
 "Useful" is always true for a feature request. The question is, does the usefulness justify the cost? The cost here is continued proliferation of magic comments, which are becoming too numerous already.
+____
 
 I'll leave you to make your own judgement if Rob's comment was curmudegonly, or precient.
 
@@ -174,9 +176,8 @@ The list has changed over time, previous versions of Go understood a different s
 * ++//go:nowritebarrier++
 * ++//go:nowritebarrierrec++
 * ++//go:yeswritebarrierrec++
-* ++//go:cgo_unsafe_args++
 * ++//go:uintptrescapes++
-* ++//go:go:notinheap++
+* ++//go:notinheap++
 
 I won't go into the pragmas that were added in the past and have been dropped, you can leave that as an exercise for yourself.
 
@@ -253,13 +254,23 @@ And the answer is, _it depends_
 It depends on what `AddToCollection` does with that pointer to a `Book`.
 If it does
 
+++++
+func AddToCollection(b *Book) {
     b.Classification = "fiction"
+}
+++++
 
-Then that's fine, `AddToCollection` can address those fields in `Book` irrispective of if `*b` points to an address on the stack or on the heap.
+Then that's fine, `AddToCollection` can address those fields in `Book` irrispective of if `b` points to an address on the stack or on the heap.
 
 However, if `AddToCollection` did something like this
 
+++++
+var AvailableForLoan []*Book
+
+func AddToCollection(b *Book) {
      AvailableForLoan = append(AvailableForLoan, b)
+}
+++++
 
 That is, keep that pointer to a `b` and store it in some long lived slice, then that will have an impact on if the `b` declared in `BuildLibrary` should have been heap or stack allocated.
 This is the essence of Escape Analysis.
@@ -276,9 +287,11 @@ Now we know that the tree of functions below a single function affect whether a 
 
 Some code calls this,
 
-   f, _ := os.Open("/tmp/foo")
-   buf := make([]byte, 4096)
-   n, err := f.Read(buf)
+++++
+f, _ := os.Open("/tmp/foo")
+buf := make([]byte, 4096)
+n, err := f.Read(buf)
+++++
 
 Is `buf` allocated on the stack, or on the heap?
 It depends on what happens inside `os.File.Read`, which it turns out calls down into `syscall.Read`.
@@ -330,11 +343,11 @@ By marking this function `//go:noescape`, it will not cause small stack allocate
 
 === Can you use ++//go:noescape++ in your code?
 
-Yes, but it should only be used on the forward declarations.
+Yes, but it can only be used on the forward declarations.
 
-Note, you're buypassing the checks of the compiler, if you get this wrong you'll corrupt memory and no tool will be able to spot this.
+Note, you're bypassing the checks of the compiler, if you get this wrong you'll corrupt memory and no tool will be able to spot this.
 
-== go:norace
+== ++//go:norace++
 
 Forking in a multithreaded program is complicated.
 Because the child process gets a complete, independent, copy of the parent's memory, things like locks, implemented as values in memory can be a problem when suddenly two copies of the same program see locks in different state.
@@ -384,7 +397,7 @@ Hopefully everyone here knows that a goroutine's stack is not a static allocatio
 Instead each goroutine starts with a few kilobytes of stack and if necessary will grow its stack.
 I won't go into the details here, you can read about in these resources.
 
-TODO link to OSCON presentation
+http://go-talks.appspot.com/github.com/davecheney/presentations/performance-without-the-event-loop.slide#1
 
 So, for the purposes of this presentation the technique that the runtime uses to manage a goroutines stack relies on each goroutine keeping track of its current stack usage.
 During the function entry preamble a check is made to ensure there is enought stack space for the function to run.
@@ -408,7 +421,6 @@ https://groups.google.com/d/topic/golang-dev/riFzqp8AXRU/discussion
 === `#prgma textflag`
 
 Up until Go 1.4, the runtime was implemented entirely in a mix of Go, C and assembly.
-The assembly was for the tricky partsA
 
 [quote, Go 1.4, runtime/proc.c]
 ____
@@ -453,7 +465,7 @@ const (
 ____
 Amongst the flags defined in this file is `NOSPLIT`.
 
-=== Where is //go:nosplit used in the runtime?
+=== Where is ++//go:nosplit++ used in the runtime?
 
 When the runtime was rewritten in Go, we needed some way to say that a particular function should not have the stack split check.
 This was often because taking a stack split inside the runtime was forbidden because a stack split implicitly needs to allocate memory, which would lead to recursive behaviour.
@@ -464,10 +476,8 @@ If a function, written in Go, or otherwise, uses nosplit, the compiler still has
 TODO show examples from runtime/mgc.go
 
 To do this, the compiler maintains an invariant called the redzone.
-The Redzone is a 128 byte  allocation at the bottom of the stack frame which is guarneteed to be available.
+The Redzone is a 768 byte  allocation at the bottom of the stack frame which is guarneteed to be available.
 Or to put it another way, when the stack check runs at the top of each function, it checks that the space it needs, _plus_ the redzone, is available.
-
-TODO: check if the redzone comes out of the 2k allocation, or it is additional.
 
 The compiler keeps track of the stack requirements of each function and when it encounters a nosplit function it accumulates that functions stack needs against the redzone.
 In this way, carefully written nosplit functions can execute safely against the redzone buffer to avoid stack growth at inconvenient times without allowing the goroutine to accidentally stomp on another's memory.
@@ -480,12 +490,13 @@ We occasionally hit this in the `-N`, no optimisation, build on the dashboard as
 
 Can you use nosplit in your own functions; yes, but it's probably not necessary.
 Small functions would benefit most from this optmisation are already good candidates for inlining, which is far more effective at eliminating the overhead of function calls than `//go:nosplit`.
+You'll note in the example I showed I had to use ++//go:noinline++ to disable inlining which detected that `D` actaully did nothing.
 
 Of all the pragmas this one is the safest to misuse, as it will get spotted at compile time, and should generally not affect the correctness of your program, only the performance. 
 
-== go:noinline
+== ++//go:noinline++
 
-Inlining also ameleorates the cost of the stack check preamble, and in fact all the overheads of a function call, by copying the code of the inlined function into it's caller.
+Inlining ameleorates the cost of the stack check preamble, and in fact all the overheads of a function call, by copying the code of the inlined function into its caller.
 It's a small trade off of possibly increased program size against reduced runtine of avoiding the function call overhead.
 Inlining is _the_ key compiler optimisation because it unlocks many other optimisations.
 
@@ -547,29 +558,30 @@ https://go-review.googlesource.com/#/c/13911/
 https://groups.google.com/d/topic/golang-dev/v9KV2k_rAWQ/discussion
 
 [quote, Keith Randall]
+____
 We particularly need this feature on the SSA branch because if a function is inlined, the code contained in that function might switch from being SSA-compiled to old-compiler-compiled.  Without some sort of noinline mark the SSA-specific tests might not be testing the SSA backend at all.
+____
 
-=== Can you use `//go:noinline` in your own code?
+=== Can you use ++//go:noinline++ in your own code?
 
 Can you use `//go:noinline` in your own code?
 Absolutely, although I cannot think of any reason to do so off hand.
 
 == ++//go:systemstack++
 
-++++
-commit 08e25fc1ba397e02ec776561ed73b7f9a8b94392
-Author: Russ Cox <rsc@golang.org>
-Date:   Sun Jun 7 21:45:39 2015 -0400
+We talked previous about the 'native' goroutine stack, which is what Go code executes on.
+User stacks start small (e.g., 2K) and grow or shrink dynamically.
 
-    cmd/compile: introduce //go:systemstack annotation
+Each _running_ goroutine is backed by an operating system thread, there is another stack available.
+We call this the system stack, which is used when handling signals, thunking into cgo, and performing operations that may require more than the small redzone allocation we talked about in ++//go:nosplit++ can provide.
+System and signal stacks cannot grow, but are large enough to execute runtime and cgo code (8K in a pure Go binary; system-allocated in a cgo binary).
 
-    //go:systemstack means that the function must run on the system stack.
+Runtime code often temporarily switches to the system stack using `systemstack`, `mcall`, or `asmcgocall` to perform tasks that must not be preempted, that must not grow the user stack, or that switch user goroutines.
+Code running on the system stack is implicitly non-preemptible and the garbage collector does not scan system stacks.
+While running on the system stack, the current user stack is not used for execution.
 
-    Add one use in runtime as a demonstration.
-
-    Fixes #9174.
-++++
-
+[quote, runtime/stub.go]
+____
 ++++
 // systemstack runs fn on a system stack.
 // If systemstack is called from the per-OS-thread (g0) stack, or
@@ -591,37 +603,22 @@ Date:   Sun Jun 7 21:45:39 2015 -0400
 //go:noescape
 func systemstack(fn func())
 ++++
+____
 
-But suffice to say, but default
-
-=== digression system stack vs goroutine stack
-
-I'm not using the word native stack here because that is a matter of perspective.
-From the POV of a goroutine, the system stack is foreign and it's own is native.
-From the POV of the os thread, the goroutine's stack is opaque, and it
-
-Sometimes in the runtime we need to run code that does not grow the stack, see nosplit, but can potentially use a lot of stack, or needs to run on the system thread because that is waht the underlying operation system expects.
-
-== so
-
-we used to have a trampoline function called system stack.
-runs go code on the thread's native stack.
-
-Now that the horse had truely bolted, the systemstack trampoline was rewritten to be a linker call with go:systemstack
-
-Note: as of Go 1.8, you cannot combine ++//go:nosplit++ and ++//go:systemstack++
+To ensure that one could not accidentally call a function designed to run only on the system stack from normal Go code, Russ Cox added the ++//go:systemstack++ annotation which enforces that this function is not called from normal code.
 
 ++++
-commit 450472989b318b7242d2c3d0db4c09d84727c065
-Author: Austin Clements <austin@google.com>
-Date:   Thu Feb 9 17:08:27 2017 -0500
+commit 08e25fc1ba397e02ec776561ed73b7f9a8b94392
+Author: Russ Cox <rsc@golang.org>
+Date:   Sun Jun 7 21:45:39 2015 -0400
 
-    cmd/compile: disallow combining nosplit and systemstack
+    cmd/compile: introduce //go:systemstack annotation
 
-    go:systemstack works by tweaking the stack check prologue to check
-    against a different bound, while go:nosplit removes the stack check
-    prologue entirely. Hence, they can't be used together. Make the build
-    fail if they are.
+    //go:systemstack means that the function must run on the system stack.
+
+    Add one use in runtime as a demonstration.
+
+    Fixes #9174.
 ++++
 
 === Can you use ++//go:systemstack++ in your own code?
@@ -648,11 +645,13 @@ TODO link to rick hudson's presentation
 With the addition of the concurrent garbage collector in Go 1.5 came a new concept known as a write barrier.
 To explain what a write barrier is, we need to first talk about how memory works in multi chip and multi core computers.
 
-From the point of view of code executing on a single processor code, all reads and writes to main memory happen instantaniously.
+From the point of view of code executing on a single processor core, all reads and writes to main memory happen immediately.
 A store to memory, directly followed by a load of the same address will return the value previously stored -- if this didn't happen, writing correct programs would be very hard.
-However, from the point of view of another core connected to that 
+However, from the point of view of a different core connected to that same memory bus the write to memory may be delayed, or in some cases never written at all.
 
-In the previous Go 1.4 world where your program would run until the heap was exhausted, then all the resources of the machine would be dedicated on marking and sweeping the heap, the garbage collector could make the straight forward assumption that while the garbage collector was running, the program -- or "mutator" as garbage c
+In the previous Go 1.4 world where your program would run until the heap was exhausted, then all the resources of the machine would be dedicated on marking and sweeping the heap, the garbage collector could make the straight forward assumption that while the garbage collector was running, the program -- or "mutator" as garbage collector authors know it, was not going to be writing to memory.
+
+Now, the write barrier is part of the runtime, so if you are the runtime code tha
 
 As a Go programmer, addition
 
@@ -660,8 +659,22 @@ These three directives, added over the course of the development of the concurre
 
 Again just like escape analysis the compiler works hard to eliminate write barriers where it can prove they are not necessary -- basically memory that is not visible outside the current goroutine.
 
+Like ++//go:systemstack++, these directives cannot be used outside the runtime package.
+This is enforced by the compiler.
 
 == go:cgo_unsafe_args
+
+Added to make cgo safe when addressing a performance regression with the SSA compiler
++++
+Cgo plays tricky games by taking the address of a
+in f(a int) (b int) and then using that address to
+modify b.  So for cgo-generated Go code, disable the
+SSAing of output args.
++++
+
+https://go-review.googlesource.com/#/c/19988/
+
+This is only used inside the glue code generated by cgo to indicate that even if the cgo 
 
 == go:uintptrescapes
 		// For the next function declared in the file
@@ -681,17 +694,24 @@ https://go-review.googlesource.com/24551
 
 == go:notinheap
 
+Applies to types
+
+Ensures that variables of that type are never heap allocated; either by explicit calls to `make` or `new`, or implicitly via escape analysis.
+
+This directive is used inside the runtime to catch errant allocations that escape to the heap which could be unsafe, but just as importantly, an allocation that is only ever stack allocated never needs to take a write barrier.
+
 == go:linkname
 
 https://go-review.googlesource.com/#/c/26651/
 
-=== import "unsafe"
+        //go:linkname localname importpath.name
 
-One restriction the gc compiler makes is for the `//go:` pragmas is you must import the `unsafe` package for them to be recognised.
-This is arguably a reasonable restriction as using most of these pragmas incorrectly will result in an unstable program.
-It's also useful for others' auditing your code to know that if your program does not import `unsafe`, it is likely safe--baring data races of course
+The //go:linkname directive instructs the compiler to use ``importpath.name'' as the
+object file symbol name for the variable or function declared as ``localname'' in the
+source code. Because this directive can subvert the type system and package
+modularity, it is only enabled in files that have imported "unsafe".
 
-TODO check if it errors, or just ignores.
+
 
 == is +build a pragma
 
@@ -703,10 +723,11 @@ i argue not
 
 == Conclusion
 
-Pragmas in Go have a rich history, and I hope the retelling of this history has been interesting to you.
+Pragmas in Go have a rich history.
+I hope the retelling of this history has been interesting to you.
 
 The wider story arc of pragmas in Go allowed the runtime authors to implement as much of the runtime as possible in Go, reducing the amount of assembly used, and eliminating C altogether.
-They are used inside the runtime itself to gain a foothold to implement the runtime, including the garbage collector, in Go itself.
+They are used inside the standard library to gain a foothold to implement the runtime, including the garbage collector, in Go itself.
 Pragmas allowed the runtime devs to extend, albeit it on the sly, the language just enough to meet the requirements of the problem.
 You find pragmas used, sparingly, inside the standard library, although you'll never find them in godoc.
 
