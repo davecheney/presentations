@@ -28,11 +28,11 @@ func (m *Mux) loop() {
 	for {
 		select {
 		case conn := <-m.add:
-			m.conns[conn.RemoteAddr()] = conn
+			conns[conn.RemoteAddr()] = conn
 		case addr := <-m.remove:
-			delete(m.conns, addr)
+			delete(conns, addr)
 		case msg := <-m.sendMsg:
-			for _, conn := range m.conns {
+			for _, conn := range conns {
 				io.WriteString(conn, msg)
 			}
 		}
