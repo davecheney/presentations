@@ -33,6 +33,8 @@ Does it
 
 _Stop_turns_off_a_ticker._After_Stop,_no_more_ticks_will_be_sent._Stop_does_not_close_the_channel,_to_prevent_a_read_from_the_channel_succeeding_incorrectly_.
 
+.link https://golang.org/pkg/time/#Ticker.Stop time.Ticker.Stop
+
 * Floaty McFloatface
 
 Consider this program
@@ -40,6 +42,19 @@ Consider this program
 .play -edit gopher-puzzlers/floaty.go
 
 Does it compile?
+
+* Floaty McFloatface (solution)
+
+Although Go does not permit implicit conversion between variables, the rules are different for constants.
+
+Specifically:
+
+A constant value `x` can be converted to type `T` in any of these cases:
+
+- `x` is representable by a value of type `T`.
+- // other cases that aren't relevant
+
+.link https://golang.org/ref/spec#Conversions Spec (Conversions)
 
 * Snip, Snip
 
@@ -254,37 +269,37 @@ Consider this solution.
 
 Take away: `copy` returns the number of elements it copied from the source to the destination.
 
-* The size of things
-
-In this program, the size of variables of type `X` and `Y` in memory varies by platform.
-
-.play -edit gopher-puzzlers/size-of-things.go
-
-By changing _only_one_line_ can you ensure that variables of type x, and y always consume *16* bytes on all platforms that Go 1.7 supports?
-
-* The size of things (cont.)
-
-The solution involves setting n to 4 on 32 bit platforms, and 2 on 64 bit using a constant expression.
-
-.play -edit gopher-puzzlers/size-of-things-ii.go /START OMIT/,/END OMIT/
-
-`^uint(0)` gives you a number whose bits are all 1, then `>>`63` shifts the number 63 places to the right. If we’re on a 64 bit platform, this evaluates to 1, shifting 4 one place to the right leaves 2, otherwise 32 ones shifted 63 places to the right gives zero, and 4 shifted right zero times is still 4.
-
-But there is an _even_smaller_ way to write this, can you guess?
-
-* The size of things (cont.)
-
-Credit: Paul Hankin
-
-.play -edit gopher-puzzlers/size-of-things-iii.go /START OMIT/,/END OMIT/
-
-`^uint(6)` is 4294967289 on 32bit platforms, it's the same as `^uint32(6)`
-
-4294967289 divided by 7 is 613566755, with a remainder (modulo) of 4.
-
-`^uint64(6)`%`7` is left as an exercise to the reader.
-
-Question: If I change the first `const` to a `var`, will this code compile?
+#* The size of things
+#
+#In this program, the size of variables of type `X` and `Y` in memory varies by platform.
+#
+#.play -edit gopher-puzzlers/size-of-things.go
+#
+#By changing _only_one_line_ can you ensure that variables of type x, and y always consume *16* bytes on all platforms that Go 1.7 supports?
+#
+#* The size of things (cont.)
+#
+#The solution involves setting n to 4 on 32 bit platforms, and 2 on 64 bit using a constant expression.
+#
+#.play -edit gopher-puzzlers/size-of-things-ii.go /START OMIT/,/END OMIT/
+#
+#`^uint(0)` gives you a number whose bits are all 1, then `>>`63` shifts the number 63 places to the right. If we’re on a 64 bit platform, this evaluates to 1, shifting 4 one place to the right leaves 2, otherwise 32 ones shifted 63 places to the right gives zero, and 4 shifted right zero times is still 4.
+#
+#But there is an _even_smaller_ way to write this, can you guess?
+#
+#* The size of things (cont.)
+#
+#Credit: Paul Hankin
+#
+#.play -edit gopher-puzzlers/size-of-things-iii.go /START OMIT/,/END OMIT/
+#
+#`^uint(6)` is 4294967289 on 32bit platforms, it's the same as `^uint32(6)`
+#
+#4294967289 divided by 7 is 613566755, with a remainder (modulo) of 4.
+#
+#`^uint64(6)`%`7` is left as an exercise to the reader.
+#
+#Question: If I change the first `const` to a `var`, will this code compile?
 
 #* Space packing
 #
@@ -363,23 +378,23 @@ This is important because of the [[https://golang.org/ref/spec#Assignability][As
 
 .play -edit gopher-puzzlers/named-and-unnamed-v.go /START OMIT/,/END OMIT/
 
-* Two hundred
-
-What does this program print ?
-
-.play -edit gopher-puzzlers/twohundred.go
-
-* Two hundred (cont.)
-
-It prints `200` and `202`.
-
-`x` starts with a length _and_ a capacity of 7.
-
-Appending to `x` must grow the slice, and this causes the backing array to be copied.
-
-However, `y` continues to point at the 2nd element of the original backing array.
-
-Take away: taking the address of an element of a slice, or sub slicing a slice or string will keep the _entire_ backing array alive.
+#* Two hundred
+#
+#What does this program print ?
+#
+#.play -edit gopher-puzzlers/twohundred.go
+#
+#* Two hundred (cont.)
+#
+#It prints `200` and `202`.
+#
+#`x` starts with a length _and_ a capacity of 7.
+#
+#Appending to `x` must grow the slice, and this causes the backing array to be copied.
+#
+#However, `y` continues to point at the 2nd element of the original backing array.
+#
+#Take away: taking the address of an element of a slice, or sub slicing a slice or string will keep the _entire_ backing array alive.
 
 * Missing panic
 
@@ -419,45 +434,45 @@ What's going on here.
 
 Credit: [[https://twitter.com/peter_szilagyi/status/786210562229178370][Péter Szilágyi]]
 
-* Do you even shift?
-
-Here are four expressions involving shift operations, which ones are valid?
-
-.code gopher-puzzlers/shift.go /START1 OMIT/,/END1 OMIT/
-
-.code gopher-puzzlers/shift.go /START2 OMIT/,/END2 OMIT/
-
-.code gopher-puzzlers/shift.go /START3 OMIT/,/END3 OMIT/
-
-.code gopher-puzzlers/shift.go /START4 OMIT/,/END4 OMIT/
-
-Credit: Robert Griesemer
-
-* Do you even shift? (cont.)
-
-Answer: none of them are valid.
-
-.code gopher-puzzlers/shift.go /START1 OMIT/,/END1 OMIT/
-
-Cannot shift by a negative number.
-
-.code gopher-puzzlers/shift.go /START2 OMIT/,/END2 OMIT/
-
-Shifts must be an _unsigned_ number, `x` defaults to `int`.
-
-.code gopher-puzzlers/shift.go /START3 OMIT/,/END3 OMIT/
-
-This time we're shifting by an unsigned integer, but the value of `y` is `float64`, which means `1.0` is a float64, and `<<` is only defined on integers.
-
-* Do you even shift? (cont.)
-
-.code gopher-puzzlers/shift.go /START4 OMIT/,/END4 OMIT/
-
-The last one is complicated
-
-.code gopher-puzzlers/shift.go /START5 OMIT/,/END5 OMIT/
-
-.link https://github.com/golang/go/issues/14844
+# * Do you even shift?
+#
+#Here are four expressions involving shift operations, which ones are valid?
+#
+#.code gopher-puzzlers/shift.go /START1 OMIT/,/END1 OMIT/
+#
+#.code gopher-puzzlers/shift.go /START2 OMIT/,/END2 OMIT/
+#
+#.code gopher-puzzlers/shift.go /START3 OMIT/,/END3 OMIT/
+#
+#.code gopher-puzzlers/shift.go /START4 OMIT/,/END4 OMIT/
+#
+#Credit: Robert Griesemer
+#
+#* Do you even shift? (cont.)
+#
+#Answer: none of them are valid.
+#
+#.code gopher-puzzlers/shift.go /START1 OMIT/,/END1 OMIT/
+#
+#Cannot shift by a negative number.
+#
+#.code gopher-puzzlers/shift.go /START2 OMIT/,/END2 OMIT/
+#
+#Shifts must be an _unsigned_ number, `x` defaults to `int`.
+#
+#.code gopher-puzzlers/shift.go /START3 OMIT/,/END3 OMIT/
+#
+#This time we're shifting by an unsigned integer, but the value of `y` is `float64`, which means `1.0` is a float64, and `<<` is only defined on integers.
+#
+#* Do you even shift? (cont.)
+#
+#.code gopher-puzzlers/shift.go /START4 OMIT/,/END4 OMIT/
+#
+#The last one is complicated
+#
+#.code gopher-puzzlers/shift.go /START5 OMIT/,/END5 OMIT/
+#
+#.link https://github.com/golang/go/issues/14844
 
 * Tokens
 
