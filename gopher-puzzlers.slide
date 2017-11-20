@@ -1,6 +1,6 @@
 Gopher Puzzlers
 How well do you know your language?
-17 Nov 2016
+20 Nov 2017
 
 Dave Cheney
 dave@cheney.net
@@ -16,6 +16,173 @@ http://dave.cheney.net/
 .image gopher-puzzlers/1e8ys6.jpg
 
 Hopefully this little quiz will surprise you, and perhaps teach you something you didn't know about Go.
+
+* Tick, Tick, Tick
+
+Consider this program
+
+.play -edit gopher-puzzlers/tick.go
+
+Does it
+
+- Exit quickly
+- Deadlock
+- Dave. That doesn't even compile.
+
+* Tick, Tick, Tick (solution)
+
+_Stop_turns_off_a_ticker._After_Stop,_no_more_ticks_will_be_sent._Stop_does_not_close_the_channel,_to_prevent_a_read_from_the_channel_succeeding_incorrectly_.
+
+* Floaty McFloatface
+
+Consider this program
+
+.play -edit gopher-puzzlers/floaty.go
+
+Does it compile?
+
+* Snip, Snip
+
+# https://twitter.com/davecheney/statuses/833052892105891840?tw_i=833052892105891840&tw_e=details&tw_p=archive
+
+What does this program print?
+
+.play -edit gopher-puzzlers/snip.go
+
+- `"abcdef"`
+- `"fedcba"`
+- `""`
+- `"abcedfedcba"`
+
+* Snip, Snip (solution)
+
+`strings.TrimRight` takes a _cutset_ for their second argument.
+
+If the rightmost character is a member of the cutset, it is removed, and we go again, otherwise stop.
+
+`strings.Trim{,Left,Right}` are great for trimming a set of characters (usually whitespace), from a string, but if you know the prefix or suffix, you probably want `strings.Trim{Prefix,Suffix}`
+
+.play -edit gopher-puzzlers/snip2.go
+
+* By the power vested in me
+
+What does this program print?
+
+.play -edit gopher-puzzlers/power.go
+
+- `a`
+- `b`
+- _nothing_ (doesn't compile)
+
+* By the power vested in me (solution)
+
+`^` is the bitwise exclusive or operator (XOR), not exponentiation.
+
+`a`:=`2`^`15`
+
+   2 = 0010
+  15 = 1111
+       XOR
+  a := 1101
+
+`b`:=`4`^`15`
+
+   4 = 0100
+  15 = 1111
+       XOR
+  b := 1011
+
+∴ `a`>`b`==`true`
+
+* The Terminator
+
+# https://twitter.com/davecheney/status/819759166617108481?s=09
+
+Will this program terminate?
+
+.play -edit gopher-puzzlers/terminator.go
+
+- Yes
+- No
+
+* The Terminator (solution)
+
+The `for`...`range` syntax only evaluates the terminating condition _once_, at the start of the loop.
+
+.play -edit gopher-puzzlers/terminator2.go
+
+_Take_Away_: if you are modifying a slice while iterating over it; use a regular `for` loop.
+
+* Do you want to print a Snowman?
+
+# https://twitter.com/davecheney/status/860319875717136384
+
+What does this code print
+
+.play -edit gopher-puzzlers/snowman.go
+
+- ☃
+- `[9731]`
+- _nothing_ (doesn't compile)
+
+* Do you want to print a Snowman? (solution)
+
+`rune` is an _alias_ for `int32`.
+
+.play -edit gopher-puzzlers/rune.go
+
+What does this program print?
+
+Question: How many other predeclared aliases are there? What are their names?
+
+* A slice of aliases
+
+Which of these declarations are valid?
+
+.play -edit gopher-puzzlers/slices.go
+
+- All of them
+- Some of them 
+- None of them
+
+* Gofmt you
+
+# https://twitter.com/davecheney/status/803862683380420608?s=09
+
+Is this program valid? Will it compile?
+
+.play -edit gopher-puzzlers/gofmt.go
+
+Is this program correctly formatted? If if feed it to `gofmt` what will happen?
+
+.link https://play.golang.org/p/FuP46_dFM-
+
+* Gofmt you (cont.)
+
+Humans see source files as a list of lines, computers do not. Specifically the compiler treats your source as one long string of text which it punctuates with semicolons according [[https://golang.org/ref/spec#Semicolons][to the rules]].
+
+For example, you're probably ok with this
+
+.play -edit gopher-puzzlers/gofmt2.go
+
+* Gofmt you (cont.)
+
+And you're probably ok with this
+
+.play -edit gopher-puzzlers/gofmt3.go
+
+* The pointy end
+
+# https://twitter.com/davecheney/statuses/896701753365626881?tw_i=896701753365626881&tw_e=details&tw_p=archive
+
+Consider this program
+
+.play -edit gopher-puzzlers/pointer.go
+
+- Does it print `8`8`?
+- Does it print `8`9`?
+- Does it print `9`9`?
+- Does it not even compile?
 
 * Maps
 

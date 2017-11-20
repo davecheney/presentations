@@ -6,12 +6,28 @@ dave@cheney.net
 http://dave.cheney.net/
 @davecheney
 
+* Programming philosophy
+
+The 80's were a golden time for programming language design.
+
+- ADA, Smalltalk, C++, Self
+- First AI winter
+- Hardware was large enough to support _huge_ programs, developed by _huge_ numbers of programmers.
+
+The 90's was a golden time for programming philosophy.
+
+- SOLID
+- TDD, BDD, DDD
+- Modularity
+
+People have thought about designing huge programs since the 80's, don't reinvent their wheel.
+
 * Overcoming complexity
 
 "There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult."
 .caption C. A. R. Hoare, 1980 Turing Award Lecture
 
-Simplicity is not a synonym for easy, nor is achieving a design which is simple an easy task. Putting this into the context of programming languages, something which is simple may take a little longer, it may be a little more verbose, but it will be more comprehensible, more estensible, more adaptable, and exibit lower coupling.  
+Simplicity is not a synonym for easy, nor is achieving a design which is simple an easy task. Putting this into the context of programming languages, something which is simple may take a little longer, it may be a little more verbose, but it will be more comprehensible, more extensible, more adaptable, and exhibit lower coupling.  
 
 "We know we have to keep it crisp, disentangled, and simple if we refuse to be crushed by the complexities of our own making."
 .caption [[https://www.cs.utexas.edu/users/EWD/transcriptions/EWD12xx/EWD1243a.html][Edsger W.Dijkstra]]
@@ -23,12 +39,12 @@ Simplicity is not a synonym for easy, nor is achieving a design which is simple 
 "Programs must be written for people to read, and only incidentally for machines to execute."
 .caption Hal Abelson and Gerald Sussman, Structure and Interpretation of Computer Programs
 
-The source code of a program is an intermediary form, somewhere between the author's concept and the computer's executable notation. In that sense source code is an encoded form of an idea, a process, an algorythm, or a formula. Just like musical notation.
+The source code of a program is an intermediary form, somewhere between the author's concept and the computer's executable notation. In that sense source code is an encoded form of an idea, a process, an algorithm, or a formula. Just like musical notation.
 
 "We don’t read code, we decode it. We examine it. A piece of code is not literature; it is a specimen."
 .caption [[http://www.gigamonkeys.com/code-reading/][Peter Seibel]]
 
-Go places readability above all other considerations, because source code is written to be read. Many of the choices relating to Go's syntax speak to the needs of the reader. Go's syntax is sparten because of its drive for readability.
+Go places readability above all other considerations, because source code is written to be read. Many of the choices relating to Go's syntax speak to the needs of the reader. Go's syntax is spartan because of its drive for readability.
 
 * Change
 
@@ -41,23 +57,7 @@ Code is written once and read many times.
 
 Change is what we're paid to do.
 
-We _must_ make it possible for our software to accomodate business change. Quickly. Safely. Reliabily.
-
-* Programming philosophy
-
-The 80's were a golden time for programming language design.
-
-- ADA, Smalltalk, C++, Self
-- First AI winter
-- Hardware was large enough to support _huge_ programs, developed by _huge_ numbers of programmers.
-
-The 90's was a golden time for programming philisophy.
-
-- SOLID
-- TDD, BDD, DDD
-- Modularity
-
-People have thought about designing huge programs since the 80's, don't reinvent their wheel.
+We _must_ make it possible for our software to accommodate business change. Quickly. Safely. Reliably.
 
 * Design
 
@@ -74,34 +74,29 @@ People have thought about designing huge programs since the 80's, don't reinvent
 
 Interfaces describe behaviour, structs describe data.
 
+OO mocks this idea; the _data_class_ is a called a code smell.
+
 Not everything is an object, some things are just data, and other things are just behaviour.
 
 These should be separate concepts.
 
 - If you're talking about behaviour, return functions or interface value.
-- If you're talking about data, return a primative value or struct.
+- If you're talking about data, return a primitive value or struct.
 
 * Accept interfaces, return structs
 
-Talk about function parameters 
+APIs should describe their parameters in terms of their behaviour rather than their type.
 
+Functions should either consume universe data types or interface values _they_define_.
 
+ie. `ioutil.ReadAll(io.Reader)` vs `ioutil.ReadAll(*os.File)`
 
+Where possible, interfaces belong to the consumer. Don't import a package just to agree on an interface defintion.
 
-- go does not have generics
-- we should talk about objects in terms of behaviour, ReadAll(io.Reader) vs ReadAll(*os.File)
+So, why return concrete types (or universe types)?
 
-So, why return concrete types.
-
-- reduce the possiblity of typed nils.
--
-
-(or universe types)
-
-* Syntax is irrelevant
-
-- Moaning about generics is missing the point.
-- What matters in a multicore world is the semantics of how multiple processes (goroutines) communicate.
+- Reduce the possibility of typed nils.
+- You're already coupled to the name of the function, so the name of a type is no worse.
 
 * Give things fewer names
 
@@ -109,34 +104,19 @@ Reduce source level coupling by removing the requirement for everyone to use the
 
 Avoid named return values.
 
-* Watch out for typed nils,
-
-Especially when returning values in interfaces.
-
-See
-
 * Methods on a T vs methods on a *T
-Without exception, Everything in Go is a copy. We also know that method calls are just syntactic sugar for calling a function an passing the receiver as the first parameter. So, what are the rules for how the recover is passed, as a value, or a pointer.
+Everything in Go is a copy, without exception.
+
+We also know that method calls are just syntactic sugar for calling a function an passing the receiver as the first parameter. So, what are the rules for how the recover is passed, as a value, or a pointer.
 
 - Use a pointer receiver when the caller will change the receiver, possibly this could be written as use a pointer receiver when the method is stateful.
 - Use a value receiver when the receiver is immutable, one of the few std lib examples of this is the `time.Time` type.
 
-But even that is incomplete, many methods are methods because they need to be to implement interfaces, otherwise they'd just be functions, and that seems to cut across this immutable/stateful boundary.
+But even that is incomplete, many methods exist because they need to implement an interfaces, otherwise they'd just be functions, and that seems to cut across this immutable/stateful boundary.
 
-In the end I'm left with the unhappy compromise of
-
-- in general, use pointer receivers.
-- if you use a ptr receiver on one method, the rest should follow suit.
-- but, every type is different, there are not hard and fast rules.
-
-Return values with methods by reference, and those without by value.
-
-* Types should only have public methods
-
-"People have it backwards, methods only exist to implement interfaces (sic)."
-.caption Jason Moiron (Twitter)
-
-Prefer private functions to private methods on types.
+- In general, use pointer receivers.
+- If you use a ptr receiver on one method, the rest should follow suit.
+- Return values with methods by reference, and those without by value.
 
 * Errors are just values
 
@@ -145,7 +125,7 @@ Prefer private functions to private methods on types.
 
 - Errors should be opaque
 - Never use nil to indicate failure
-- Handle an error _or_ return it
+- Only handle an error once; handle an error _or_ return it
 - Assert errors for behaviour, not type
 
 * Fewer, larger packages
@@ -175,24 +155,19 @@ An empty package is a sign you developing a package hierarchy.
 
 An exception to this rule is the use of grouping main packages into a `cmd` directory.
 
-* Constants are useful
-
-(Constants are hard)
-
- (don't go nuts with types, constants will undo all your hard work)
-
 * The most reasonable channels sizes are usually zero and one.
 
+Prefer unbuffered channels.
 
-(who's on the other end of that channel)
+* How to lay out Go projects
 
-* Only handle an error once
+- single pkg, single lib, Multi paxkage, application, project. 
 
-* How to lay out a go project
+Use `testdata`, use `vendor/` (if you're an application), use `internal/`
 
-single pkg, single lib, Multi paxkage, application, project.  use _testdata, use vendor/, use internal/
+- vendoring is what it is, use grep and write a Makefile for complex projects.
 
-Get onboard with gopath, use go build, go install, go race, go test, vendoring is what it is, use grep and write a Makefile
+Get onboard with `$GOPATH`, use `go`build`, `go`install`, `go`test`-race`.
 
 Comment everything, use the google shell docs
 
@@ -202,22 +177,25 @@ Name your tests with a prefix of they type they test so you can run and check th
 
 * Only log actionable items
 
-Go is designed for production, the ones concerned with its outpu should be told when and only when it goes wrong
+Go is designed for production, the ones concerned with its output should be told when and only when it goes wrong
 
 For development add a debug or -v flag
 
-* Interfaces belong to the consumer
+* Use streaming IO interfaces
 
-* Don't trade performance for reliability
+Where-ever possible avoid reading data into a `[]byte` and passing it around.
 
-"I can make things very fast if they don't have to be correct."
-.caption Russ Cox
+Depending on the request you may end up reading megabytes (or more!) of data into memory. This places huge pressure on the GC, which will increase the average latency of your application.
 
-Performance and reliability are equally important.
+Instead use `io.Reader` and `io.Writer` to construct processing pipelines to cap the amount of memory in use per request.
 
-I see little value in making a very fast server that panics, deadlocks or OOMs on a regular basis.
+For efficiency, consider implementing `io.ReaderFrom` / `io.WriterTo` if you use a lot of `io.Copy`. These interface are more efficient and avoid copying memory into a temporary buffer.
 
-Don't trade performance for reliability
+* Syntax is irrelevant
+
+To the extent that readability is paramount, language syntax is mostly irrelevant.
+
+What matters in a multicore world is the semantics of how multiple processes (goroutines) communicate.
 
 * Never start a goroutine without knowing how it will finish
 
@@ -231,13 +209,13 @@ In your design, some goroutines may run until the program exits. These goroutine
 
 *Never*start*a*goroutine*without*knowing*how*it*will*stop*.
 
-* Use streaming IO interfaces
+* Don't trade performance for reliability
 
-Where-ever possible avoid reading data into a `[]byte` and passing it around.
+"I can make things very fast if they don't have to be correct."
+.caption Russ Cox
 
-Depending on the request you may end up reading megabytes (or more!) of data into memory. This places huge pressure on the GC, which will increase the average latency of your application.
+Performance and reliability are equally important.
 
-Instead use `io.Reader` and `io.Writer` to construct processing pipelines to cap the amount of memory in use per request.
+I see little value in making a very fast server that panics, deadlocks or OOMs on a regular basis.
 
-For efficiency, consider implementing `io.ReaderFrom` / `io.WriterTo` if you use a lot of `io.Copy`. These interface are more efficient and avoid copying memory into a temporary buffer.
-
+Don't trade performance for reliability.

@@ -18,7 +18,6 @@ func C(t T) {
 }
 
 //go:nosplit
-//go:noinline
 func D(t T) {}
 
 func main() {
