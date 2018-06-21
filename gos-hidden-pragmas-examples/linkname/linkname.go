@@ -33,12 +33,13 @@ type m struct {
 	divmod  uint32 // div/mod denominator for arm - known to liblink
 
 	// Fields not known to debuggers.
-	procid   uint64     // for debuggers, but offset not hard-coded
-	gsignal  *g         // signal-handling g
-	sigmask  sigset     // storage for saved signal mask
-	tls      [6]uintptr // thread-local storage (for x86 extern register)
-	mstartfn func()
-	curg     *g // current running goroutine
+	procid     uint64       // for debuggers, but offset not hard-coded
+	gsignal    *g           // signal-handling g
+	goSigStack gsignalStack // Go-allocated signal handling stack
+	sigmask    sigset       // storage for saved signal mask
+	tls        [6]uintptr   // thread-local storage (for x86 extern register)
+	mstartfn   func()
+	curg       *g // current running goroutine
 }
 
 type g struct {
@@ -96,4 +97,13 @@ type gobuf struct {
 type stack struct {
 	lo uintptr
 	hi uintptr
+}
+
+// gsignalStack saves the fields of the gsignal stack changed by
+// setGsignalStack.
+type gsignalStack struct {
+	stack       stack
+	stackguard0 uintptr
+	stackguard1 uintptr
+	stktopsp    uintptr
 }
