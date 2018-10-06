@@ -94,6 +94,18 @@ An identifier is a name; the name of a variable, the name of a function, the nam
 Readability is the defining quality of good code.
 Good names are critical to readability.
 
+=== Choose identifiers for clarity, not brevity
+
+Go is not a language that optimises for clever one liners, nor is a language which optimises for the least number of lines in a program.
+We're not optimising for the size of the source code on disk, nor how long it takes to type.
+
+"Obvious code is important. What you _can_ do in one line you _should_ do in three."
+-- Ukiah Smith  
+
+// https://twitter.com/UkiahSmith/status/1044931395112644608
+
+Given the limited syntax of our language, the names we give to things in our programs have an oversized impact on the readability of our programs.
+
 To get technical, when I'm talking about naming, I'm talking about naming _identifiers_ in Go programs.
 But that's a bit lengthy, so lets just call it naming from now on -- you understand what I mean.
 
@@ -106,17 +118,17 @@ To make this clear this
 * the name of a constant
 * the name of a variable, formal parameter, or return value
 
-=== Choose identifiers for clarity, not brevity
+The properties of a good name are:
 
-Given the limited syntax of our language, the names we give to things in our programs have an oversized impact on the readability of our programs.
-
-Go is not a language that optimises for clever one liners, nor is a language which optimises for the least number of lines in a program.
-We're not optimising for the size of the source code on disk, nor how long it takes to type.
-
-A good name is:
-- Consistent (easy to guess),
 - Short (easy to type),
 - Accurate (easy to understand).
+- Consistent (easy to guess),
+
+Let's talk about each of these properties
+
+=== Identfier length
+
+Sometimes people criticise the Go style for recommending short variable names.
 
 As Rob Pike said, "Go programmers want the _right_ length identifiers"
 
@@ -128,6 +140,10 @@ By using longer identifies for some things we indicate to the reader that they a
 I'm going to make a slight modification on this and suggest this maxim
 
 "The length of an identifer is proportional to the distance between its definition and _last_ use."
+
+From this we can draw some rules
+
+- Functions
 
 Let's look at an example to make this clear
 
@@ -152,10 +168,41 @@ func AverageAge(people []Person) int {
 	return sum/count
 }	
 ----
-In this example, the range 
+In this example, the range variable `p` is declared on line X and only referenced on the following line. It 
 
 TIP: Use blank lines to break up the flow of a function in the same way you use paragraphs to break up the flow of a document. In `AverageAge` we have three operations occuring in sequence. The first is the precondition, checking that we don't divide by zero if people is empty, the second is the accumulation of the sum and count, and the final is the computation of the average.
 
+=== Don't name your variables for their types
+
+BAD: config *Config
+
+If `conf`, or maybe even `c` will do. If there is more that one config in scope
+
+=== Use a consistent naming style
+
+For example, if your code passes around a database handle, make sure each time the parameter appears, it has the same name
+
+db *sql.DB, not 
+
+Doing so promotes familiarity; if you see a `db`, you know it's a *sql.DB and that has either been created locally or provided for you.
+
+Similarly for method receivers, use a consistent name between
+
+[NOTE]
+====
+The convention for short receiver names in Go is at odds with the advice provided so far.
+This is just one of the choices made early on that has become the preferred style, just like the use of CamelCase rather than Snake_case
+====
+
+==== Take away
+
+* short variable names work well when the distance between their declaration and _last_ use is short.
+* long variable names need to justify themselves, the longer they are, the more value they need to bring. Lengthy beurocratic names carry a low amount of signal.
+* the name of your varible shouldn't be longer than its type.
+* never include the name of your type in the name of your variable.
+* constants should describe the value they contain, _not_ where that value is used.
+* Single letter variables for loops and branches, single words for parameters and return values, multiple words for functions and package level things,
+* Single words for methods, single words for interfaces, and always remember that the name of a package is part of the name the caller uses to to refer to it, so make use of that.
 
 === Use a consistent declaraton style
 
@@ -171,14 +218,88 @@ I'm sure there are more that I haven't thought of.
 
 With all these different ways of declaraing a variable, how do we find some commonality so rather than everyone having their own style
 
+I want to present a suggestions for how I declare variables in my programs.
+This is  the  style I try to use where possible.
+
+When declaring, but not initialising, a variable, use `var`.
+As Go does not permit uninitialised variables, num will be initialised to the zero value.
+Some other examples of this form might be
+
+----
+var players int 
+
+var things []Thing // an empty slice of Things
+
+var thing Thing // empty Thing struct 
+json.Unmarshall(reader, &thing)
+----
+The key is that `var` acts as a clue that the variable has been deliberately declared as the zero value of the indicated type.
+
+When declaring _and_ initalising, use `:=`
+
+Let's look at why using the previous example, deliberately initalising each variable
+
+----
+var players int = 0
+
+var things []Thing = nil
+
+var thing *Thing = new(Thing)
+json.Unmarshall(reader, thing)
+----
+
+In the first and third examples, there are no automatic coercions from one type to another; the type on the left hand side of the assignment operator _must_ be identical to the type on the right hand side.
+So the compiler can infer the type of the variable being declared from the type on the right hand side
+
+----
+var players = 0
+
+var things []Thing = nil
+
+var thing = new(Thing)
+json.Unmarshall(reader, thing)
+----
+
+What about the middle statement
+
+Of course, with any rule of thumb, there are exceptions.
+Sometimes two variables are closely related so writing
+
+ var min int
+ max := 1000
+
+Woud be odd, so this may be more readable.
+
+ min, max := 0, 1000
+
+However in this case min and max might be constants.
+
+
+
 [TIP]
 ====
-When something is complicated, it should stand out. When I see 
+When something is complicated, it should stand out.
 
- var x uint64 = 1<<30
+ var length uint32 = 0x80
 
-I know there is is a reason that `x` 's type is special.
+Here length may be being used with a library which requires a specific numeric type and this is probably more readable than
+
+ length := uint32(0x80)
+
 ====
+
+=== Don't be a maverick
+
+We talked about a goal of software engineering to produce readabile, maintainable, code.
+therefore you will likely spend most of your career working on projects which you are not the sole author.
+
+My personal rule of thumb is; if it fits throught `gofmt` then its not worth holding up a code review for.
+
+Follow the local style.
+Changing styles in the middle of a file is jarring.
+Uniformity, even if its not your preferred approach, is more valuable for maintenance than it is your personal preference.
+
+TIP: If you want to do a renaming across a codebase, do not mix this into another change. If someone is using git bisect they don't want to wade through thousands of lines of renaming to find the code you changed as well.
 
 == Comments
 
@@ -196,28 +317,30 @@ Comments should do one of three things.
 
 
 === Comments on variables and constants should describe their contents not their purpose
+
 [source,go]
 ----
-const random = 6 // determined from an unbiased die
+const randomNumber = 6 // determined from an unbiased die
 ----
 For variables without an initial value, the comment should describe the contents of the variable.
+
 [source,go]
 ----
 // registry of SQL drivers
 var drivers = make(map[string]*sql.Driver)
 ----
 
-.Hiding in plain sight
 [TIP]
+.Hiding in plain sight
 ====
 This is a tip from Kate Gregory.
 //footnote:[https://www.youtube.com/watch?v=Ic2y6w8lMPA]
 Sometimes a better name for a variable is right there in the comments.
-[source,go]
-----
+
 var sqlDrivers = make(map[string]*sql.Driver)
-----
+
 Now we don't need a comment, the _use_ of the map is right there in it's name.
+====
 
 === Comments are associative
 
@@ -330,6 +453,7 @@ The second is the name of the directory holding those files.
 **Those two names should match**
 
 The first name, the `package` declaration will be visibile as a prefix on every 
+====
 
 ==== Avoid package names like `base`, `common`, or `util`
 
@@ -338,11 +462,129 @@ Use the plural; `strings` for string handling utilities.
 
 An identifier’s name includes its package name
 Prefer lower case package names and import paths
-. Rather than nesting deeply, return early
-. Make the zero value useful
-. Eschew package level state.
-No package level variables.
-Avoid global side effects.
+
+=== Use guard clauses 
+
+My friend Mat Ryer calls this practice 'line of sight' coding.
+
+
+=== Make the zero value useful
+
+Every variable declaration, assuming no explicit initaliser is provided, will be automatically intialised to a value that matches the contents of zero’d memory.
+This is the value’s zero value.
+The type of the value determines its zero value; for numeric types it is zero, for pointer types nil, the same for
+
+This property of always setting a value to a known default is important for safety and correctness of your program, but can also make your Go programs simpler and more compact.
+This is what Go programmers talk about when they say "give your structs a useful zero value".
+
+Consider the sync.Mutex type.
+sync.Mutex contains two unexported integer fields, representing the variable’s internal state.
+Thanks to the zero value those fields will be set to will be set to 0 whenever a sync.Mutex is declared.
+sync.Mutex has been deliberately coded to take advantage of this property, making the type usable without explicit initialisation.
+
+----
+type AtomicInt struct {
+	mu  sync.Mutex
+	val int
+}
+
+func (a *AtomicInt) Inc() {
+	a.mu.Lock() // a.mu is usable without explicit initialisation.
+	a.mu.val++
+	a.mu.Unlock()
+}
+
+func main() {
+	var i AtomicInt
+
+	i.Inc()
+}
+----
+
+Another example of a type with a useful zero value is bytes.Buffer.
+You can decare a bytes.Buffer and start writing to it without explicit initialisation.
+
+----
+package main
+
+import "bytes"
+import "io"
+import "os"
+
+func main() {
+        var b bytes.Buffer
+        b.Write([]byte("Hello world"))
+        io.Copy(os.Stdout, &b)
+}
+----
+
+A useful property of slices is their zero value is nil. This makes sense if we look at the runtime’s definition of a slice header.
+
+type slice struct {
+        array unsafe.Pointer
+        len   int
+        cap   int
+}
+The zero value of this struct would imply len and cap have the value 0, and array, the pointer to memory holding the contents of the slice’s backing array would also be 0. This means you don’t need to explicitly make a slice, you can just declare it.
+
+package main
+
+import "fmt"
+import "strings"
+
+func main() {
+        // s := make([]string, 0)
+        // s := []string{}
+        var s []string
+
+        s = append(s, "Hello")
+        s = append(s, "world")
+        fmt.Println(strings.Join(s, " "))
+}
+Note
+
+var s []string is similar to the two commented lines above it, but not identical. It is possible to detect the difference between a slice value that is nil and a slice value that has zero length. The following code will output false.
+
+package main
+
+import "fmt"
+import "reflect"
+
+func main() {
+        var s1 = []string{}
+        var s2 []string
+        fmt.Println(reflect.DeepEqual(s1, s2))
+}
+A surprising, but useful, property of uninitalised pointer variables (nil pointers) is you can call methods on types that have a nil value. This can be used to provide default values simply.
+
+package main
+
+import "fmt"
+
+type Config struct {
+        path string
+}
+
+func (c *Config) Path() string {
+        if c == nil {
+                return "/usr/home"
+        }
+        return c.path
+}
+
+func main() {
+        var c1 *Config
+        var c2 = &Config{
+                path: "/export",
+        }
+        fmt.Println(c1.Path(), c2.Path())
+}
+
+
+=== Eschew package level state.
+
+. No package level variables.
+. Avoid global side effects.
 
 == Project Structure
 
@@ -603,6 +845,118 @@ If you were in my presentation yesterday I talked about the draft proposals for 
 
 === Only handle an error once
 
+Lastly, I want to mention that you should only handle errors once. Handling an error means inspecting the error value, and making a _single_ decision.
+
+----
+// WriteAll writes the contents of buf to the supplied writer.
+func WriteAll(w io.Writer, buf []byte) {
+        w.Write(buf)
+}
+----
+If you make less than one decision, you’re ignoring the error.
+As we see here, the error from `w.WriteAll` is being discarded.
+
+But making _more than one_ decision in response to a single error is also problematic.
+The following is code that I come across frequently.
+
+----
+func WriteAll(w io.Writer, buf []byte) error {
+        _, err := w.Write(buf)
+        if err != nil {
+                log.Println("unable to write:", err) // annotated error goes to log file
+                return err // unannotated error returned to caller
+        }
+        return nil
+}
+----
+In this example if an error occurs during `w.Write`, a line will be written to a log file, noting the file and line that the error occurred, and the error is also returned to the caller, who possibly will log it, and return it, all the way back up to the top of the program.
+
+The caller is probably doing the same
+
+----
+func WriteConfig(w io.Writer, conf *Config) error {
+	buf, err := json.Marshal(conf)
+	if err != nil {
+		log.Printf("could not marshal config: %v", err)
+		return err
+	}
+	if err := WriteAll(w, buf); err != nil {
+	        log.Println("could not write config: %v", err)
+	        return err
+	}
+	return nil
+}
+----	
+
+So you get a stack of duplicate lines in your log file, 
+
+ unable to write: io.EOF
+ could not write config: io.EOF
+
+but at the top of the program you get the original error without any context.
+
+ err := WriteConfig(f, &conf)
+ fmt.Println(err) // io.EOF
+
+I want to dig into this a little further because I dont' see the problems with logging _and_ returning as just a matter of personal preference.
+
+----
+func WriteConfig(w io.Writer, conf *Config) error {
+        buf, err := json.Marshal(conf)
+        if err != nil {
+                log.Printf("could not marshal config: %v", err)
+        }
+        if err := WriteAll(w, buf); err != nil {
+                log.Println("could not write config: %v", err)
+                return err
+        }
+        return nil
+}
+----
+
+The problem I see a lot is programmers forgetting to return from an error.
+As we talked about earlier, Go style is to use guard clauses, checking preconditions as the function progresses and returning early.
+
+In this example the author checked the error, logged it, but _forgot_ to return.
+This has caused a subtle bug.
+
+Because the json marshalling failed, the contents of buf are unknown, maybe it contains nothing, but worse it could contain a 1/2 written json fragment.
+The contract for error handling in Go says that you cannot make any assumptions about the contents of other return values in the presence of an error.
+
+Because the programmer forgot to return from the function, the corrupt buffer will be passed to WriteAll, which will probably succeed and so the config file will be written incorrectly.
+However the function will return just fine, and the only indiciation that a problem happened will be a teltail log line
+
+==== Add context to errors
+
+
+
+----
+func WriteConfig(w io.Writer, conf *Config) error {
+        buf, err := json.Marshal(conf)
+        if err != nil {
+                return fmt.Errorf("could not marshal config: %v", err)
+        }
+        if err := WriteAll(w, buf); err != nil {
+                return fmt.Errorf("could not write config: %v", err)
+        }
+        return nil
+}
+
+func WriteAll(w io.Writer, buf []byte) error {
+        _, err := w.Write(buf)
+        if err != nil {
+		return fmt.Errorf("write failed: %v", err)
+        }
+        return nil
+}
+----
+
+
+func Write(w io.Write, buf []byte) error {
+        _, err := w.Write(buf)
+        return errors.Wrap(err, "write failed")
+}
+Using the errors package gives you the ability to add context to error values, in a way that is inspectable by both a human and a machine.
 
 
 == Concurrency
