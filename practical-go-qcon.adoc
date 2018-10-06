@@ -1,8 +1,10 @@
 = Practical Go: Real world advice for writing maintainable Go
+:toc:
 
 Hello, again
 
 My goal over the next two sessions is to give you my advice for best practices writing Go code.
+
 
 == Guiding principals
 
@@ -29,7 +31,7 @@ They are:
 You'll note that I didn't say _performance_, or _concurrency_.
 Those are important attributes, but not as important as these three.
 
-== Simplicity
+=== Simplicity
 
 Why should we strive for simplicity?
 Why is important that Go code be simple?
@@ -44,7 +46,7 @@ Complexity is what kills software projects
 So, simplicity is the highest goal of Go.
 Whatever programs we right, we should be able to say that they are simple.
 
-== Readability
+=== Readability
 
 "Readability is essential for maintability."
 -- Mark Reinhold, JVM language summit 2018
@@ -70,7 +72,7 @@ And this is really it.
 If you're writing a program for yourself, maybe it only has to run once, or you're the only person who'll ever see it, then do what ever works for you.
 But if this is a piece of software that more than one person will contribute to, or that will be used by people over a long enough time that requirements, features, or the environment it runs in changes, then your goal must be that this program be _maintainable_.
 
-== Productivity
+=== Productivity
 
 The last underlying principle I want to highlight is productivity.
 When I say productivity, Go programmers should feel that they can get a lot done with Go.
@@ -89,6 +91,9 @@ Ok, let's start at the beginning.
 The first section we're going to discuss is _identifiers_.
 An identifier is a name; the name of a variable, the name of a function, the name of a method, the name of a type, the name of a package.
 
+Readability is the defining quality of good code.
+Good names are critical to readability.
+
 To get technical, when I'm talking about naming, I'm talking about naming _identifiers_ in Go programs.
 But that's a bit lengthy, so lets just call it naming from now on -- you understand what I mean.
 
@@ -105,13 +110,51 @@ To make this clear this
 
 Given the limited syntax of our language, the names we give to things in our programs have an oversized impact on the readability of our programs.
 
-Go is not a language that optimises for the shortest line, nor is a language which optimises for the least number of lines in a program.
+Go is not a language that optimises for clever one liners, nor is a language which optimises for the least number of lines in a program.
 We're not optimising for the size of the source code on disk, nor how long it takes to type.
+
+A good name is:
+- Consistent (easy to guess),
+- Short (easy to type),
+- Accurate (easy to understand).
 
 As Rob Pike said, "Go programmers want the _right_ length identifiers"
 
 By using longer identifies for some things we indicate to the reader that they are of higher importance. 
 
+"The greater the distance between a name's declaration and its uses, the longer the name should be."
+-- Andrew Gerrand footnote:[https://talks.golang.org/2014/names.slide#4]
+
+I'm going to make a slight modification on this and suggest this maxim
+
+"The length of an identifer is proportional to the distance between its definition and _last_ use."
+
+Let's look at an example to make this clear
+
+----
+type Person struct {
+	Name string
+	Age int
+}
+
+// AverageAge returns the average age of people.
+func AverageAge(people []Person) int {
+	if len(people) == 0 {
+		return 0
+	}
+
+	var count, sum int
+	for _, p := range people {
+		sum += p.Age
+		count += 1
+	}
+
+	return sum/count
+}	
+----
+In this example, the range 
+
+TIP: Use blank lines to break up the flow of a function in the same way you use paragraphs to break up the flow of a document. In `AverageAge` we have three operations occuring in sequence. The first is the precondition, checking that we don't divide by zero if people is empty, the second is the accumulation of the sum and count, and the final is the computation of the average.
 
 
 === Use a consistent declaraton style
@@ -132,11 +175,136 @@ With all these different ways of declaraing a variable, how do we find some comm
 ====
 When something is complicated, it should stand out. When I see 
 
-----
-var x uint64 = 1<<30
-----
+ var x uint64 = 1<<30
+
 I know there is is a reason that `x` 's type is special.
 ====
+
+== Comments
+
+Before we move on to larger things I want to spend a few minutes talking about comments.
+
+"Good code has lots of comments, bad code _requires_ lots of comments."
+-- Dave Thomas and Andrew Hunt, The pragmatic programmer
+
+Comments are very important to the readability of a Go program.
+Comments should do one of three things.
+
+* They should explain _what_ the thing does.
+* They should explain _how_ the thing does what it does.
+* They should explain _why_ the thing is why it is.
+
+
+=== Comments on variables and constants should describe their contents not their purpose
+[source,go]
+----
+const random = 6 // determined from an unbiased die
+----
+For variables without an initial value, the comment should describe the contents of the variable.
+[source,go]
+----
+// registry of SQL drivers
+var drivers = make(map[string]*sql.Driver)
+----
+
+.Hiding in plain sight
+[TIP]
+====
+This is a tip from Kate Gregory.
+//footnote:[https://www.youtube.com/watch?v=Ic2y6w8lMPA]
+Sometimes a better name for a variable is right there in the comments.
+[source,go]
+----
+var sqlDrivers = make(map[string]*sql.Driver)
+----
+Now we don't need a comment, the _use_ of the map is right there in it's name.
+
+=== Comments are associative
+
+Keeping documentation up to date is important, but its hard.
+And
+
+The important rule for godoc is comments associate with the declaration that directly follows them
+
+Let's look at an example
+
+=== Always document public symbols
+
+Because godoc _is_ the documentation for your package, you should always add a comment for every public function and method.
+
+Here are two rules from the Google Style guide
+
+- Any function that is not both obvious and short must be commented.
+- Any function in a library must be commented regardless of length or complexity
+
+There is one exception to this rule; you don't need to document methods that implement an interface.
+Specfically don't do this:
+
+ // Read implements the io.Reader interface
+ func (r *FileReader) Read(buf []byte) (int, error)
+
+This comment says nothing.
+It doesn't tell you what the method does, in fact it's worse, it tells you to go look somewhere else for the documentation.
+
+In this sitaution I suggest removing the comment entirely.
+
+Here is an example from the `io` package
+
+----
+// LimitReader returns a Reader that reads from r
+// but stops with EOF after n bytes.
+// The underlying implementation is a *LimitedReader.
+func LimitReader(r Reader, n int64) Reader { return &LimitedReader{r, n} }
+
+// A LimitedReader reads from R but limits the amount of
+// data returned to just N bytes. Each call to Read
+// updates N to reflect the new amount remaining.
+// Read returns EOF when N <= 0 or when the underlying R returns EOF.
+type LimitedReader struct {
+	R Reader // underlying reader
+	N int64  // max bytes remaining
+}
+
+func (l *LimitedReader) Read(p []byte) (n int, err error) {
+	if l.N <= 0 {
+		return 0, EOF
+	}
+	if int64(len(p)) > l.N {
+		p = p[0:l.N]
+	}
+	n, err = l.R.Read(p)
+	l.N -= int64(n)
+	return
+}
+----
+Not now the LimitedReaer declaration is directly preceded by the function that uses it, and the declaration of LimtedReaer's Read method follows the delcaration of LimitedReader itself.
+Even thgouh LimitedReader.Read has no documentation itself, its clear from that Read is an implementation of io.Reader.
+
+
+=== Write the comment for the function first
+
+A suggestion I have for you is before you write the function, write the comment first.
+If you find it hard to write the comment, then it's a sign that the code you're about to write is going to be hard to understand.
+
+=== Don't comment bad code, rewrite it
+
+Comments highlighting the grossness of a particular piece of code are not sufficient.
+If you encounter one of these comments, you should raise an issue as a reminder to refactor it later.
+It is ok to live with technical debt, as long as the amount of debt is known.
+
+The tradition in the standard library is to annotate a todo style comment with the username of the person who noticed it.
+
+   // TODO(dfc) this is O(N^2), find a faster way to do this
+
+The username is not a promise that that person has comitted to fixing the issue, but they may be the best person to ask when the time comes to address it.
+Other project annotate todos with a date and or an issue number, which is a benficial tradition.
+
+=== Rather than comment on a block of code, refactor it
+
+Functions should do one thing only.
+If you find yourself commenting a piece of code because it is antithetical to the rest of the function, consider extracting that into a function of its own.
+
+Smaller functions, in addition to be easier to comprehend, are easier to test in isolation.
 
 == Package Design
 
@@ -162,8 +330,6 @@ The second is the name of the directory holding those files.
 **Those two names should match**
 
 The first name, the `package` declaration will be visibile as a prefix on every 
-
-====
 
 ==== Avoid package names like `base`, `common`, or `util`
 
@@ -208,7 +374,58 @@ However when it comes to reviewing APIs in code review, I am less forgiving.
 This is because everything we've talked about so far can be fixed without breaking backward compatability; they are, for the most part, internal details.
 
 === Design APIs that are hard to misuse.
+
+If you take anything away from this presntation, it is this advice
+
+"Design APIs that are hard to misuse"
+-- Dave Cheney
+
+
+
 Design APIs for their default use case.
+
+
+==== Be wary of functions which take several parameters of the same type
+
+Let's compare two function signatures
+
+ func Max(a, b int) int
+ func CopyFile(to, from string) error
+
+What's the difference between these two functions?
+Obviously one returns the maximum of two numbers, the other copies a file, but that's not the important thing.
+
+ Max(8, 10) // 10
+ Max(10, 8) // 10
+
+Max is _commutative_; the order of the parameters does not matter.
+
+What about this
+
+ CopyFile("/tmp/backup", "presentation.md")
+ CopyFile("presentation.md", "/tmp/backup")
+
+Which one of these made a backup of your presentation and which one overwrite your presentation with last week's version?
+
+One solution is to 
+
+----
+package main
+
+func copyFile(to, from string) error { return nil }
+
+type Source string
+
+func (src Source) CopyTo(dest string) error {
+	return copyFile(dest, string(src))
+}
+
+func main() {
+	var from Source = "presentation.md"
+	from.CopyTo("/tmp/backup")
+}
+----
+
 
 
 === Prefer var args to []T parameters
@@ -218,6 +435,70 @@ It's very common to write a function or method that takes a slice of values.
 ----
 func ShutdownVMs(ids []string) error
 ----
+
+Let's come back to our average age example
+
+----
+type Person struct {
+        Name string
+        Age int
+}
+
+// AverageAge returns the average age of people.
+func AverageAge(people []Person) int {
+        if len(people) == 0 {
+                return 0
+        }
+
+        var count, sum int
+        for _, p := range people {
+                sum += p.Age
+                count += 1
+        }
+
+        return sum/count
+}
+----
+
+The problem is the caller can do something like this
+
+ avg := AverageAge(nil)
+
+So we have to avoid the divide by zero condition here with a check.
+Arethmetically the average age of zero people isn't zero, its unknown. So what'd we'd really like is to ensure that the caller always averages at least one person.
+
+Consider this
+
+----
+type Person struct {
+        Name string
+        Age int
+}
+
+// AverageAge returns the average age of people.
+func AverageAge(first Person, rest ...Person) int {
+        count, sum := 1, first.Age
+        for _, p := range rest {
+                sum += p.Age
+                count += 1
+        }
+
+        return sum/count
+}
+----
+Now the caller cannot use AverageAge unsafely, it always returns a numerically sensible answer.
+
+ me := Person{ Name: "David", Age: 42 }
+ avg := AverageAge(me) // 42
+
+The syntax is a little more complicated for the caller if there is more than one element
+
+ qcon := make([]People, 1200) 
+ avg := Average(qcon[0], qcon[1:])
+
+
+
+
 
 
 === Let callers define the interface they require
