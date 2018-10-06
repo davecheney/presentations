@@ -1,0 +1,172 @@
+= What's in a name?
+dotGo 2019
+
+== Leaving a trail
+
+In the last six years I've written Go at four different companies.
+I've been priveleged that I'be been able to write Go in a bunch of different verticals and environments, but the downside of this priveliege, is i've left behind a bunch of code; written at a bunch of experience levels, 
+
+Does the code that I have left for others reflect the values of the language, simplicity, readability, maintainabikity.
+
+In Go we care about readability. A lot.
+
+"Readability is essential for maintability."
+-- Mark Reinhold, JVM language summit 2018
+
+"There are only two hard things in Computer Science: cache invalidation and naming things."
+-— Phil Karlton
+
+"The most important skill for a programmer is the ability to effectively communicate ideas."
+-- https://gaston.life/books/effective-programming/
+
+Wait, what?
+Aren't we paid to program?
+No, of course not, programmers are not paid to program--we're paid to solve problems, with software.
+
+Hmm, ok, maybe I buy that, but what's all this guff about _effectively communicating ideas_, you just said I'm paid to solve problems with software.
+
+"This leads to code that communicates intention. The only work that’s reusable is the one that you understand what it communicates."
+-- https://gaston.life/books/effective-programming/
+
+
+
+This is a talk about naming things in Go.
+
+Names are important.
+Given the limited syntax of our language, the names we give to things in our programs have an oversized impact on the readability of our programs.
+
+First, lets set the ground rules.
+What are the things in Go we can name.
+
+To get technical, when I'm talking about naming, I'm talking about naming _identifiers_ in Go programs.
+But that's a bit lengthy, so lets just call it naming from now on -- you understand what I mean.
+
+Anything in Go that is an _identifier_ has a name.
+To make this clear this
+
+* the name of a type, struct, or interface
+* the name of a function or a method
+* the name of a package
+* the name of a constant
+* the name of a variable, formal parameter, or return value
+
+== Identifier length
+
+Go is not a language that optimises for the shortest line, nor is a language which optimises for the least number of lines in a program.
+We're not optimising for the size of the source code on disk, nor how long it takes to type.
+
+As Rob Pike said, "Go programmers want the _right_ length identifiers"
+
+Prefer longer names for things which are important. 
+
+If everything’s important, then nobody is 
+
+If its clearer to break a 
+
+```
+// uint32OrNil returns a *types.UInt32Value containing the v or nil if v is zero.
+func uint32OrNil(v int) *types.UInt32Value {
+        switch v {
+        case 0:
+                return nil
+        default:
+                return &types.UInt32Value{Value: uint32(v)}
+        }
+}
+```
+
+good; v is short, the function is only 7 lines line
+bad; the functino talks about returning a uint32, but it takes an int, and the identifeir is v, i would be better.
+
+== Code is decoded
+
+Peter Siebal.
+
+== Verb/noun/etc
+
+== Kevlins observation that factory suffix conventions convey no information. 
+
+== Use the type system, luke
+
+== Be consistent
+
+If you have a set of methods on a type, make sure they all use the same receiver.
+If you find that the receiver conflicts with 
+
+== It's contextual
+
+Sometimes applying rules takes finess.
+
+an variables name shouldn't be larger than its type's name.
+
+Adherence to these memes is what I'd conclude is the soul of what we call 'idiomatic' go.
+
+== Don't be stubborn
+
+If you're working in a team, or on a piece of code that 
+
+Say they use names which you thing are overly verbose, or perhaps you think their perchant for tiny intendifiers is not your preference -- keep it to yourself.
+
+The goal is readability, the goal is always readability.
+Changing styles in the middle of a file is jarring.
+Unifirmity, even if its not your preferred approach, is more valuable for maintenance than it is 
+
+== Names help your code find meaning
+
+
+
+== Package naming 
+
+== Machinists have names for everything, so do mathematicians, why don’t programmers, why do we try to fit a thing to a name, not a name to the thing?
+
+"Poor naming is symptomatic of poor design."
+-- Dave Cheney
+
+== On the subject of nouns
+
+One of my guilty hobbies is watching metalworking videos on youtube.
+I have zero desire to be a machinist, I enjoy thier attention to detail, and find watching them work soothing.
+
+One thing about machining videos is machinists have a lot of tools, and each tool has a name.
+Take making a hole in a piece of metal.
+You can use a punch or a drill. You can bore a hole, or ream it, and if you want an irregular shape you can broach it.
+The same applies in other parts of machining, what we lay people would call a washer, machinists have many names; bushing. 
+
+To flatting something you can mill it, file it, grind it, lap it, scrape it, flake it, or hone it.
+
+And so on
+
+And one fascinating thing about this vocabuilary is one machinist can look at a piece produced by other and not only figure out how to reproduce it, but also use the same terminology.
+
+And I 
+
+Now my partner, who has a degree in such things, tells me that this is known as an _interpretive repetiour_. 
+
+Now, in programming we have our own repitour, we have words 
+  
+
+
+
+== Conclusion
+
+don't choose a name for your type which is the perfect name for variables of that type.
+
+this will show up in formal parameters
+
+but, package names are you friend
+
+var db sql.DB is good
+
+list := container.List
+
+is bad
+
+* short variable names work well when the distance between their declaration and _last_ use is short.
+* long variable names need to justify themselves, the longer they are, the more value they need to bring. Lengthy beurocratic names carry a low amount of signal.
+* the name of your varible shouldn't be longer than its type.
+* never include the name of your type in the name of your variable.
+* constants should describe the value they contain, _not_ where that value is used.
+* Single letter variables for loops and branches, single words for parameters and return values, multiple words for functions and package level things,
+* Single words for methods, single words for interfaces, and always remember that the name of a package is part of the name the caller uses to to refer to it, so make use of that. 
+
+https://www.reddit.com/r/golang/comments/8wxwgv/why_does_go_encourage_short_variable_names/

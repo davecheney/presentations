@@ -1,0 +1,333 @@
+= Practical Go: Real world advice for writing maintainable Go
+
+Hello, again
+
+My goal over the next two sessions is to give you my advice for best practices writing Go code.
+
+== Guiding principals
+
+If we're going to talk about best practices in any programming language we need some way to define what we mean by _best_.
+
+If you came to my keynote yesterday you would have seen this quote from Russ Cox, the Go team lead
+
+"Software engineering is what happens to programming when you add time and other programmers."
+-- Russ Cox
+
+Russ is making the distinction between software _programming_ and software _engineering_.
+The former is a program you write for yourself.
+The latter is a product that many people will work on over time.
+Engineers will come and go, requirements will change, features will be added and bugs fixed.
+
+I'm probably one of the longest users of Go in this room, but to argue that my seniority somehow gives my views more weight is false.
+Instead the advice I'm going to present today is informed by what I believe to be the guiding principals underlying Go itself.
+They are:
+
+. Simplicity
+. Readability
+. Productivity
+
+You'll note that I didn't say _performance_, or _concurrency_.
+Those are important attributes, but not as important as these three.
+
+== Simplicity
+
+Why should we strive for simplicity?
+Why is important that Go code be simple?
+
+We've all been in a situation where you say "I can't understand this code", yes?
+We've all worked on programs where you're scared to make a change because you're worried it'll break another part of the program; a part you don't understand and don't know how to fix.
+
+This is complexity.
+Complexity is what kills software projects
+ what turns reliable software in unreliable sof
+
+So, simplicity is the highest goal of Go.
+Whatever programs we right, we should be able to say that they are simple.
+
+== Readability
+
+"Readability is essential for maintability."
+-- Mark Reinhold, JVM language summit 2018
+
+Why should we strive for readabilty?
+Why is it important that Go code be readable?
+
+Readability is important because all software, not just Go code, is written by humans to be read by other humans.
+The fact that it is also consumed by machines is secondary.
+
+Code is read many more times than it is written.
+A single piece of code will, over its lifetime, be read hundreds, maybe thousands of times.
+
+"The most important skill for a programmer is the ability to effectively communicate ideas."
+-- https://gaston.life/books/effective-programming/
+
+Readability is key to being able to understand what the code is doing.
+If you can't understand what the code is doing, how can you hope to maintain it.
+
+Because, if software cannot be maintained, it will be rewritten; and that's the last time the company will invest in Go.
+
+And this is really it.
+If you're writing a program for yourself, maybe it only has to run once, or you're the only person who'll ever see it, then do what ever works for you.
+But if this is a piece of software that more than one person will contribute to, or that will be used by people over a long enough time that requirements, features, or the environment it runs in changes, then your goal must be that this program be _maintainable_.
+
+== Productivity
+
+The last underlying principle I want to highlight is productivity.
+When I say productivity, Go programmers should feel that they can get a lot done with Go.
+
+They aren't waiting for the compiler
+They don't spend days debugging inscrutible compile errors
+They don't waste days with complicated build scripts or deploying code to production.
+And most importantly they don't spend your time trying to understand what your coworker wrote.
+
+Productivity is what the Go team talk about when they say the language must _scale_.
+
+== Identifiers
+
+Ok, let's start at the beginning.
+
+The first section we're going to discuss is _identifiers_.
+An identifier is a name; the name of a variable, the name of a function, the name of a method, the name of a type, the name of a package.
+
+To get technical, when I'm talking about naming, I'm talking about naming _identifiers_ in Go programs.
+But that's a bit lengthy, so lets just call it naming from now on -- you understand what I mean.
+
+Anything in Go that is an _identifier_ has a name.
+To make this clear this
+
+* the name of a type, struct, or interface
+* the name of a function or a method
+* the name of a package
+* the name of a constant
+* the name of a variable, formal parameter, or return value
+
+=== Choose identifiers for clarity, not brevity
+
+Given the limited syntax of our language, the names we give to things in our programs have an oversized impact on the readability of our programs.
+
+Go is not a language that optimises for the shortest line, nor is a language which optimises for the least number of lines in a program.
+We're not optimising for the size of the source code on disk, nor how long it takes to type.
+
+As Rob Pike said, "Go programmers want the _right_ length identifiers"
+
+By using longer identifies for some things we indicate to the reader that they are of higher importance. 
+
+
+
+=== Use a consistent declaraton style
+
+Go has at least six different ways to declare a variable
+
+* `var x int = 1`
+* `var x = 1`
+* `var x int; x = 1`
+* `var x = int(1)`
+* `x := 1`
+
+I'm sure there are more that I haven't thought of.
+
+With all these different ways of declaraing a variable, how do we find some commonality so rather than everyone having their own style
+
+[TIP]
+====
+When something is complicated, it should stand out. When I see 
+
+----
+var x uint64 = 1<<30
+----
+I know there is is a reason that `x` 's type is special.
+====
+
+== Package Design
+
+In this next section we'll talk about designing a package including the package's name, naming types, writing functinos and methods.
+
+=== A good package starts with its name
+
+Just like we talked about names for variables in the previous section, the name of a package is very important.
+
+Think of your package's name as a one word _elevator pitch_ for what the 
+
+==== Good package names
+
+. Should be unique
+
+[NOTE]
+.Prefer lower case names for packages.
+====
+There are two places where you can give a package a name.
+The first is the `package` declaration at the top of each `.go` file in a directory.
+The second is the name of the directory holding those files.
+
+**Those two names should match**
+
+The first name, the `package` declaration will be visibile as a prefix on every 
+
+====
+
+==== Avoid package names like `base`, `common`, or `util`
+
+Use the plural; `strings` for string handling utilities.
+
+
+An identifier’s name includes its package name
+Prefer lower case package names and import paths
+. Rather than nesting deeply, return early
+. Make the zero value useful
+. Eschew package level state.
+No package level variables.
+Avoid global side effects.
+
+== Project Structure
+
+Let's talk about combining
+
+=== Consider fewer, larger packages
+Arrange code into files by import statements.
+Prefer nouns for file names.
+Eschew elaborate package hierarchies, resist the desire to apply taxonomy
+
+=== Keep package main small as small as possible
+
+Your main function, and main package should do as little as possible.
+This is because main.main acts as a singleton; there can only be one main function in a program.
+Because main.main is a singleton there are a lot of assumptions built into the things that main.main will call that they will only be called during main.main or main.init, and only called _once_.
+
+This makes it hard to write tests for code written in main.main.
+
+TIP: main should parse flags, open connections to databases, loggers, and such, then hand off execution to a high level object.
+
+== API Design
+
+The final piece of design advice I'm going to give today is potentailly the most important.
+
+All of the suggestions I've made so far are just that, suggestions.
+These are the way I try to write Go, but I'm not going to push them hard in code review.
+
+However when it comes to reviewing APIs in code review, I am less forgiving.
+This is because everything we've talked about so far can be fixed without breaking backward compatability; they are, for the most part, internal details.
+
+=== Design APIs that are hard to misuse.
+Design APIs for their default use case.
+
+
+=== Prefer var args to []T parameters
+
+It's very common to write a function or method that takes a slice of values.
+
+----
+func ShutdownVMs(ids []string) error
+----
+
+
+=== Let callers define the interface they require
+
+As a concrete example, say I've been given a task to write a function that persists a Document structure to disk.
+
+----
+// Save writes the contents of doc to the file f.
+func Save(f *os.File, doc *Document) error
+----
+I could specify this function, Save, which takes an `*os.File` as the destination to write the `Document`.
+But this has a few problems
+
+The signature of `Save` precludes the option to write the data to a network location.
+Assuming that network storage is likely to become requirement later, the signature of this function would have to change, impacting all its callers.
+
+`Save` is also unpleasant to test, because it operates directly with files on disk. So, to verify its operation, the test would have to read the contents of the file after being written.
+
+And I would have to ensure that `f` was written to a temporary location and always removed afterwards.
+
+`*os.File` also defines a lot of methods which are not relevant to `Save`, like reading directories and checking to see if a path is a symlink.
+It would be useful if the signature of the `Save` function could describe only the parts of `*os.File` that were relevant.
+
+What can we do ?
+
+----
+// Save writes the contents of doc to the supplied
+// ReadWriterCloser.
+func Save(rwc io.ReadWriteCloser, doc *Document) error
+----
+
+Using `io.ReadWriteCloser` we can apply the interface segregation principle to redefine `Save` to take an interface that describes more general file shaped things.
+
+With this change, any type that implements the `io.ReadWriteCloser` interface can be substituted for the previous `*os.File`.
+
+This makes `Save` both broader in its application, and clarifies to the caller of `Save` which methods of the `*os.File` type are relevant to its operation.
+
+And as the author of `Save` I no longer have the option to call those unrelated methods on `*os.File` as it is hidden behind the `io.ReadWriteCloser` interface.
+
+But we can take the interface segregation principle a bit further.
+
+Firstly, it is unlikely that if `Save` follows the single responsibility principle, it will read the file it just wrote to verify its contents--that should be responsibility of another piece of code.
+
+----
+// Save writes the contents of doc to the supplied
+// WriteCloser.
+func Save(wc io.WriteCloser, doc *Document) error
+----
+
+So we can narrow the specification for the interface we pass to Save to just writing and closing.
+
+Secondly, by providing `Save` with a mechanism to close its stream, which we inherited in this desire to make it still look like a file, this raises the question of under what circumstances will `wc` be closed.
+
+Possibly Save will call Close unconditionally, or perhaps Close will be called in the case of success.
+
+This presents a problem for the caller of `Save` as it may want to write additional data to the stream after the document is written.
+
+----
+// Save writes the contents of doc to the supplied
+// Writer.
+func Save(w io.Writer, doc *Document) error
+----
+
+A better solution would be to redefine `Save` to take only an `io.Writer`, stripping it completely of the responsibility to do anything but write data to a stream.
+
+By applying the interface segregation principle to our `Save` function, the results has simultaneously been a function which is the most specific in terms of its requirements--it only needs a thing that is writable--and the most general in its function, we can now use Save to save our data to anything which implements io.Writer.
+
+=== Prefer streaming interfaces
+
+Consider these two methods that read data from a file.
+
+----
+func (f *File) Read(buf []byte) (int, error)
+func (f *File) Read() ([]byte, error)
+----
+The first is well known to all Go programmers as `io.Reader`.
+
+We all know how to use the `io.Reader` interface: you pass a buffer to `Read` and it returns the number of characters read into that buffer and possibly an error.
+
+----
+buf := make([]byte, 8192)
+n, err := f.Read(buf)
+buf = buf[:n] // reslice buffer
+if err != nil {
+	// now handle error
+	...
+}
+...
+----
+
+Wouldn't this be easier if Read returned a buffer of what it read, like this
+
+
+
+. Use type assertions for optional behaviour
+
+== Error handling
+
+=== Elminate handling by eliminating errors
+
+If you were in my presentation yesterday I talked about the draft proposals for improving error handl
+
+=== Only handle an error once
+
+
+
+== Concurrency
+
+. Never start a goroutine without when it will stop.
+When sending or receiving on a channel, consider what happens if the other party never receives the message
+. Keep yourself busy while waiting for a goroutine.
+or, do the work yourself.
+. Leave concurrency to the caller

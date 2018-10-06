@@ -1,0 +1,597 @@
+= The past, present, and future of Go 2
+QCon 2018 China
+
+Hello!
+
+My name is David, I'm a software engineer from Sydney, Australia.
+
+I'm also a Gopher! 
+
+I've been involved in the Go programming language since 2010.
+My first commit was Feburary 2011, and I've been a full comitter to the project since ... 2012.
+
+This is my commit history for Go; the next person is Ken Thompson.
+One day I hope to have more commits to Go than Ken Thompson.
+
+Today I'm going to give you an overview of where Go came from, how the language has evolved since it was launched in 2009, and we'll conclude with what is coming up for Go 2.
+
+== The past
+
+We cannot talk about the future of Go without first talking about the steps that lead to this point.
+
+=== Why Go?
+
+Why is there a language called Go?
+
+We have C\+\+, we have Java and C sharp, we have Python and Ruby and PHP, we even had Node.
+Why did Rob Pike, Ken Thompson and Robert Griesemer decide there was a need for a new langauge.
+
+There are really two founding documents that describe the rational for Go's creation.
+
+The first is the original presentation recorded on the 11th of November 2009, where Rob Pike introduced the language, https://www.youtube.com/watch?v=rKnDgT73v8s
+
+The second is a paper called Go and Google: Language Design in the Service of Software Engineering, https://talks.golang.org/2012/splash.article, which was presented at the Splash conference in 2012, the same year that Go hit its 1.0 release.
+
+Together these presentions provide a rationale for a new language, specifically targeted at Google's software development needs, but, as it turns out, as we all write software, not just Google, Go turned out to be a pretty good fit for anyone writing large scale server software.
+
+=== Productivity at scale
+
+"Software engineering is what happens to programming when you add time and other programmers."
+-- Russ Cox
+
+There is a difference between software _programming_ and software _engineering_.
+
+The difference between software programming and software engineering is not the size of the program, but how long the program will live for.
+
+Sitting down and writing a script or a throw away program for a single computation is software programming.
+
+Software engineering, on the other hand, is a more deliberate, considered, act.
+It requires a broader view of the software development lifecycle than just focusing on lines of code, syntax, and algorythms.
+
+When Go launched it was with the explicit intent to improve the life of the software engineer, not specifically the programmer. 
+
+Why
+
+Above all, the core goal of Go is developer productivity.
+
+The point at which developer time became more expensive than hardware time was crossed back in the late 1970s.
+Developer productivity is a sprawling topic but it boils down to this; how much time do you spend doing useful work vs waiting for the compiler or hopelessly lost in a foreign codebase.
+
+The joke goes that Go was developed while waiting for a C++ program to compile.
+Fast compilation is a key feature of Go and a key recruiting tool to attract new developers.
+While compilation speed remains a constant battleground, it is fair to say that compilations which take minutes in other languages, take seconds in Go.
+
+More fundamental to the question of developer productivity, Go programmers realise that code is written to be read and so place the act of reading code above the act of writing it.
+Go goes so far as to enforce, via tooling and custom, that all code by formatted in a specific style.
+This removes the friction of learning a project specific language sub-dialect and helps spot mistakes because they just look incorrect.
+
+Due to a focus on analysis and mechanical assistance, a growing set of tools that exist to spot common coding errors have been adopted by Go developers in a way that never struck a chord with C programmers—Go developers want tools to help them keep their code clean.
+
+==== Concurrency
+
+In November 2007 Rob Pike noted that there was a choice between statically typed programming languages which were beuricratic to develop in and slow to compile, but the final binary ran quickly, and dynamically typed programming languages which were faster to develop on, but because they were so dynamic were inefficient to run execute at runtime.
+
+The philosophy of go
+
+- quote rob; the performance and safety of a static language with the productivity of a dynamic language
+- false dichotomoy
+
+== The present
+
+That was 2009, now it's 2018, let's take a look at how Go has evolved over the last 9 years.
+
+=== The performance
+
+Show GC performance numbers
+
+=== The platforms
+
+When Go was open sourced on the 10th of November 2009 it supported linux, mac os, on 386, amd64, and if you were running linux
+
+By the time Go 1.0 was launched in March of 2012 support for Windows, FreeBSD, OpenBSD
+
+In Go 1.3 we added support for FreeBSD, DragonfyBSD, OpenBSD, and NetBSD, Plan 9 on 386 and Native Client (NaCl), and Solaris on amd64
+Go 1.4 added support for cross compling to Android, NaCl on arm, and plan 9 on amd64
+Go 1.5 added support for arm64 on linux and os x.
+Go 1.6 added support for 64bit MIPS on linux, and Android on 386
+Go 1.7 added support for ibm system/z and 64 bit powerpc
+Go 1.8 added support for 32 bit MIPS 
+Go 1.11 added support for web assembly and plans are in the works for a risc-v port
+
+=== The companies
+
+Atlassian, Heptio, Digital Ocean, 
+
+=== The projects
+
+* Vitess
+* Docker
+* Kubernetes ( The k8s client library is 1.2 million lines of code -- how much must the full version be?)
+* Vault, Consol, Terraform
+* CockroachDB
+
+* Beego
+
+=== The language 
+
+So, how has Go evolved in the last 9 years.
+
+Well, it hasn't.
+
+ok, that isn't exactly true, we've had a few small additions to the language
+
+* three arg slices
+* method expressions
+* type aliases
+
+and a few additions to the standard library
+
+* http/2
+* sync.Map, sync.Value
+
+but the rest of the evolution of the language has happened _outside_ the langauge.
+In third party libraries and projects
+
+This is mostly by design.
+Many developers _want_ their pet feature included in the standard library; UUID's are a great example, but the push back from the Go developers has always been that we hold the commitment to backwards compatabilty very highly.
+Adding a feature or package to the standard library means that all Go developers can depend on it without needing a third party package, but it also means that the package is now bound by what we call the _Go 1 contract_.
+
+=== The books
+
+=== The community
+
+Link to go-meetups page , https://go-meetups.appspot.com
+
+==== Conferences; 
+
+Gophercon's all around the world, from Brazil to Tokyo. Gopher China, the Go conference here in Shanghai has been held since 2015. 
+
+Meetup groups, all around the world
+
+-- link: godoc, n thousand packages
+-- link: reddit, 54k , slack, 30,000, golang-nuts, 40,000 people
+
+=== New tools
+
+We started with gofmt, godoc,
+
+The race detector
+
+The execution tracer
+
+The fuzzer
+
+-- All of which were added by the tallented Dmitry Vyukov
+
+=== New community tools
+
+go lint, go vet, a hosts of new tools go metalinker, unused, domonicks tools.
+
+misspell
+
+
+=== The gopher
+
+The gopher mascot is Go's unofficial logo.
+It's cute, playful, and irreverant.
+
+The gopher is a symbol that has let fans of Go interact, remix, and reimagine their relatinoship with the language by drawing
+
+=== Growth of the language
+
+And finally there is the growth of the usage of the langauge.
+
+In 2016 I made a broad predcition that there would be 500,000 programmers using Go in their day to day jobs by 2020. 
+
+Less than a year later Russ Cox used a similar methodology to me and estimated that there were already 500,000 Go programmers in July 2017.
+
+https://research.swtch.com/gophercount
+
+A year after that he revised his prediction that there were at least 1 million programmers using Go in July 2018.
+
+== The future
+
+So, with all this success as a background, in July 2017 Russ Cox took the stage at Gophercon to announce that it was time to start talking about Go 2.
+
+https://blog.golang.org/toward-go2
+
+Specifically the goal of Go 2 would _not_ be to add a swaithe of new features, new concepts, and radical new ideas. 
+
+Rather, the goal of Go 2 was to address the long standing paint points that Go programmers faced over the last decade.
+
+Or as russ said
+
+"Our goal for Go 2 is to fix the most significant ways Go fails to scale."
+-- Russ Cox
+
+Because scaling is what separates software programming from software engineering.
+
+https://research.swtch.com/vgo-eng
+
+In his presntation at Gophercon 2017 Russ laid out the methodology for how the large issues which caused Go to fail at scale will be identified.
+
+Specifically Russ called on the users of Go to provide expereince reports, gists, blog posts, issues, that demonstrated clearly the issues that developers were having using Go for increasingly larger and larger projects.
+
+=== Towards Go 2
+
+Using experience reports and feedback from the 2016 and 2017 Go community surveys as input at Gophercon 2018, Russ and the Go team detailed three concrete improvements which address the top pain points that users of the langauge have been feeling since 2007.
+
+* dependency management (go modules)
+* error handling (check / handle / error values)
+* generics
+
+I'm going to explain each of these to you, how they work, what they mean for you as a Go programmer, and how you can try them and provide feedback to the Go team.
+
+I want to make it clear that these aren't my proposals.
+I've been involved in Go for a long time, but I don't work for Google so while I can inform you of what they are planning, I'm not in a position to change anything.
+
+=== go modules
+
+The first improvement is the addition of a new concept to the Go tool, a module.
+
+A module is a collection of packages.
+
+Just as we have .go source files grouped into a package, so too can a collection of packages with shared prefix be considered a module.
+
+Now, this probably looks pretty close to a concept that you aready know, a git repository.
+But there is an important differnce, go modules have an explict understanding of versions.
+
+==== Semver
+
+What is a version?
+
+Go has adopted the popular Semver standard
+
+https://semver.org
+
+==== Package management history
+
+Prior to Go modules, go get would check out whatever revision happened to be master in your repository a the time, it would then walk over all the import statements in the code you just checked out and do the same, fetching the head of any other package that you didn't already have. 
+If you already had some revision of a package in your $GOPATH then go get would skip it, so you might end up building against a really old version.
+If you used the `go get -u` flag to force go get to always download a fresh copy, you might find that you now had a much newer version of a package than the author.
+
+None of these problems are new to Go programmers; they've been talked about, complained about, since the very earliest days of Go.
+
+We've had many people propose solutions, tools like
+
+- godep
+- gopkg.in
+- govendor
+- gb
+
+worked to promote the idea of a vendor/ directory, a self contained gopath that could be checked in with the code so that your program had a copy of each of the dependencies it needed.
+
+The vendor directory was incorporated into the Go tool in Go 1.5.
+
+However the development of these tools was sporadic, and because they had their own directory layouts and manifest fuiles there was no interoperability.
+They all gave some solutions for working around the limitations of go get, but each solutino was unique and didn't interoperate with othes.
+
+In 2016 Peter Bourgon lead a discussion at Gophercon to address this, he formed a working group to focus on solving the problem holisically, not piecemeal, and called on the go team to join him in this effort.
+From that working group grew a tool we know as dep.
+
+Dep drew much of its inspiration from the authors experience with PHP Composer, and their previous tools glide.
+Dep encouraged the use of semantic import versioning, using tags on your git repos, to provide tools like dep with a way of knowning which versions of a package were available and opertate pretty much how you expected.
+
+In early 2018 the Go team proposed their own tool, at the time given the working title vgo, now known as go modules. 
+
+Go modules makes three important addtions over dep
+
+The first is because it is integrated directly into the Go tool, the notion of modules is baked in as a first class citizen.
+This has laid a path for Go developers to build their code anywhere they want; this makes it easier to add Go code to a repository containing other langauges, and it means you do not need to use GOPATH to hold all your Go source code.
+
+The other two are more subtle, so i'll take some time to explain them
+
+=== SIV and MVS
+
+The two changes over how dep and other 'solver' type tools work have the names
+
+- Semantic Import Versioning
+- Minimum version selection
+
+==== Semantic Import Versioning
+
+SIV comes from the idea that when I change a piece of code in an incompatible way, I should give it a new name so existing callers cannot mistakenly think they are talking to the old version 
+
+In Semver we reserve the minor digit for non breaking changes and the major digit for breaking changes.
+
+For example, version 1.3 may have some new features, but code written against version 1.2 should continue to work fine.
+Howver, version 2.0 may not be backwards compatible with code written for version 1.3.
+The increase in the major version number is an indicator to the consumer that this package may have been significantly rewritten, introducing breaking changes, hopefully to make things better.
+
+This is something we all understand. 
+Pretty much every dependency management tool understands that the sequence goes 1.2, 1.3, 2.0, and if you don't want to use version 2.0 then you need to 
+
+
+=== Summary
+
+MVS and SIV work together so that the set of dependencies a project needs to build is stable _even as new versions are added by their authors_.
+
+M and S work together so that you only need to document which versions of a package you have tested against. As your project is 
+
+For some time it looked likeA
+
+=== How do you us it?
+
+make a god.mod dile
+
+=== Lets do a live demo
+
+=== GOPROXY protocol
+
+=== Go modules is available today
+
+Go 1.11, which shipped in August, includes full support for modules.
+It's opt-in at the moment, because we realise there is a large change, not just for package authors but for the ecosystem of tool authors
+
+So try it, experiment with converting your projects to use go.mod rather than your previous dependency management solution, and please give the Go team feedback via the 
+
+=== Error handling
+
+Unlike Java, Ruby, Python, or C#, Go does not use exceptions for control flow.
+Instead Go's error handling takes advantage of the languages native support for multiple return values.
+
+----
+package os 
+
+func Open(path string) (*File, error)
+----
+
+In this example we have a function called `Open` which takes a path to a file, and returns two values, a pointer to a File value, which represents the file handle we just opened, and an `error` value.
+
+By convention, if a function returns an error value, then the caller should check if that error value to see if the operation succeeded or failed.
+
+This is analogus to C's `errno()` macro.
+
+This explicit error handling methodology is generally well received by Go developers.
+Go developers believe that by being forced to think about failure case _before_ the success case, leads to more robust programs.
+However, this form of error checking means it can feel repetitive to write this error checking code by hand.
+
+----
+f, err := os.Open("/etc/passwd")
+if err != nil {
+	return err
+}
+...
+----
+
+The Go team announced two proposals related to error handling.
+We'll talk about them next.
+
+=== check / handle
+
+
+=== error values
+
+Related to improving the syntax 
+
+=== generics
+
+The final planned addition to Go 2 is generics.
+
+To be clear what I mean when I say generics, I will use its proper name
+
+Parametric Polymorphism.
+
+In C++ you call them templates, but in java you call the generics, which are all ways of writing a piece of code once and letting the compiler fill in the 
+
+=== Max
+
+Let's work through an example.
+
+A commonly requested feature for the Go standrad library are simple functions like maximum and minimum.
+We _do_ provide these for floating point numbers in the `math` package--because dealing with NaN is subtle--however we leave it to you to write your own version for integer types.
+
+----
+func Max(a, b, int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+----
+There we go, six lines, something that all programmers should be able to do.
+But, even if you write this out, your `Max` function only works for one integer type, `int`.
+What about if you want to deal with unsigned integers, or bytes.
+You'd have to write this out several times, and worse, because Go does not support function overloading, you'll have to give each version a new name, just so you can identify which function to use for which type.
+
+In fact, I got so sick of peoeple complaining about this, I wrote a packaged and automatically generated all the variations
+
+https://godoc.org/github.com/pkg/math
+
+Look at it, its hideious.
+
+So what we really want is to write `Max` once and let it work for any integer type we pass into it.
+What we want to wite is something like this
+
+----
+func Max(a, b T) T {
+	if a > b {
+		return a
+	}
+	return b
+}
+----
+We denote this magic type `T` is a placeholder, a parameter, for a type that we're going to supply later.
+Now we can write things like
+
+----
+var A, B uint8 = 50, 90
+result := Max(A, B)
+fmt.Println(result) // 90
+----
+And it all works, the compiler figures out in this case I need a version of `Max` for ``uint8``s and we're off and racing.
+
+=== The problem with T
+
+However, this simplist substitution has some problems because the compiler is inferring the type of the parameters to Max from the arguments we provide it.
+Obviously this works properly for all the integer types.
+But what about if we call Max like this?
+
+----
+var A, B = "Hello", "QCon"
+result := Max(A, B)
+fmt.Println(result) // "Qcon"
+----
+
+It turns out that this works out ok, because in a string context greater and less than are defined on the collation order of a string; hence Q sorts _after_ H!
+I bet you weren't expecting that.
+
+But things go downhill quickly after this. 
+
+----
+func Max(a, b []byte) []byte {
+        if a > b {
+                return a
+        }
+        return b
+}
+
+var A, B = []byte("Hello"), []byte("QCon")
+result := Max(A, B)
+----
+
+Will fail to compile because greater and less than are not defined for slices.
+Worse, if we assume a simple text substitution then the compilation will fail here (point to line 2 of Max), not (point to the caller of Max).
+This is one of the reasons why C++ templates have such a reputation for generating huge compilation errors.
+
+This can also fail in many subtle ways, consider
+
+----
+var A, B float64 = 3.1417, math.NaN()
+result := Max(A, B)
+fmt.Println(result)
+----
+
+What will this return?
+It turns out its complicated because NaN is not on the number line, so it doesn't really make sense that we even ask this question.
+
+So what we'd really like is some way of applying a constraint to what can be subsituted for T.
+In other languages like Java you would do this with what they call _type bounds_
+
+----
+public static <T extends Number> T max(T a, T b) { ... }
+----
+
+That is T has to be a subclass of Number, which Java can do because everything, even intgers and doubles are subclasses of java.lang.Object.
+But Go doesn't have type inheretence, and we don't want to add it, we see not having inheretence as a feature, not a bug.
+
+=== Contracts
+
+The suggestion the Go team have come up with is called contracts.
+The idea of a contract is based on something C++ has been trying to add to solve their own problems with templates called _concepts_.
+
+A contract, as its name implies, is a way of writing down the rules for something that will implement a T according to the operations you can perform on it.
+
+Here's an example of a contract which we can use in our Max function
+
+----
+contract comparable(t T) {
+	t > t
+	t << 1
+}
+----
+
+You'll notice that a contract looks very similar to a Go function. This is because its just Go code.
+The idea is using the statements written in a contract the compiler can determine at the point of use, if the type its planning to substitute for T is valid not by substituting T in the body of the generic function and trying to compile it, but by substituting the T in the contract and seeing if it _type checks_.
+
+On the first line we make sure that its valid to compare two t's, this helps us exclude passing in slices, or maps, or channels, ot structs.
+On the second line we make sure we can left shift by t one, because it is not permitted to shift flaot64s. In this way we exclude floating point umebrs from our Max function.
+
+=== How do we use a contract?
+
+Now we have our contract, lets demonstrate how it will be used
+
+----
+contract comparable(t T) {
+        t > t
+        t << 1
+}
+
+func Max(type T comparable)(a, b, T) T {
+	if a > b {
+		return a
+	}
+	return b
+}
+----
+
+We do this by introducing a new kind of parameter, a type parameter
+
+(show formal, return, and type paramters)
+
+In this case we're introducing one type, T, which is bounded by the comparable contract. If we didn't have that second parameter, then 
+
+Now that we've defined T we can see that Max takes two paramters of the same type -- whatever T is substituted for, and returns a single result of the same type as the input.
+
+=== What's that (type syntax)
+
+There is a reason that the Go developers have chosen `(type )` as the way to denote a generic function declaration.
+
+Go is designed to be parsed without a symbol table; this is important because it means we never need to look more than one character ahead when parsing, and because there is no symbol table being produced as part of consuming code we don't need forward declarations, and the work can proceeed in parallel.
+
+However this means that the syntax
+
+----
+func Max<T comparable>(a, b T) T { ... }
+----
+
+Is ambigious; we don't know if the less than sign is part of the expression indentifyer < identfier, or if it is part of the type parameter T comparable.
+The same arrises if we try to use square brackets as Scala does
+
+----
+func Max[T comparable](a, b T) T { ... }
+----
+
+This is ambigious because we don't know if we're parsing the expression indenfiier[index] as in a slice or map lookup.
+
+And at this point, at least on the us ascii keyboard that the Go team use, we're out of usable symbols.
+
+Believe me, many people are concerned about yet another series of parenthesis on a function declartion line. I do hope something is done.
+
+=== Go generics don't dictate how the compiler will implement them
+
+The last thing I want to mention about the Go generics proposals is that Implementing generics has implications not just for the programmer learning a new syntax, it also affects how the compiler will implement this new feature.
+
+The generics debate in Go is not new. Years ago Russ Cox wrote a short post called the Generics Dilemma, which summarises the three approaches to adding parametiric polomorphism to a lanuage
+
+1. Don't do it. This is the approach C tool, and, until now, the approach Go chose.
+2. Compile-time specialization or macro expansion. This is the C++ approach, It generates a lot of code, much of it redundant, and needs a good linker to eliminate duplicate copies. This slows down compliation.
+3. Box everything. This is the java approach. The decision of how to implement the 
+
+The importnat thing to recognise in this proposal is the syntax I talked above in the previous slides does not dictate how the feature will be implemented. 
+Unlike the C++ implementation which is explicitly defined to rely on template text substitution, or the java solution which requires boxing every patameter into an object, this proposal does not specify how the compiler should implement this feature.
+
+The Go compiler may choose to compile a generic function at compilee-time or run-time type substitution, so that the decision becomes purely a compiler optimization, not one of semantic significance. 
+
+Templates in C++ reduced the compiler to a complicated macro processor.
+Reified generics in Java hid the boxing and casting behind syntactic sugar.
+
+https://research.swtch.com/generic
+
+=== Would you like to know more?
+
+I only had a few minutes to discuss each of these new additions.
+If you'd like to know more, read the design documents, and importnatly read and contribute your feedback on these proposals at this page
+
+https://go.googlesource.com/proposal/+/master/design/go2draft.md
+
+Go modules implmentation is much further along, as I mentioned, its available to try in Go 1.11 today, so feedback and experience reports are best directed to the issue tracker.
+
+== There is no Go 2
+
+I opened this talk with a promise that the future of Go was a language called Go 2.
+The truth is that there will not be a new language called Go 2.
+And the reason for this is the Go developers recognise that over the last 9 years the value Go has bought to you is not what has been added to go, but what _has not changed_.
+
+The value of Go is in the commitment to backwards compatability that the Go 1 contract bought us for the last nine years.
+The value in Go is in the huge base of software written in the language that was defined in 2012 that we've been using productively since then; not a future language which looks similar to the one we call Go today.
+And the value in language is all of you, or at least those of you who are interested in Go, in this room today because ultimately a programming language is only successful if it has a large userbase of people who are happy to continue to use it.
+
+In two months it will be december, then in the western calendar january 2019.
+2019, a whole new year, distinct and separate from the previous 365 days of 2018.
+And yet, except for changing the year on the calendar, january 1 2019 will be in almost every other respect just a continuation of december 31st, 2018.
+
+For all of the Go users today, Go 2 is not a single release we're working towards.
+Rather, just like one day following the next, the progress of small, frequent releases will continue for the forseable future, adding these features that I just discussed, and maybe a few other small tweaks.
+
+Thank you!
