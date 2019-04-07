@@ -1,0 +1,438 @@
+= Going without
+Sydney Go Users' Group, November 2018
+
+== Introduction
+
+This is a talk about giving up something.
+
+I was going to suggest giving up something for Lent, but not being a religious person, I didn't know when Lent was, and it turns out i've missed it by more than a few months.
+So, with the end of 2018 fast approching, let's couch this discussion as a new years resolution to give up something.
+
+Specifically I'm talking about giving up something in Go.
+Our language's syntax is unlikely to be described as ornate.
+How can we give up something in Go?
+But what?
+
+=== State
+
+Giving up state?
+That's proposterous.
+
+This isn't functional programming. We write servers, we interact with data, without state there is no purpose to the code we write.
+
+=== Global state
+
+Getting closer.
+
+What do we mean when we say global state?
+
+Go has several scope.
+There's the universe scope.
+The universe scope is where the basic types like int, string, bool, etc are declared.
+Sll Go programs exist inside the universe scope.
+As Go programmers we cannot declare new things at the universe scope, for that we must move down a level.
+
+Next is package scope. Variables, types, constants, functions and methods are all declared at package scope.
+That is to say, they a declared inside a specific package.
+If I know the name of your package's symbol, assuming it's public then I can reference it from my package with the import declaration.
+This is what Go programmers mean when they say global scope--publically exported symbol declared inside a package.
+
+If someone changes the type of a public symbol, it could break someone else's package that was relying on it.
+This is source level coupling.
+
+Note: we also have function and block scope, but that's out of scope (ha!) for this discussion.
+
+=== Mutable global state
+
+Now we're talking.
+Immutable global state is just a constant.
+This is excellent, these are invariants in your program,
+If someone changes the initial value it could break at ru time
+
+What I'm going to discuss today is mutable state, specifically mutable state at the package level.
+What would Go look like if we could no longer declare variables at the package level?
+What would be the impact of removing package scoped variable declarations, and what could we learn about the design of Go programs?
+
+I’m only talking about expunging `var`, the other five top level declarations would still be permitted as they are effectively constant at compile time.
+You can, of course, continue to declare variables at the function or block scope.
+
+== Why
+
+Before we get into the how of the talk, I should explain my rational for proposing such semantic belt tightening.
+
+=== Coupling
+
+The core issue with global state is not that it is blog
+
+One of the best ways of describing coupling is hitching a trailer to your car, now they are coupled together, where one goes, the other follows.
+Any movement of your vehicle affects the position of the trailer, and likewise the position of the trailer cannot be altered indepdendently of your car.
+
+Coupling in software is present at multiple levels.
+
+The most obvious is any piece of code in any package can change the value of a public variable in any package that it can import.
+In short, if I know the name of a variable, I can change it.
+
+This goes the other way as well.
+If my program is dependant on the value of a variable declared in another package, if that variable changes, my package might break.
+If my program is dependant on the _type_ of a variable declared in anotehr package, if that variable's _type_ changes, my package might break.
+This is the root of tight coupling; a change in one package ripples through a codebase along the lines of coupling.
+The more things are coupled tightly to one package, the more things are affected when that package changes.
+
+Fundamentally global variables act like hidden parameters to _every_ method or function a program.
+
+=== Mutability
+
+You want to avoid declaring a constant 
+
+=== Testability
+
+Another property of a global variable is they are unique.
+There can only be one variable called `Foo` declared in package `Bar`.
+
+If your functions rely on the state of a global variable, your test will need to ensure that all those variable are set to 
+
+=== Leakage
+
+=== Concurrency
+
+Lastly, any variable who's state can be changed at any time, by _anyone who knows its name_, presents a problem when attempting to write programs that are free from data races.
+
+Obiviously a bare public variable cannot be used safely in the presence of multiple goroutines, so anyone attempting to do this must guard the mutation of a public variable using a mutex.
+This adds complication to accessing or updating global state, its usually somethign you'd want to hide behind a function.
+
+----
+var counter struct {
+	sync.Mutex
+	val int
+}
+
+func GetCounter() int { counter.Lock(); defer counter.Unlock(); return counter.val }
+func IncCounter()     { counter.Lock(); defer counter.Unlock(); counter.val++ }
+----
+That's a lot of boilerplate for what was supposed to be a convenience.
+
+If your variable is purely scalar, Maybe you can skip the boilerplate by using `sync.Atomic` primatives.
+----
+var Counter uint64
+----
+
+Assuming that your confident that anyone who accesses `Counter` will _always_ use the `sync/atomic` primatives maybe that's a solution to writing a _race free_ program, but it still leaves the problem of writing a _correct_ program.
+
+Say I have this program
+
+----
+if GetCounter() > 99 {
+    // what is the value of the counter?
+    // is it still greater than 99?
+----
+What is the value of the counter inside the loop?
+On entering the loo
+
+
+== How
+
+What would Go programs look like if we could no longer declare variables at the *package level*?
+
+To put this idea to the test I surveyed the most popular Go code base in existence; the standard library, to see how package scoped variables were used, and assessed the effect applying this experiment would have.
+
+// Image: old testimont
+
+=== Registration
+
+A registration pattern is followed by several packages in the standard library such as `net/http`, `database/sql`, `flag`, and to a lesser extent `log`.
+It commonly involves an unexported package level `map` or `struct` which is mutated by a public function—a textbook singleton.
+
+Not being able to create a package scoped placeholder for this state would remove the side effects in the `image`, `database/sql`, and `crypto` packages to register image decoders, database drivers and cryptographic schemes.
+However, this is precisely the spooky action at a distance that the registration pattern encourages. 
+
+==== Registration promotes duplicated business logic.
+
+When imported, the `net/http/pprof` package registers itself, via a side effect with `net/http.DefaultServeMux`, which is both a potential security issue—other code cannot use the default mux without exposing the pprof endpoints—and makes it difficult to convince the `net/http/pprof` package to register its handlers with another mux.
+
+==== Registration promotes confusing APIs
+
+Here's an example from the `net/http` package
+
+----
+package http
+
+// Serve accepts incoming HTTP connections on the listener l, creating a
+// new service goroutine for each. The service goroutines read requests and
+// then call handler to reply to them.
+//
+// The handler is typically nil, in which case the DefaultServeMux is used.
+func Serve(l net.Listener, handler Handler) error
+----
+`Serve` takes two parameters, a `net.Listener` for incoming connections, and `http.Handler` to handle the incoming HTTP request.
+`Serve` allows the second parameter to be `nil`, and notes that usually the caller _will_ pass `nil` indicating that they want to use `http.DefaultServeMux` as the implicit parameter.
+
+Now the caller of `Serve` has two ways to do the same thing.
+----
+var l net.Listerner = ...
+
+http.Serve(l, nil)
+http.Serve(l, http.DefaultServeMux)
+----
+Both do _exactly_ the same thing.
+
+But wait, it gets worse.
+Accepting `nil` for one parameter may lead the caller into thinking they can pass `nil` for both parameters.
+However calling `Serve` like this,
+
+ http.Serve(nil, nil)
+
+results in an ugly panic.
+
+The author of `http.Serve` was trying to make the API user's life easier in the common case, but ended up making the package harder to use safely.
+
+There is no difference in line count between using `DefaultServeMux` explicitly, or implicitly via `nil`.
+
+[source,go]
+----
+include::http1.go[tags=listenandserve]
+----
+verses
+[source,go]
+----
+include::http2.go[tags=listenandserve]
+----
+and a was this confusion really worth saving one line?
+[source,go]
+----
+include::http3.go[tags=listenandserve]
+----
+
+==== Eschew registrations
+
+If package scoped variables were no longer used, packages like `net/http/pprof` could provide a function that registers routes on a supplied `http.ServeMux`, rather than relying on import side effects.
+
+Removing the ability to apply the registry pattern would also solve the issues encountered when multiple copies of the same package are imported in the final binary and try to register themselves during startup.
+This means _if you're luck_ some routes, database drives, loggers could be registered with version 1 of your package, and others with version 2 of your package.
+If you're not lucky, updating you go.mod file causes your application to panic on startup and you have no way to fix the incompatibility because registration is hanled by side effect imports.
+
+== Errors
+
+A frequent uses of public package level varaibles are _sentinal errors_.
+`io.EOF`, `sql.ErrNoRows`, `crypto/x509.ErrUnsupportedAlgorithm`, and so on are sentinel values.
+Sentinel errors introduce strong source and run time coupling--to compare the error you got with the error you expect you need to import the package that declares that error.
+
+The first problem is `io.EOF` is a public variable--any code that imports the `io` package could change the value of `io.EOF`.
+----
+package nelson
+
+import "io"
+
+func init() {
+	io.EOF = nil // haha!
+}
+----
+It turns out that most of the time this isn’t a big deal, but it could be a very confusing problem to debug.
+----
+fmt.Println(io.EOF == io.EOF) // true
+x := io.EOF
+fmt.Println(io.EOF == x)      // true
+    
+io.EOF = fmt.Errorf("whoops")
+fmt.Println(io.EOF == io.EOF) // true
+fmt.Println(x == io.EOF)      // false
+----
+The second problem is `io.EOF` behaves like a singleton, not a constant.
+Even if we follow the exact procedure used by the `io` package to create our own `EOF` value, they are not fungible.
+----
+err := errors.New("EOF")   // io/io.go line 38
+fmt.Println(io.EOF == err) // false
+----
+Combine these properties and you have a set of weird behaviours stemming from the fact that sentinel error values in Go, those traditionally created with `errors.New` or `fmt.Errorf`, are not constants.
+
+If we adopted a prohbition on package scoped variables this would remove the ability to use public variables for sentinel error values.
+I've argued elsewhere that the sentinal error value is an anti pattern and is over played, but it raises the question of how to deal with real sentinal errors like `io.EOF`.
+If we can't declare errors as variables, what could be used to replace them?
+Ideally a sentinel value should behave as a constant.
+It should be immutable and fungible.
+
+=== Constant errors
+
+Before I introduce my solution, let’s recap how the `error` interface works in Go.
+Any type with an `Error() string` method fulfils the `error` interface.
+This includes primitive types like `string`, including _constant strings_.
+
+With that background, consider this error implementation.
+----
+include::eof.go[tags=error]
+----
+It looks similar to the `errors.errorString` implementation that powers `errors.New`.
+However unlike `errors.errorString` this type is a constant expression.
+----
+const err = Error("EOF") 
+const err2 = errorString{"EOF"} // const initializer errorString literal is not a constant
+----
+As constants of the `Error` type are not variables, they are immutable.
+----
+const err Error = "EOF" 
+err = Error("not EOF") // error, cannot assign to err
+----
+Additionally, two constant strings are always equal if their contents are equal, which means two `Error` values with the same contents are equal.
+----
+const err = Error("EOF") 
+fmt.Println(err == Error("EOF")) // true
+----
+Said another way, equal Error values are the same, in the way that the literal constant `1` is the same as every other literal constant `1`.
+----
+include::eof.go[tags=reader]
+----
+Could we change the definition of `io.EOF` to be a constant?
+ It turns out that this compiles just fine and passes _almost_ all the tests (when I first did this experiment two years ago `./all.bash` passed cleanly).
+It's not worth fixing the test because this is a stretch for the Go 1 contract.
+
+I’ve written previously that you should prefer behaviour over type or identity when inspecting errors.
+Where that isn’t possible, declaring error constants removes the potential for modification while retaining their identity semantics.
+
+In the standard library the remaining error variables are private declarations which give a symbolic name to an error message.
+These error values are unexported so they cannot be used for comparison by callers outside the package.
+----
+package sql
+
+var errDBClosed = errors.New("sql: database is closed")
+----
+Declaring these at the package level, rather than at the point they occur inside a function negates the opportunity to add additional context to the error.
+Instead I recommend using something like `pkg/errors` to capture a stack trace at the point the error occurs.
+
+=== Interface satisfaction assertions
+
+The interface satisfaction idiom
+
+ var _ SomeInterface = new(SomeType)
+
+occurred at least 19 times in the standard library.
+
+In my opinion these assertions are tests.
+They don’t need to be compiled, only to be eliminated, every time you build your package.
+Instead they should be moved to the corresponding `_test.go` file.
+
+But if we’re prohibiting package scoped variables, this prohibition also applies to tests, so how can we keep this test?
+
+One option is to move the declaration from package scope to function scope, which will still fail to compile if `SomeType` stops implementing `SomeInterface`:
+
+----
+func TestSomeTypeImplementsSomeInterface(t *testing.T) {
+       // won't compile if SomeType does not implement SomeInterface
+       var _ SomeInterface = new(SomeType)
+}
+----
+
+But, as this is actually a test, it’s not hard to rewrite this idiom as a standard Go test.
+
+----
+func TestSomeTypeImplementsSomeInterface(t *testing.T) {
+       var i interface{} = new(SomeType)
+       if _, ok := i.(SomeInterface); !ok {
+               t.Fatalf("expected %t to implement SomeInterface", i)
+       }
+}
+----
+
+As a side note, because the spec says that assignment to the blank identifier must fully evaluate the right hand side of the expression, there are probably a few suspicious package level initialisation constructs hidden in those var declarations.
+
+=== Real singletons
+
+While I think the singleton pattern is generally overplayed, especially in its registration form, there are always a few real singleton values that provide a foothold in every program.
+A good example of this is `os.Stdout` and friends.
+
+----
+package os 
+
+var (
+        Stdin  = NewFile(uintptr(syscall.Stdin), "/dev/stdin")
+        Stdout = NewFile(uintptr(syscall.Stdout), "/dev/stdout")
+        Stderr = NewFile(uintptr(syscall.Stderr), "/dev/stderr")
+)
+----
+
+There are a few problems with this declaration.
+Firstly `Stdin`, `Stdout`, and `Stderr` are of type `*os.File`, not their respective `io.Reader`, `io.Writer`, or `io.Closer` interfaces.
+This makes replacing them with alternatives problematic.
+However the notion of replacing them is _precisely_ the kind of magic that this experiment seeks to avoid.
+
+As the previous constant error example showed, we can retain the singleton nature of the standard IO file descriptors, such that packages like `log` and `fmt` can address them directly, but avoid declaring them as mutable public variables with something like this:
+
+[source,go]
+----
+include::fd.go[tags=fd]
+----
+
+=== A bridge too far
+
+This talk was a thought experiment.
+I don't expect you to agree with everything I suggested, but hopefully if you don't fully subscribe to my method, you see the value in the underlying thesis.
+Global state a hell of a drug, it can bring trancendant freedom, but like most things in excess, too much will result in addiction.
+Going without global state cold turkey might be too dogmatic a piece of advice to be applied carte blanch, but recognise that even the tiniest amount of global state goes a long way.
+Remember, a little global state is not an invitation for a little more.
+It's a prescribed substance, not a precident.
+
+Even though this post was just a thought experiment, it’s clear that forbidding all package scoped variables is too draconian to be workable as a language precept.
+However, I believe there are a few concrete recommendations that can be drawn from this exercise, without going to the extreme of changing the language spec.
+
+Firstly, public var declarations should be eschewed.
+This is not a controversial conclusion and not one that is unique to Go.
+The singleton pattern is discouraged, and an unadorned public variable that can be changed at any time by any party that knows its name should be a design, and concurrency, red flag.
+
+Secondly, where public package var declarations are used, the type of those variables should be carefully constructed to expose as little surface area as possible. It should not be the default to take a type expected to be used on a per instance basis, and assign it to a package scoped variable.
+
+Putting aside the problem of globally visible mutable state in a heavily concurrent language, package scoped variables are fundamentally singletons, used to smuggle state between unrelated concerns, encourage tight coupling and makes the code that relies on them hard to test.
+
+
+- Replace variables with constant or near constant
+- Replace global variables with fields and parameters, decouple
+- Use interfaces to declare, without stipulating how, the behaviours your type requires to operate
+
+Global state is a design issue.
+You should strive to eliminate it wherever possible.
+
+
+If I'm being realistic, it seems unlikely that the .
+There are some things which we cannot express
+
+
+These remain exceptions 
+ Probably not, this isn’t a suggestion for a change to the language
+
+Should we act as if there is no global state? YES
+
+How can we do this ?
+
+to be clear, i'm not proposing a change to the standard library; that's not my place or my purpose. instead what I am saying is by embracing the ideas I presented today, we don't need to continue to make the mistakes that the std lib has to live with?
+
+=== One more thing
+
+Isn’t this terrible inconvenience?
+What about fmt println?
+Think about cobra context, think about how testing.Examples work.
+I talked earlier about properties of the process which were singletons, such as open file descriptors.
+
+[source,go]
+----
+include::chdir.go[tags=main]
+----
+Functions like `os.Chdir` and `filepath.Abs` expect the working directory of the process to be a singleton -- but it is not.
+
+It's quite common to see applications wrap their `main` function in a little helper like this:
+
+[source,go]
+----
+include::main.go[]
+----
+
+Consider insteam
+
+[source,go]
+----
+include::main2.go[tags=context]
+----
+
+Semantic global, process global slicker current working dir3ctory. What about passing in a directory object, representing a “base”
+
+Tables, Ian’s proposal
+
+If someone changes the values after startup, this could be a data race 
+
+

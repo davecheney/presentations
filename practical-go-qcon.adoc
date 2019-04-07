@@ -1,4 +1,4 @@
-= Practical Go: Real world advice for writing maintainable Go
+= Practical Go: Real world advice for writing maintainable Go programs
 :toc:
 
 Hello, again
@@ -520,13 +520,17 @@ func main() {
 
 A useful property of slices is their zero value is nil. This makes sense if we look at the runtime’s definition of a slice header.
 
+----
 type slice struct {
-        array unsafe.Pointer
+        array *[...]T // pointer to the underlying array
         len   int
         cap   int
 }
-The zero value of this struct would imply len and cap have the value 0, and array, the pointer to memory holding the contents of the slice’s backing array would also be 0. This means you don’t need to explicitly make a slice, you can just declare it.
+----
+The zero value of this struct would imply len and cap have the value 0, and array, the pointer to memory holding the contents of the slice’s backing array would be nil.
+This means you don’t need to explicitly make a slice, you can just declare it.
 
+----
 package main
 
 import "fmt"
@@ -541,8 +545,10 @@ func main() {
         s = append(s, "world")
         fmt.Println(strings.Join(s, " "))
 }
-Note
+----
 
+[NOTE]
+====
 var s []string is similar to the two commented lines above it, but not identical. It is possible to detect the difference between a slice value that is nil and a slice value that has zero length. The following code will output false.
 
 package main
@@ -555,8 +561,11 @@ func main() {
         var s2 []string
         fmt.Println(reflect.DeepEqual(s1, s2))
 }
+====
+
 A surprising, but useful, property of uninitalised pointer variables (nil pointers) is you can call methods on types that have a nil value. This can be used to provide default values simply.
 
+----
 package main
 
 import "fmt"
@@ -579,7 +588,7 @@ func main() {
         }
         fmt.Println(c1.Path(), c2.Path())
 }
-
+----
 
 === Eschew package level state.
 
@@ -624,8 +633,19 @@ If you take anything away from this presntation, it is this advice
 
 
 
-Design APIs for their default use case.
+=== Design APIs for their default use case.
 
+_Never_ pass `nil` as an API parameter
+
+I want to give a few 
+
+Go has a nullable type, NULL, nil, null, whatever.
+This tends to upset people who come from a Java or C#, perhaps C++ background because they are traumatised by 
+
+I offer to you that nil is not a problem in Go if you follow two simple rules
+
+. Always check your errors; the biggest source of accidental nil values is poor error handling. We'll talk more about error handling in the next section
+. Never explicitly pass nil into a function or method.
 
 ==== Be wary of functions which take several parameters of the same type
 
@@ -839,9 +859,115 @@ Wouldn't this be easier if Read returned a buffer of what it read, like this
 
 == Error handling
 
+I've given several presentations about error handling footnote:[https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully] and written a lot about error handling on my blog.
+I also spoke a lot about error handling in yesterday's session so I won't repeat what I've said.
+
+- https://dave.cheney.net/2014/12/24/inspecting-errors
+- https://dave.cheney.net/2016/04/07/constant-errors
+
+Today we'll cover two other areas related to error handling.
+
 === Elminate handling by eliminating errors
 
-If you were in my presentation yesterday I talked about the draft proposals for improving error handl
+If you were in my presentation yesterday I talked about the draft proposals for improving error handling.
+But do you know what is better than 
+
+This section draws inspiration from John Ousterhout's recently book, A philosophy of Software Design footnote:[https://www.amazon.com/Philosophy-Software-Design-John-Ousterhout/dp/1732102201].
+One of the chapters in that book is called "Define Errors Out of Existence".
+We're going to try to apply this advice to Go.
+
+==== Counting lines
+
+Let's write a function to count the number of lines in a file.
+
+----
+func CountLines(r io.Reader) (int, error) {
+        var (
+                br    = bufio.NewReader(r)
+                lines int
+                err   error
+        )
+
+        for {
+                _, err = br.ReadString('\n')
+                lines++
+                if err != nil {
+                        break
+                }
+        }
+
+        if err != io.EOF {
+                return 0, err
+        }
+        return lines, nil
+}
+----
+
+Because we're following our advice from previous sections, `CountLines` takes an io.Reader, not a *File; its the job of the caller to provide the io.Reader who's contents we want to count.
+
+We construct a bufio.Reader, and then sit in a loop calling the ReadString method incrementing a counter until we reach the end of the file, then we return the number of lines read.
+At least that's the code we want to write, but instead this function is made mode complicated by error handling.
+
+First, there is this strange construction
+
+----
+                _, err = br.ReadString('\n')
+                lines++
+                if err != nil {
+                        break
+                }
+----
+We increament the count of lines _before_ checking the error--that looks odd.
+
+The reason we have to write it this way is ReadString will return an error if it encounters and end-of-file before hitting a newline character.
+This can happen if there is no final newline in the file.
+
+To try to fix this, we rearrange the logic to increment the line count, then see if we need to exit the loop.
+
+NOTE: this logic still isn't perfect, can you spot the bug?
+
+And we're not done checking errors yet.
+ReadString will return `io.EOF` when it hits the end of the file.
+This is expected, `ReadString` needs some way of saying _stop, there is nothing more to read_.
+So before we return the error to CountLine's caller, we need to check if it was _not_ io.EOF, and in that case propogate it up, otherwise we return nil to say that everything worked fine.
+
+I think this is a good example of Russ Cox's observation that error handling can obscure the operation of the function.
+
+Let's look at an improved version.
+
+----
+func CountLines(r io.Reader) (int, error) {
+        sc := bufio.NewScanner(r)
+        lines := 0
+
+        for sc.Scan() {
+                lines++
+        }
+        return lines, sc.Err()
+}
+----
+This improved version switches from using `bufio.Reader` to `bufio.Scanner`.
+
+Under the hood the scanner uses bufio.Reader, but it adds a nice layer of abstraction which helps clarify CountLines.
+Scanner can scan for any pattern, but by default it looks for newlines.
+The method, `sc.Scan()` returns true if the scanner has matched a line of text and _has not_ encountered an error.
+So, the body of our for loop will be called only when there is a line of text in the scanner's buffer.
+This means our revised CountLines correctly handles the case where there is no trailing newline, and also handles the case where the file was empty.
+
+Secondly, as sc.Scan returns false once an error is encountered our for loop will readlines only until the end of file, or an error is encountered.
+The scanner type memoises the first error it encountered and we can recover that once we've exited the loop using the sc.Err() value.
+
+Lastly, the scanner's Err() method takes care of handling io.EOF and will return nil if the end of file was reached successfully.
+
+==== WriteResponse
+
+The second example is inspired from the _Errors are values_ blog post footnote:[https://blog.golang.org/errors-are-values].
+
+We've seen earlier examples dealing with opening, writing and closing files.
+The error handling is present, but not overly onerous as the operations can be encapsulated in helpers like `ioutil.ReadFile` and `ioutil.WriteFile`.
+However when dealing with low level network protocols it becomes necessary to build the response 
+
+TIP: When you find yourself faced with overbearing error handling, try to extract some of the operations into a helper type.
 
 === Only handle an error once
 

@@ -1,0 +1,559 @@
+= Testing; how, what, and why
+Dave Cheney <dave@cheney.net>
+v1.0, April 26, 2019: GopherChina
+:idprefix:
+:idseparator:
+:sectids!:
+:sectnums:
+
+This is a presentation about testing in Go.
+We're going to talk about how to test, what you should test, and why you should test it.
+
+:toc:
+
+== How to test
+
+There are a wide range of experience levels in the room so lets start by talking about how to write unit tests for a Go package.
+
+Let's say we have this string splitting function
+[source,go,options=nowrap]
+----
+include::split1/split.go[tags=split]
+----
+
+This function takes a string and a separator and returns a slice of the input string broken on the separator.
+How can we write a unit test for this function?
+
+We start with a file in the same directory, with the same package name.
+[source,go,options=nowrap]
+----
+include::split1/split_test.go[tags=test]
+----
+Tests are just regular Go functions with a few rules.
+
+1. The name of the test function must start with `Test`
+2. The test function must take one argument of type `*testing.T`.
+A `*testing.T` is a type injected by the testing package itself, to provide ways to print, skip, and fail the test.
+
+Because test functions are just regular _public_ Go functions, we don't want to include them as part of our package's API.
+Instead, we want to only compile them in the context of running our tests.
+To do this the `go test` commands understands that files ending with `\_test.go` are only compiled in _test scope_.
+
+Now we know that A packages' unit tests live alongside the package's code in the same directory.
+
+So, now we have a function, and its tests, we can run them.
+[source]
+% go test
+PASS
+ok      split   0.005s
+
+The next question is, what is the coverage of this package?
+Luckily the go tool has a built in branch coverage.
+We can invoke it like this
+
+[source]
+% go test -coverprofile=c.out
+PASS
+coverage: 100.0% of statements
+ok      split   0.010s
+
+Which tells us we have 100% branch coverage, which isn't really surprising, there's only one branch in this code, a loop.
+
+If we want to dig in to the coverge report the coverage tool has several options to print the coverage report.
+The first is to break down the coverage per function;
+[source]
+% go tool cover -func=c.out
+split/split.go:8:       Split           100.0%
+total:                  (statements)    100.0%
+
+Which isn't that exciting as we only have one function in this package, but I'm sure you'll find more exciting packages to test the coverage of.
+
+This is so useful for me I have a shell alias which runs the test coverage and the report in one command
+[source,bash]
+cover () {
+  local t=$(mktemp -t cover)
+  go test $COVERFLAGS -coverprofile=$t $@ && go tool cover -func=$t && unlink $t
+}
+
+You can also get a html visualisation of the coverage with this command
+[source,bash]
+% go tool cover -html=c.out
+
+So, we wrote one test case, got 100% coverage, brilliant.
+Who thinks that we're done?
+
+You're right, we have good branch coverage but we probably need to test some of the boundary conditions.
+For example, our string is some kind of path, what happens if we try to split it on comma?
+[source,go,options=nowrap]
+----
+include::split1/split_test.go[tags=test2]
+----
+<1> split on comma.
+
+Now we have a bunch of test cases, this is good, yes?
+Good coverage of the boundary conditions.
+
+What are some bad things you can see about our test file?
+Yes, its getting long.
+Well, long isn't a problem, if you have a complicated function you will have to test all the edge cases.
+There's something more subtle wrong with this test file.
+
+[source,go,options=nowrap]
+----
+include::split1/split_test.go[tags=tests]
+----
+
+The problem is there is a lot of duplication, for each test case only the `want` and `got` are different, oh, and the name.
+What we'd like to to set up all the inputs and expected outputs and feel them to the test harness.
+This is a great time to introduce a table driven test.
+
+[source,go,options=nowrap]
+----
+include::split2/split_test.go[tags=test]
+----
+
+So lets talk about this, we declare a structure to hold out test inputs and expected outputs.
+We're going to make this a local declaration, just inside the function because we probably want to reuse the `type test` for other values for other tests in this package.
+In fact, we don't even need to give it a name, we can use an anonymous struct literal to reduce the boilerplate a little more.
+
+Then we get something like this
+[source,go,options=nowrap]
+----
+include::split3/split_test.go[tags=test]
+----
+You can even, in some cases eliminate the field names, but that's probably going to harm readability and means you have to declare each field in the struct.
+
+Ok, that's good, what about if there is a trailing separator?
+Now we have our test table adding this test is a simple as adding a new line.
+[source,go,options=nowrap]
+----
+include::split4/split_test.go[tags=test]
+----
+And when we run `go test`, we get
+[source,bash]
+% go test
+--- FAIL: TestSplit (0.00s)
+    split_test.go:24: expected: [a b c], got: [a b c ]
+FAIL
+exit status 1
+FAIL    split   0.006s
+
+Cool, so there are a few things to talk about here.
+The first is by rewriting the test from a function to a row in a table we've lost the name of the failing test.
+We added a comment in the test file to call out this case, but we don't have access to that.
+
+There are a few ways to resolve this, and you'll see these styles in use in older code bases.
+
+[source,go,options=nowrap]
+----
+include::split5/split_test.go[tags=test]
+----
+Now when we run this we get
+[source,bash]
+% go test
+--- FAIL: TestSplit (0.00s)
+    split_test.go:24: test 4: expected: [a b c], got: [a b c ]
+FAIL
+exit status 1
+FAIL    split   0.005s
+
+Which is a little better.
+We know this is the fourth test, although we have to do a little bit of fudging because slice indexing--and range iteration--is zero based.
+But if the list of test cases is long, it could be difficult to count braces to figure out exactly which line is test case 4.
+
+Another common pattern is to include a `name` field in the test fixture.
+[source,go,options=nowrap]
+----
+include::split6/split_test.go[tags=test]
+----
+Now when the test fails we have a descriptive name for what the test was doing--we no longer have to try to figure it out from the arguments--and a string we can search on.
+[source,bash]
+% go test
+--- FAIL: TestSplit (0.00s)
+    split_test.go:25: trailing sep: expected: [a b c], got: [a b c ]
+FAIL
+exit status 1
+FAIL    split   0.005s
+
+And it turns out we can dry this up even more 
+[source,go,options=nowrap]
+----
+include::split7/split_test.go[tags=test]
+----
+Using a map literal syntax we define our test cases not as a slice of stucts, but a map of test names to test fixtures.
+
+There's also a side benefit of using a map that is going to potentially improve the utility of our tests.
+Can you guess what it is?
+
+Yes, that's right. Map iteration is undefined--some people say random, it's not even defined to be random, although in practice it is--which means each of our tests are going to be run in an undefined order.
+This is super useful for spotting conditions where two test pass when run in a certain order, but not otherwise.
+
+But before we go on to fix the test there are two remaining issues with our test harness.
+Can anyone think of what they are?
+
+The first is we're calling `t.Fatalf` when one of the test cases fails.
+This means the first failing test case and we stop testing the other cases.
+Because test cases are run in an undefined order, if we refactor our function--which we're just about to do--and have a test failure, we'd like to know was that the only one or is it just the first.
+
+The testing package will do this for us if we go to the effort to write out each test case as its own function, but can we fix the test harness to report all the test failures at the same time?
+Can you give me a way we can do it?
+
+Yes, we could change the `t.Fatalf` to `t.Errorf`.
+`t.Errorf` marks the test as failing, but does not terminate execution like `t.Fatalf` does.
+But say we had more than one assertion, its going to be complicated to remember to skip those other checks--they might panic--with a continue or something.
+
+Fortunately in Go 1.7 a feature was added to the testing package called https://blog.golang.org/subtests[sub tests].
+Sub tests let us write a test harness _as if_ it were a single test function.
+We can therefore use `Fatalf`, `Skipf`, etc and all the other testing.T helpers, while retaining the compactness of a table driven test
+
+This is what a table driven sub test looks like
+[source,go,options=nowrap]
+----
+include::split8/split_test.go[tags=test]
+----
+Because the subtest now has a name we get that name automatically printed out in any test runs
+[source,bash]
+% go test
+--- FAIL: TestSplit (0.00s)
+    --- FAIL: TestSplit/trailing_sep (0.00s)
+        split_test.go:25: expected: [a b c], got: [a b c ]
+FAIL
+exit status 1
+FAIL    split   0.005s
+
+[TIP]
+====
+Ok, so we have a pretty good table driven test now.
+In fact tools like goland--i'm not sure about vim-go or vscode--will generate this harness for you as an autocomplete action, all you have to do is drop in the test cases.
+====
+
+Ok, now we're ready to fix the test case.
+Let's look at the error
+[source]
+split_test.go:25: expected: [a b c], got: [a b c ]
+
+Can you spot the problem?
+Clearly the slices are different, that's what `reflect.DeepEqual` is upset about, but spotting the actual difference isn't easy; you have to spot the extra space after the `c`.
+
+We can improve the output if we switch to the `%#v` printf syntax;
+[source,go,options=nowrap]
+----
+include::split9/split_test.go[tags=test]
+----
+Now when we run out test we get
+[source,bash]
+% go test
+--- FAIL: TestSplit (0.00s)
+    --- FAIL: TestSplit/trailing_sep (0.00s)
+        split_test.go:25: expected: []string{"a", "b", "c"}, got: []string{"a", "b", "c", ""}
+FAIL
+exit status 1
+FAIL    split   0.005s
+
+Ok, now it's clear that the problem is there is an extra blank element in the slice.
+But before we go to fix this I want to talk a little bit more about choosing the right way to present test failures.
+Our `Split` function is simple, it takes a primitive string and returns a slice of strings, but what if it worked with structs, or worse, pointers to structs.
+
+Consider this example for how printing even a pointer to a simple struct can be unreadable.
+[source,go,options=nowrap]
+----
+include::percentv/main.go[tags=main]
+----
+The output is not clear at all
+[source,bash,options=nowrap]
+% go run .
+[0xc000096000 0xc000096008 0xc000096010] [0xc000096018 0xc000096020 0xc000096028]
+[]*main.T{(*main.T)(0xc000096000), (*main.T)(0xc000096008), (*main.T)(0xc000096010)} []*main.T{(*main.T)(0xc000096018), (*main.T)(0xc000096020), (*main.T)(0xc000096028)}
+
+I want to introduce the `go-cmp` library from Google.
+This was introduced about two years ago by Joe Tsai. 
+He gave a talk about it at GopherCon 
+#TODO: find video reference#
+
+The goal of the compare library is it is specifically to compare two values.
+This is similar to reflect.DeepEqual, but it has more capabilities.
+You can of course write
+[source,go]
+x := []*T{{1}, {2}, {3}}
+y := []*T{{1}, {2}, {4}}
+fmt.Println(cmp.Equal(x, y)) // false
+
+But far more useful for us with our test function is the Diff method which will produce a textual description of what is different between the two values, recursively.
+[source,go,options=nowrap]
+----
+include::cmp/main.go[tags=main]
+----
+Which gives us
+[source,bash]
+% go run .
+{[]*main.T}[2].I:
+        -: 3
+        +: 4
+
+So the first difference was in the slice of *T's, at index 2, the value of I was expected to be 3, but was actually 4.
+
+`go-cmp` is a very useful library, I don't have time to go into it in more detail here--watch Joe's talk.
+Let's apply go-cmp to our test harness and see what we get
+[source,go,options=nowrap]
+----
+include::split10/split_test.go[tags=test]
+----
+
+[source,bash]
+% go test
+--- FAIL: TestSplit (0.00s)
+    --- FAIL: TestSplit/trailing_sep (0.00s)
+        split_test.go:27: {[]string}[?->3]:
+                -: <non-existent>
+                +: ""
+FAIL
+exit status 1
+FAIL    split   0.006s
+
+The results tell us that the strings are different lengths, the third index in the fixture didn't exist, but in the actual output we got an empty string, `""`.
+
+[source]
+% go test
+--- FAIL: TestSplitTrailingSep (0.00s)
+    split_test.go:35: expected: [a b c], got: [a b c ]
+FAIL
+exit status 1
+FAIL    split   0.005s
+
+Now we can fix our split function
+[source,go,options=nowrap]
+----
+include::split11/split.go[tags=split]
+----
+[source,bash]
+% go test
+PASS
+ok      split   0.005s
+
+and check out coverage
+[source,bash]
+% cover
+PASS
+coverage: 100.0% of statements
+ok      split   0.007s
+split/split.go:8:       Split           100.0%
+total:                  (statements)    100.0%
+
+=== What about?
+
+So what about other testing packages like gingo, testify, gocheck, etc?
+Honestly, I've never found that I need them, the Go testing package is perfectly good for writing unit style tests.
+However, if they're what you like, or what you're used to, and the rest of your team agrees, then go for it.
+
+But, remember that your whole team has to agree, a test framework is like any other dependency, you're adopting it, you're taking responsibility for it.
+Remember that some Go dependency tools don't have a good idea about "test only dependencies"
+
+ok, what about assertion frameworks like assert or is?
+I think the same applies.
+Most of them are untyped, and boil down to a Equal method
+
+== What to test?
+
+We've talked about how to write a good Go test, so lets step back a bit and talk about what kind of things should be tested.
+
+I'm going to talk about test driven development.
+
+Test driven development, or to be more specific; writing tests concurrently with your code has a long history.
+
+In 2002, Kent Beck published _Test Driven Development: by example_, combined with JUnit, this is considered to be _the_ book on TDD.
+But it turns out that the ideas behind TDD are much older.
+
+In his talk _1968_ https://www.infoq.com/presentations/1-9-6-8[Kevlin Henney] found that at the NATO confrence on software development
+
+“A software system can best be designed if the testing is interlaced with the designing instead of being used after the design.”
+-- Alan Perlis, NATO Software Engineering Conference, 1968
+
+We probably can’t say conclusively that Perlis invented the idea of TDD, or at least intermixing testing with development, but its clear that TDD isn’t the product of a early 90’s C++ induced hangover.
+
+I’ve found references to unit style testing going back to at least the early 1960’s.
+While they didn’t have the words to describe it, people were unit testing the software that ran on the minute man missile.
+
+So, show of hands, who likes TDD?
+
+- Who sorta likes it?
+- Who thinks is a crock of shit?
+- Who’s tried to love TDD and hit a roadblock?
+
+I think I’m probably in the latter category.
+I think that TDD is the right way to develop software--testing something after its built is soooo waterfall--it's just that trying to apply these TDD ideas as we’re taught, seems to always feel like swimming up stream.
+
+Never the less, I hold as an article of faith that writing tests concurrently with writing the code is a _good thing_.
+
+- Who agree’s with me?
+- Who disagrees with me?
+
+I don’t have a software engineering background, I came to this industry from the sysadmin administration school of hard knocks.
+
+This is how I was introduced to TDD, via Robert Martin's three rules of TDD.
+
+1. Write production code only to pass a failing unit test.
+2. Write no more of a unit test than sufficient to fail (compilation failures are failures).
+3. Write no more production code than necessary to pass the one failing unit test.
+
+This all sounds very sensible, and to hear Martin speak of the benefits of never being more than a minute or so from having shippable code, never having the build broken again, was intoxicating.
+Beck and others call this Red/Green/Refactor, write a failing test, fix the test, clean up the code.
+
+I wrote most of the gorilla/http package like this.
+It was wonderful to know when I’d implemented a feature, I’d also implemented the tests for that feature.
+That was the canonical definition of _done_ for me because nothing pisses me off more than being in a standup and hearing “i’ve fixed the bug, I just have to write a test for it”.
+
+But, as I’m sure you all appreciate, its not all beer and skittles when it comes to TDD.
+When I didn’t know what I wanted to write, I was doing research exploring the problem space by writing code, then working TDD style was twice as expensive; every time I back tracked on the code, I needed to first back track on the test.
+
+Worse, depending on the degree I wanted to course correct, the cost was higher than 200%.
+
+I was deeply concerned about rewriting my tests all the time. 
+Changing well covered code felt safe, changing the tests felt like cheating.
+
+It goes like this, test’s check that your code works how it says on the tin, they are our insurance policy, but who tests our tests?
+
+The best way to get the tests passing is just to delete the ones that fail.
+Is this the answer? Screw this testing nonsense, its only slowing us down?
+
+Constantly rewriting tests as I developed a piece of software was a lot of unnecessary work, and it felt like cheating. It wasn’t testing, it was just making the test assert the current behaviour.
+If that behaviour changed, I’d change the test to match, and that was the wrong way around, IMO.
+That’s not a test at that point, it an accessory after the fact.
+
+Then one day I ran into this amazing presentation by Ian Cooper titled https://youtu.be/EZ05e7EMOLM[_TDD, we’re did it all go wrong_].
+
+I strongly recommend you watch this presentation. It contains a lot more wisdom than just the two take aways I’m going to focus on
+
+The first was the system under test, the unit, is not the class.
+Now Ian’s a dot net kind of fellow so he can be forgiven for saying the C word.
+We’re Go programmers, we try not to use that word in polite company
+If we think about the idea of system under test, the unit, and ask the question more broadly
+
+What is the system under test in a C program, what is the “unit” that we are testing?
+I argue its a function.
+
+What is the system under test in a Java program, what is the “unit”?
+If you said “class” then you should watch Ian’s presentation.
+But that's the point, classical testing in java, the unit is the class, the methods in the class.
+
+What is the system under test in a Go program, what is the “unit”?
+Watching Ian’s talk, this is the question that I asked myself.
+And it got me thinking about something I’d said a few years ago.
+
+“Go packages embody the spirit of the UNIX philosophy. Go packages interact with one another via interfaces. Programs are composed, just like the UNIX shell, by combining packages together.”
+-- Me, GopherCon India, 2015.
+
+I was really high on Doug McIlroy and I was smitten with the idea that Go packages were composed into programs.
+And approaching this argument from Cooper’s assertion that the unit of code is not a type, or function, or a method, or a class, suddenly it all clicked for me.
+
+I argue that the unit of Go software is the package.
+
+The unit of Go code is _not_ the function.
+TDD doctrine states that you shall not write a line of production code until you have a failing unit test.
+The result is every helper or private function inside your package has a test, and those tests break all the time when you refactor.
+This wasted work discourages refactoring.
+There is a risk that the tests will end up fitting the observed behaviour of the code under test, not asserting the expected behaviour. 
+TDD, is meant to encourage you to be the first client of your code, of your api, but as commonly practiced, it discourages you from doing this.
+
+In Go the unit of code is the package.
+You only need to test the behaviour of your package that can be observed.
+Code coverage is your guide.
+If there are branches that cannot be covered via the public API, delete that code.
+When you refactor, use coverage to tell you where you need to add tests. Beware Hyrum’s Law.
+If you have high coverage, consider adding fuzz testing to check that you’ve covered all the edge cases.
+
+The second take away from Ian’s talk is to test the behaviour of your unit, _not_ the implementation.
+If we agree that the unit of a go program is a package, then you should test the package via its public API.
+
+Even if you disagree with me about testing and TDD, perhaps you will agree that the public API of a package says “this is what I do, not, this is how I do it”
+
+When you have new behaviour that you want to guarentee, you should write a test.
+
+When you _implement_ a new behaviour, you fulfil an implementation, you should assert you’ve tested all its behaviour lest people begin to rely on _incidental_ behaviour
+
+
+Unit testing
+- in fp, the unit is the test
+- In oop the unit is the class
+- In Go the unit is the package
+
+
+[ ] Tdd 
+[ ] Problems, and solutions, only test public symbols
+[ ] If you cannot exercise it via the public api, you do not need to test it
+
+== Why test?
+
+We've talked about _how_ to test.
+We've talked about _what_ to test.
+The final part of this presentation is to ask the question, _why_ test at all.
+
+Now, I'm sure none of us think that software should be delivered without being tested first.
+Even if it was, your customers are going to test it, or at least use it, and so if nothing else, it would be good to discover any issues with the code before your customers, if not for the reputation of your company, at least professional pride.
+
+So, if we agree that software _should_ be tested, the question is more, _who_ should do that testing.
+
+I argue that the majority of the testing should be done by development groups--us, the people in this room.
+Moreover, testing should be automated, and thus the majority of these tests should be unit style tests.
+
+To be clear, I am _not_ saying you shouldn't write integration, functional, or end to end tests.
+I am not saying that you shouldn't have a QA group, or integration test engineers, although I'd be prepared to place a small bet on two facts
+
+1. Nobody who considers themselves in a pure quality role is in this room today.
+2. Even for the largest companies present today, few of you have a dedicated QA gropu.
+
+What I am suggesting is those should not be the majority of your testing load.
+
+=== Manual testing is O(n)
+
+Ok, so if we, as individual contributors are expected to test the software we write, why do we need to automate it?
+Why is a manual testing plan not good enough?
+
+Manual testing of software or manual verification of a defect does not scale.
+As the number of manual tests grows engineers are tempted to skip them, or only execute the scenarios they _think_ are involved.
+Manual testing is expensive, and boring, 99.9% of the tests that passed last time will pass again.\
+
+This means that your first response when given either a bug to fix or a feature to implement, should be to write a _failing_ test.
+This doesn't need to be a unit test, but it should be an automated test.
+
+=== Tests are crucial to keeping master shipable.
+
+As a development team, you are judged on your ability to deliver working software to the business.
+Your super power is at any time anyone on the team should be confident that the master branch of your code is shippable--it may not have all the desired features, but what features are there should work as expected.
+This means at any time you can deliver a release of your software to the business and deliver
+
+The tdd doctrine of always being able to release your code wimpy by reverting a failing test is powerful for a delivery team
+
+=== Testing locks in behaviour
+
+tests lock in behaviour; the behaviour of a unit, if you break a unit test, you've changed the behaviour that others rely on.
+
+=== Why write a test?
+
+Tests help you feel confident with change
+
+Should you try for 100 coverage? No, coverage is a guide, not a goal
+
+Tdd at the unit boundary, testing in more detail slows you down and means you test the same operations over and over again when the only way they can be exercised is via the public api 
+
+So With that said, I won’t use words like must, or don’t. Rather I’ll say should, and let you make up your own mind.
+
+You should write tests.
+You should write tests at the same time you write your.
+
+Each go package is a self contained unit — I don’t say program because some of you will get hung up on the fact that most packages don’t have a main() function. 
+
+I don’t think that’s an important distinction
+
+Test your package’s behaviour, not its implementation.
+
+To do that you should write tests as if you were a calling them from another package; if you cannot reach the code from another package, you cannot observe its behavior, you cannot make any assertions about its correctness.
+
+As soon as you start testing the internals you are coupling your tests to your implementation details. To change your implementation details, even thought he behaviour is unchanged, you now have to change your tests.
+
+You should test your code for high coverage of all public apis
+You should delete any code you cannot reach from a public api
+
+Design your packages around their behaviour, not the implementation.
+Describe your packages in terms of what they do, not how they do it
+
+start with a public function, write a test case before, or after, it doens't really matter, get good coverage -- really you should aim to cover all the branches in that code. write the code as ugly as you want, just get that test passing -- then refactor. watch your coverage metric, if it goes down, add more test cases.

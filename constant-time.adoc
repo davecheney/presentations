@@ -1,0 +1,322 @@
+= Constant Time
+dotGo 2019
+
+== Introduction
+
+My favorite feature of Go is constants.
+
+Many years ago Rob Pike remarked that "Numbers are just numbers, you'll never see `0x80ULL` in a `.go` source file".
+This profound statement is, I feel, sometimes taken for granted by the Go community because, as Rob noted, numbers--constants--in Go, just work.
+
+Behind this pithy observation lies the fascinating world of Go's constant types.
+In this talk I'm going to show you why, and show you perhaps a few things you didn't know you could do with the const keyword in Go.
+
+== Why are constants good?
+
+Why are constants good? 
+
+=== Immutability
+
+Constants are one of the few ways we have in Go to express immutability to the compiler.
+
+=== Readability
+
+Constants give us a way to extract magic numbers from our code, giving them names and semantic meaning.
+
+=== Performance
+
+Constants are a key part of any compiler optimisation; constant folding, constant propogation, lead into branch elimination and dead code elimination
+
+=== Yeah, so what?
+
+But these are all generic use cases for constants.
+They apply to any language.
+
+But this is dotGo, we're here in the shadow of Le Gopher, so let's talk about some of the properties of Go's constants.
+
+=== My favorite constant use
+
+To introduce the power of Go's constants lets do a little challenge.
+
+I want to declare a _constant_ who's value is the number of bits of an unsigned integer on the machine that I'm using
+
+We can't use `unsafe.SizeOf`, it is not a constant expression.
+
+We could use a build tag and laboriously record the natural word size of each Go platform.
+
+Or we could do something like this
+
+ const uintSize = 32 << (^uint(0) >> 32 & 1) // 32 or 64
+
+There are many versions of this expression in Go codebases, they all work roughly the same way. 
+
+If we're on a 64 bit platform then the exclusive or of the number zero, all zero bits, is a number with all bits set, sixty four of them to be exact.
+If we shift tht value thirty two bits to the right, we get another value with thirty two ones in it, anding that with a numnber with one bit in the final position give us, the same thing, so the number one, and finally we shift the number thirty two one place to the right, giving us 64.
+
+I'll leave it as an exercise for you to do the math for a 32 bit word.
+
+This is an example of a constant expression, all of these operations happen at compile time and the result of evaluating the expression is itself a constant.
+
+Have a lookin the in runtime package, specifically the garvbage collector, to see how constant expressions are used to set up complex invariants. 
+
+== Constant values have methods
+
+So, that's a pretty cool party trick, but most compilers will do this kind of constant folding at compile time for you.
+Let's step it up a notch.
+
+In Go, constants are values, and each value has a type.
+
+In Go, user defined types can declare methods.
+
+Thus, a constant value can can host a method.
+
+If you're a little surprised by this, let me show you an example that we use ever day
+
+ const timeout = 500 * time.Millisecond
+ fmt.Println("The timeout is", timeout) // 500ms
+
+What we have here is `time.Millisecond` is a constant of type `time.Duration`.
+`500` is an untyped literal constant, the number 500.
+ 
+The rule for assignment in Go is the type, unless declared, the type on the left hand side of the assignment operator is inferred from the type on the right hand side.
+`500` is an untyped constant so it is coerced [check] in a time.Duration then multiplied with the value time.Millisecond.
+
+So, `timeout` is of type time.Duration, and holds the value 500,000,000.
+
+So why does `fmt.Println` print 500ms, not 500,000,000 ?
+
+The answer is the `time.Duration` type has a `String` method, so values of the type time.Duration know how to print themselves.
+Note that I said _values_, not _variables_.
+
+ // String returns a string representing the duration in the form "72h3m0.5s".
+ // Leading zero units are omitted. As a special case, durations less than one
+ // second format use a smaller unit (milli-, micro-, or nanoseconds) to ensure
+ // that the leading digit is non-zero. The zero duration formats as 0s.
+ func (d Duration) String() string 
+
+Constants in Go are values, so we can call methods on constants values.
+Try doing that in {C,C++,Rust}
+
+== Constants can implement interfaces
+
+Now we know that constant have types, and because types can declare methods, we can derive that constant values can fulfill interfaces.
+
+In fact we saw an example of this above.
+Inside the `fmt` package it doesn't assert that a value has a `String` method; it asserts the value implements the `Stringer` interface.
+
+Let's talk a little about how we can use this property to make our Go code better.
+And to do that I'm going to take a brief digression into the Singleton pattern.
+
+== Singletons
+
+I'm generally not a fan of the singleton pattern.
+It complicates testing and creates unnecessary coupling between packages.
+
+The singleton pattern is often used _not_ to create a singular instance of a thing, but insted to create a convenient place to coordinate registration of a default set of actions.
+`net/http`'s DefaultServeMux is a good example of this.
+
+This isn't a singleton, there is nothing singular about defaultServerMux, nothing prevents you from creating another serve mux. I think it represent an _anti pattern_, but that is a subject for a different talk, and I digress.
+
+Never the less there is a case for some things which are truely singletons because they can only represent a single thing. 
+A good example of this are the file descriptors of a process.
+
+Stdout and friends are really just wrappers around a number, a file descriptor; one needn't say
+
+ fmt.Fprintf(os.Stderr, "Hello dotGo\n")
+
+when 
+
+ syscall.Write(2, []byte("Hello dotGo\n"))
+
+is identical.
+
+----
+package os
+
+var (
+        Stdin  = NewFile(uintptr(syscall.Stdin), "/dev/stdin")
+        Stdout = NewFile(uintptr(syscall.Stdout), "/dev/stdout")
+        Stderr = NewFile(uintptr(syscall.Stderr), "/dev/stderr")
+)
+----
+
+There are a few problems with this declaration.
+Firstly `os.Stdin`, `os.Stdout`, and `os.Stderr` are of type `*os.File`, not their respective `io.Reader`, `io.Writer`, or `io.Closer` interfaces.
+This makes replacing them with alternatives problematic. 
+
+However the notion of replacing them is precisely the kind of magic that this experiment seeks to avoid.
+Can you safely change the value of `os.Stdout` once your program is running without causing a data race?
+
+I argue that, in the general case, you cannot.
+In general, if something is unsafe to do, as programmers we shouldn't let our users do it lest they begin to depend on that behaviour.
+
+So, can we change the definition of `os.Stdout` and friends so that they retain the observable behavior, but are immutable?
+
+[source,go]
+----
+include::fd.go[tags=fd]
+----
+
+It turns out, yes we can. And in fact this change causes only one compliation failure in the std library.
+I'll leave that as an exercise for you to figure out what breaks.
+
+== Constant errors
+
+Another case of things which look like constants but really aren't are sentinal errors.
+
+Sentinel errors are the source of source level coupling, which is the strongest form of coupling there is. 
+To compare the error you have the one you expect, you need to import the package that declares that error.
+This is source level coupling; to talk about something by name, you need to know who declared that name.
+
+You probably interact with this package via an interface, so you can break the source coupling with an interface, but if you want to compare the error value, you need to import that package to get to the errors’ declaration. 
+
+This is a design smell.
+We heard Marcel talk earlier that sentinal errors are very problematic
+
+`io.EOF`, `sql.ErrNoRows`, `crypto/x509.ErrUnsupportedAlgorithm`, and so on are sentinel error values.
+
+Beyond the design challenge with sentinal errors, let's talk about some of their other problems.
+
+The first problem with sentinel errors is they are, by definition, public variables.
+As an example, any code that imports the `io` package could change the value of `io.EOF`.
+
+I'll just say that again for clarity.
+If I know the name of `io.EOF`, then I can change its value.
+
+----
+package nelson
+
+import "io"
+
+func init() {
+        io.EOF = nil // haha!
+}
+----
+
+Now, convention and a bit of dumb luck discourages people from writing code like this, but technically there is nothing to prevent your writing something like this:
+
+----
+fmt.Println(io.EOF == io.EOF) // true
+x := io.EOF
+fmt.Println(io.EOF == x)      // true
+
+io.EOF = fmt.Errorf("whoops")
+fmt.Println(io.EOF == io.EOF) // true
+fmt.Println(x == io.EOF)      // false
+----
+
+Now, replacing `io.EOF`--in addition to being a data race--is probably going to be detected almost immediately.
+But replacing another less frequently used sentinal error might cause some interesting side effects.
+
+----
+package innocent
+
+import (
+        "crypto/rsa"
+)
+
+func init() {
+        rsa.ErrVerification = nil
+}
+----
+
+Are you sure no package in your dependency tree contains this line?
+And if you were hoping the race detector will spot this, I suggest you talk to the folks writing testing frameworks who replace `os.Stdout` without it triggering the race detector.
+
+I'll leave that for you to audit your code after this talk.
+
+Putting aside the effect of malicious actors in your code base `io.EOF` behaves like a _singleton_, not a _constant_.
+
+== Fungibility 
+
+I want to digress for a moment to talk about _the_ most important property of constants.
+Constants aren't just immutable, they are _fungible_.
+This is a tremendously important property that gets little attention.
+
+Fungible means identical.
+Money is a great example, if you lend me 10 euro, and I later pay you back, the fact that you gave me a 10 euro note and I returned to you 1 one euro coins is irrelevant.
+For both of us, the 10 euro you had before you lent me to spend, and the 10 euro I repaid you with later, with respect to its operation as a financial instrument is identical.
+
+- Things which are fungile are by definition equal.
+- Equality is a powerful property we can leverge for our programs.
+
+We do this so often in Go that we often take the property of constants for granted.
+
+=== Immutability != fungability
+
+ myEOF := errors.New("EOF")   // io/io.go line 38
+ fmt.Println(myEOF == io.EOF) // false
+
+`myEOF error and `io.EOF` are not equal.
+Even if we follow the exact procedure used by the `io` package to create our own EOF value, they are not equal.
+(Note: this is Go 1.12, they're still not equal in Go 1.13)
+
+Combine these properties and you have a set of weird behaviours stemming from the fact that sentinel error values in Go, those traditionally created with `errors.New` or `fmt.Errorf`, are not constants.
+
+I’ve argued elsewhere that the sentinel error value is an anti pattern and is over played, but it raises the question of how to deal with real sentinel errors like `io.EOF`.
+
+If we can’t declare errors as variables, what could be used to replace them?
+
+Ideally a sentinel error value should behave as a constant.
+It should be immutable and fungible.
+
+=== Constant errors
+
+Before I introduce my solution, let’s recap how the `error` interface works in Go.
+Any type with an `Error() string` method fulfils the `error` interface.
+This includes primitive types like `string`, including _constant strings_.
+
+With that background, consider this error implementation.
+----
+include::eof.go[tags=error]
+----
+It looks similar to the `errors.errorString` implementation that powers `errors.New`.
+However unlike `errors.errorString` this type is a _constant expression_.
+----
+const err = Error("EOF") 
+const err2 = errorString{"EOF"} // const initializer errorString literal is not a constant
+----
+As constants of the `Error` type are not variables, they are immutable.
+----
+const err Error = "EOF" 
+err = Error("not EOF") // error, cannot assign to err
+----
+Additionally, two constant strings are always equal if their contents are equal, which means two `Error` values with the same contents are equal.
+----
+const err = Error("EOF") 
+fmt.Println(err == Error("EOF")) // true
+----
+Said another way, equal Error values are the same, in the way that the literal constant `1` is the same as every other literal constant `1`.
+----
+include::eof.go[tags=reader]
+----
+Could we change the definition of `io.EOF` to be a constant?
+ It turns out that this compiles just fine and passes _almost_ all the tests (when I first did this experiment two years ago `./all.bash` passed cleanly).
+It's not worth fixing the test because this is a stretch for the Go 1 contract.
+
+== Conclusion
+
+Today I've talked about three ways to use constants that are more than your typical immutable variable.
+I'm sure there are more if you care too look.
+
+___
+
+The previous section highlighted the power of the interaction between untyped constant literals and typed constants, but more exciting is constants in Go can have types, and because those types are user defined, they can have methods. This gives Go constants amazing properties, like the ability to format themselves while printed
+
+#### How to make truely immutable singletons
+
+Now that we have the basics of typed constants down, we'll use that knowledge to look at a common programming pattern, the singleton, and use constants to make it safer.
+
+The example I'm using is the `os.Stdin,os.Stdout,os.Stderr` triplet of singletons. I'll explain why these really _are_ singletons, as opposed to things which Go programmers agree to co-ordinate on using. I'll explain the problems with their current _variable_ declaration, and show a replacement that makes these singletons truely immutable.
+
+#### Constant errors
+
+The final example builds on the previous by demonstrating the link between the singleton pattern, and the sentinel error pattern present in many Go libraries (sentinel errors are public package error variables such as `io.EOF`). I'll discuss the problems with sentinel errors, including their lack of immutability and fungibility, and show a replacement constant error pattern that delivers the same programming experience of a sentinel error while retaining the immutable properties we expect from a constant.
+
+#### Conclusion
+
+This talk has shown three ways of using constants in Go that go beyond giving names to magic numbers and I'll call on the audience to build upon these ideas and write safer and more reliable Go programs using these techniques.
+
+
+// Behind this pithy observation lies the fascinating world of Go's constant types.
+

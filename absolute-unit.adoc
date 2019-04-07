@@ -1,0 +1,7 @@
+= Absolute Unit (test)
+Dave Cheney <dave@cheney.net>
+GopherCon Singapore, November 2018
+
+= Conclusion
+
+This is more than a talk about testing

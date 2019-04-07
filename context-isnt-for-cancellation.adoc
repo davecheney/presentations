@@ -1,0 +1,67 @@
+= Context isn't for cancellation
+
+This is an experience report about the use of, and difficulties with, the context.Context facility.
+
+Many authors have written about the use, misuse, and how they would change context in a future iteration of Go.
+While opinions differs on many subjects, one thing is clear--there is widespead agreement that the values facility on the context tye is orthogonal to its use as a mechanism to control goroutine lifetime.
+
+Many proposals have emerged that attempt to address this overloading of context with a copy on write bag of values, most aproximate thread local storage and are unlikely to be accepted on ideological grounds.
+
+== Context is request scoped
+
+The documentation for context indicaites strongly that context is only for request scoped values--context should not be applied to long lived processes.
+[quote, godoc context]
+____
+Do not store Contexts inside a struct type; instead, pass a Context explicitly to each function that needs it.
+____
+Specifically context should only live in function arguments, never stored in a field or global.
+This makes context applicable only to the lifetime of resources in a request scope.
+While this is a strong use case for context, given Go's lineage on the server, there are other use cases for cancellation where the lifetime of goroutine lives beyond a single request.
+
+== Freeing resources is not the same as cancellation
+
+Even removing
+
+context use overloads 
+
+== context as a hook for cancellation
+
+The stated goal of the context package is to 
+[quote, godoc context]
+____
+Package context defines the Context type, which carries deadlines, cancelation signals, and other request-scoped values across API boundaries and between processes.
+____
+
+Even this description is confused and lacking.
+Deadlines are request scoped variables, yet they are treated separately giving context three different responsibilities.
+
+Yet Contexts most important facility, broadcasting a cancellation signal, is incomplete as there is no way for the canceller to _wait_ for the signal to be acknowledged.
+
+== Looking to the past
+
+As part of this experience report, it's germane to highlight some, well, actual experience.
+In 2012 Gustavo Niemeier wrote a packaged called tomb for lifecycle management, which was used by Juju for the management of the worker processes (goroutines) within the various agents in the Juju system.
+
+Tombs are concerned only with lifecycle management.
+Importantly this is a generic notion of a lifecycle, not tied exclusively to a request, or a goroutine.
+The scope of the resource's lifetime is defined simply by holding a reference to the tomb variable.
+
+Tombs provided several operations, all without 
+- the ability to signal the 
+- the ability to wait on the completion of a goroutine
+
+Combined with 
+
+== 
+
+== Context should become, well, just context
+
+The purpose of context is in it's name, context ; add defintion providing supporting information to make decisions.
+I propose that context becomes just that; an association list of copy on write values.
+
+In decoupling the lifetime management nature of context from its apparent use case; storing scoped information, hopefully that will highlight the orthogonal requirement that Go programmers have -- goroutine lifecycle management.
+
+- goroutine lifecycle management simpler, by 
+
+And best of all, we don't need to wait for Go 2.0 to implement these ideas.
+- the the 

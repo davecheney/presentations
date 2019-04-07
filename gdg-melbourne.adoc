@@ -1,0 +1,36 @@
+= Building a better Ingress for Kubernetes
+GDG Devfest Melbourne, 2018
+
+== Introduction
+
+Hello,
+
+My name is David, for the last year, and perhaps the next week, I work for Heptio.
+We're a plucky little Seattle based startup working on building tools, automation, and visualisations on top of Kubernetes to make Kubernetes easier to use.
+And probably next week the 100 odd of us as joining VMware where we're going to keep doing exactly that.
+
+Anyway, that's enough of that.
+
+== What are we talking about today?
+
+My team, which you're looking at 90% of standing before you today, work within the broad remit of getting client traffic plumbed through to your applications running inside a Kubernetes cluster.
+
+That means in practical terms; HTTP, TLS and Layer 7.
+
+Networking people call this ingress traffic, which comes from the latin to "step in".
+
+There are 
+
+== What should an ingress controller provider?
+
+== What are the problems with Ingress today
+
+Where does ingress fail to mean this promise?
+
+== What are Heptio doing about it?
+
+== What's next?
+
+
+
+

@@ -1,0 +1,74 @@
+= YOW! Contour talk
+
+
+== Introduction
+
+Who am I?
+Who do I work for?
+What am I talking about (and why)?
+
+== Writing Kubernetes components
+
+Case study, Contour, the ingress controller that my team has built and is currently being rolled as a component in the network
+
+- like all good infrastructure components, contour is open source, and written in Go.
+
+== What is k8s?
+
+I've worked in infrastructure most of my career and now working for a company who employ a number of the core k8s contributors its useful for me to 
+
+== What is k8s
+
+The marketing blurb for kuberenetes is it is some scalable workload orchestration system.
+Honestly, these words don't mean much unless you've already drunk a fifth of kool aid, so here's my descriptino of kubernetes
+
+if you put your app in a docker container, kuberenetes will take care of making sure that container is always running on a server.
+
+So that's clearly a flippant description -- albeit fundamenally complete -- but there is a lot that goes into covrering the distance between a python app running in a docker container, and the application being available on the web, on a stable url, with TLS.
+
+This is where I come in, because part of getting your app deployed on kubernetes  is the nextworking parts, specifically the HTTP routers, reverse proxies and load balancers that will get traffic from your users to your app.
+
+== Basic k8s components
+
+The secret sauce that holds k8s together is a concept called the apiserver. Which itself is a thin wrapper around etcd which is your typical key/value replicated database.
+
+the apiserver stores and lets clients query and watch, various objects that represent the desired state in your cluster.
+
+For the purposes of today, the objects we're interested in are
+
+- Pod, is a collection of (docker) containers running on the same machine. Critically while their process namespaces are separate, their network namespaces are shared.
+- Service, an abstract notion of a layer 4 service. Service objects are identified by name, but also an IP address which is reachable by every pod in the cluster.
+- Ingress. An ingress object represents 
+
+
+== What is Ingress?
+
+It's become popular to talk about design philosophies. The principles that guide the design, or the design of the design itself.
+
+Ingress wasn't part of the original design of kubernetes, it wasn't one of the original set of objects. It was added later.
+
+So, what was the reason for adding ingress. What are its design principals?
+
+
+
+
+== What is contour?
+
+== Why did we choose Envoy?
+
+== Contour the project
+
+== Managing Concurrency
+
+== Dependency management
+
+== Developing with docker
+
+== Local deployment
+
+== Functional testing
+
+== Care and feeding
+
+== Conclusion
+

@@ -1,0 +1,220 @@
+= Practical Go
+Dave Cheney <dave@cheney.net>
+London Go meetup
+
+== Introduction
+
+
+We have the Go proverbs, but they are truisms, not guidelines.
+
+I explored some of these ideas a few years ago at Golang UK
+
+
+
+== Conclusion
+
+
+[preface]
+== Preface
+// The goal of the introduction is to outline the philosophy of the language, and thus this the book.
+// Each chapter in turn explains how the topic relates to the philosophy outlined in the introduction
+
+// Write in the first person, as if one were giving a lecture.
+
+The sub title of this book is _N suggestions for writing better Go programs_, but that's a little subjective, isn't it?
+Who's to say which is better
+
+This book is not an introduction to the Go programming language.
+To steal a quote the author Scott Meyers, his Effective C++ books explain "how to use the language, not what or why the language is", and this too is the goal of _Practical Go_.
+This book is a series of a suggestions for writing programs that best capture the philosophy of the Go programming language; readabilty, simplicity, and productivity. 
+
+=== What is Practical Go?
+
+Practical Go is code that is easy to change.
+[quote, Sandi Metz]
+Design is the art of arranging code to work today, and be changable forever.
+
+// need attribution for the quote, rubyconf 2013 or 2009?
+
+If there was a quote that summarises the ethos of writing Pratical Go code it would be this quote from Sandi Metz.
+
+There is nothing wrong with writing software for fun, or writing a program to solve a problem that once completed renders the program obsolete.
+However, for the majority of industrial programming performed today, a program once developed must be deployed, debugged, maintained, extended, and eventually replaced.
+These phases define the _software development lifecycle_.
+
+[quote, Titus Winters, C++Con 2017]
+Software engineering is programming intergrated over time.
+
+This view of writing software differentiates between programming, the exercise at a point in time, and software engineering, the application of engineering principals to the design of software.
+Titus' presentation at C\+\+Con in 2017 is one of the purest expressions of the Google software design philosophy from which Go's design philiosphy is a direct descendant.
+
+=== Clarity
+
+[quote, Titus Winters]
+Code is read many more times than it is written.
+
+The quote above, again from Winters, is by no means exclusive to Google or to C++ programers.
+Readability is key to maintainable software, and maintainable software is software that is easy to change.
+Therefore if software is to be engineered to be maintainable over a period of time from months to decades, it must be understandable by all who will consult and modify its code.
+
+// proverb: Clear is better than clever.
+[quote, Hal Abelson and Gerald Sussman, Structure and Interpretation of Computer Programs]
+Programs must be written for people to read, and only incidentally for machines to execute.
+
+// explain what the word means in the abstract
+The source code of a program is an intermediary form, somewhere between the author's concept and the computer's executable notation.
+While the compiler focuses on reducing the source of a program to atoms which have a direct analogue to machine code instructions, readers of your source code must operate at the level of the source as presented.
+In that sense source code is an encoded form of an idea, a process, an algorythm, or a formula.
+Just like musical notation.
+
+// explain why it is important to programmers
+I doubt anyone would disagree with readability as a core goal of Practical Go.
+Go places readability above all other considerations, because source code is written to be read.
+However, readability is fundamentaly subjective.
+How does one prove that a piece of code is readable?
+Many of the choices relating to Go's syntax speak to the needs of the reader.
+For example, Go's syntax is sparten because of its drive for readability.
+
+// http://www.gigamonkeys.com/code-reading/
+[quote, Peter Seibel]
+We don’t read code, we decode it. We examine it. A piece of code is not literature; it is a specimen.
+
+// explain how Go enforces/encourages this property
+An excellent example of Go's commitment to readability is +go fmt+, Go's built in source code formatting tool.
+But what is it that is so important about +go fmt+, and why is it important to +go fmt+ your source code?
+Part of the reason is, to avoid needless debate.
+Source code formatting is the most pernicious of these, yet least, important issue, providing that everyone agrees on a single format.
+It’s not enough that the code is well formatted according to local custom, but there is precisely one way Go code should be formatted.
+The outcome is that nearly all Go code is +go fmt+'ed _by convention_, and adherence to this convention is an indicator of alignment with the values of the language.
+
+[quote, C. A. R. Hoare, Hints on Programming Language Design 1973]
+The readability of programs is immeasurably more important than their writeability.
+
+//* Familiarity -- Through standardisation, simple convention.
+But readability goes deeper than just formatting.
+As Go programmers we can pick up a piece of Go code written by anyone in the world and start to read it.
+A perchant for concise naming, small interfaces, use of the built in map and slice types, the mantra of composition over inheritance, a simple methodology for declaring what is public or private in your package, all contribute to a convention which provides a sense of familiarity.
+All Go code uses these same basic building blocks, so all Go code is accessible to a reader who is versed in the language, not some organization specific dialect.
+
+.Explicit is better than implicit
+Thus, well written Go programs are highly readable.
+
+https://twitter.com/CodeWisdom/status/851495746402570240?s=09
+
+“It was an explicit design decision (for readability) that Go does not have ternary expressions.
+
+Sometimes Go makes you write a few more lines, but we accept that cost for explicitness and legibility.” Bradfitz - issue NNN
+
+“It definitely reduces typing, but that's not a virtue, as code is read vastly more often than it is written. You gotta optimize for comprehension “ -- me ?
+
+“I think the point of Go is less about performance and more about providing a simple language that speeds up software development (not necessarily software itself) and allows developers the power of a compiled, GC, and type-safe language without having to deal with the gotchas of languages like C” -- Rob / Ian ?
+
+[quote, Sameer Ajmani]
+Not specifically wrapping, but I have a strong preference to use struct literals with named fields, one per line.
+
+// https://twitter.com/Sajma/status/875905155887226881?s=09 
+
+http://www.squirrel.nl/pub/PBP_refguide-1.02.00.pdf
+
+- just because something was hard to write, that does not mean it should be hard to read
+https://twitter.com/CodeWisdom/status/887049034069921795?s=09
+https://twitter.com/grepory/status/886700568600694784?s=09
+
+=== Simplicity
+indexterm:[Simplicity]
+
+// http://zoo.cs.yale.edu/classes/cs422/2011/bib/hoare81emperor.pdf
+
+[quote, C. A. R. Hoare, 1980 Turing Award Lecture]
+There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult.
+
+// explain what the word means in the abstract
+Simplicity is not a synonym for easy, nor is achieving a design which is simple an easy task.
+Putting this into the context of programming languages, something which is simple may take a little longer, it may be a little more verbose, but it will be more comprehensible, more estensible, more adaptable, and exibit lower coupling.
+
+[quote, Edsger W.Dijkstra]
+We know we have to keep it crisp, disentangled, and simple if we refuse to be crushed by the complexities of our own making.
+// https://www.cs.utexas.edu/users/EWD/transcriptions/EWD12xx/EWD1243a.html
+
+[quote, Dennis Ritchie]
+____
+A language that doesn’t have everything is actually easier to program in than some that do.
+____
+
+[quote, unknown]
+That the Go people are perfectly prepared to resort to brute force instead of (excessive) cleverness and thus that when you read the code in, eg, the standard packages you get inspired to do the same.
+
+// http://www.azquotes.com/quote/596303
+
+// explain why it is important to programmers
+Good programmers write simple programs, not simplistic ones.
+They bring their knowledge, their experience, and their failures to new designs, to learn from and avoid mistakes in the future.
+You should design your programs with simplicity as a goal, not aim to be pleasantly surprised when your solution happens to be simple.
+
+Every language introduced in my life time that purports to be simple.
+Each new language offers as a justification, and an enticement, their inherent simplicity.
+On the other hand, I cannot point to a language introduced in the same time frame with the rallying call of complexity--_more complexity than it's contemporaries_--but many claim instead to be _powerful_.
+The idea of proposing a new language which designed to offer inherently higher levels of complexity is clearly laughable, yet this is exactly what so many contemporary languages evolve to become; complicated, baroque, messes.
+A parody of the languages they sought to replace.
+
+So, every language starts out with simplicity as a goal, yet many of them fail to achieve this goal.
+Eventually falling back on notions of expressiveness or power of the language as justification for a failure to remain simple.
+
+One major reason I believe is to be thought successful a language should somehow include the complete set of popular features from its predecessors.
+If you would listen to Go's critics, they demand that new programming languages should push forward the boundaries of type theory and computer science.
+Thus, clumsy syntax and non-orthogonality is justified by the difficulty of capturing nuanced corner cases of the language, many of them self inflicted by years of careless feature creep.
+In reality, this is a veiled request that any new language include all the bits they felt were important in their favourite old language, while still holding true to the promise of whatever it was that drew them to investigate your language in the first place.
+
+// explain how Go enforces/encourages this property
+Simplicity and readablity are closely related, but simplicity goes far deeper than source code on the page.
+Go is a language that chooses to be simple, and it does so by deliberately not including many features that other programming languages have accustomed their users to believing are essential.
+
+Go is a language designed to be simple.
+This was the message that spoke to me when I first learned about the language in 2009, and is the message that has stayed with me to this day.
+The desire for simplicity is woven through every aspect of the language, a fact which Donovan and Kernighan described as "Go's campaign of radical simplicity"<<gopl>>>.
+Go's focus on simplicity is a feature, not an accident.
+Thus, a Practical Go program is inherently simple.
+
+=== Productivity
+
+// practical go code is rooted in sustainable engineering practices
+
+The third axiom of Go is productivity.
+Go is designed to be used by teams of programmers, even if you may not know each other personally.
+Small annoyances such as a lack of warnings, a refusal to allow unused imports, or unused local variables, are all facets of choices designed to help Go work well for large teams.
+This does not mean that Go is not suitable for the single developer working alone, or a small program written for a specific need, but speaks to the fact that a number of the choices within the language are aimed at the needs of growing software teams.
+
+- clean code
+- SOLID
+- TDD
+- anti fragile
+
+decoupled code, srp
+
+There is more to the success of Go than just being simple, and this is the realization that for a programming language to be successful, it must coexist inside a larger environment.
+Large programs are written by large teams.
+I don’t believe this is a controversial statement.
+
+The inverse is also true.
+Large teams of programmers, by their nature, produce large code bases.
+Projects with large goals will necessitate large teams, and thus their output will be commensurate.
+This is the nature of our work.
+
+In his 2017 Gophercon keynote footnote:[https://blog.golang.org/toward-go2] Russ Cox used the word _scale_ to denote one of Go's explicit design goals
+
+[quote, Russ Cox, GopherCon 2017 keynote address]
+____
+The goals we have for Go today are the same as in 2007. We want to make programmers more effective at managing two kinds of scale: production scale, especially concurrent systems interacting with many other servers, exemplified today by cloud software; and development scale, especially large codebases worked on by many engineers coordinating only loosely, exemplified today by modern open-source development.
+____
+
+These statements echo earlier ones by Rob Pike
+
+[quote, Rob Pike, https://talks.golang.org/2012/splash.article]
+____
+The goals of the Go project were to eliminate the slowness and clumsiness of software development at Google, and thereby to make the process more productive and scalable.
+The language was designed by and for people who write—and read and debug and maintain—large software systems.
+____
+
+Three tenets which are presented in increasing order of subjectivity
+
+- Simple does not mean easy, we know that, but it also does not mean unsphisticated or crude

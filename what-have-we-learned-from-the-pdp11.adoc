@@ -1,0 +1,532 @@
+= What have we learned from the PDP-11
+Papers We Love SF
+Dave Cheney <dave@cheney.net>
+
+== Welcome
+
+Hello.
+
+Thank you for coming to hear me speak tonight.
+It's my distinctly unnerving privelege to be able to address you at the home of this great insitution.
+Papers We Love is a wonderfully whimiscal, and crucially important, endeavour, especially in our field which has a tendancy to overlook even the recent past.
+I would like to thank Ines for accepting my proposal, GitHub for generously hosting tonights event, and my employer, Heptio, for letting me turn a brief layover into a week long stopover.
+
+> In the six years that the PDP-11 has been on the market, more than 20,000 units in 10 different models have been sold.
+> Although one of the original system design goals was a broad range of models, the actual range of 500 to 1 (in cost and memory size) has exceeded the design goals.
+>
+> The PDP-11 was designed to be a small computer, yet its design has been successfully extended to high-performance models.
+> This paper recollects the experience of designing the PDP-11, commenting on its success from the point of view of its goals, its use of technology, and on the people who designed, built and marketed it.
+
+The paper I have chosen tonight is a retrospective on a computer design.
+It is one of a series by Gordon Bell and his various co-authors, spanning the design, growth, and eventual replacement of the companies iconic line of PDP-11 mini computers.
+
+- C. G. Bell, R. Cady, H. McFarland, B. Delagi, J. O’Laughlin, R. Noonan and W. Wulf, “A New Architecture for Mini-Computers - The DEC PDP- 11,” _Proceedings of the Sprint Joint Computer Conference_, pp. 657-675, AFIPS Press, 1970.
+- G. Bell, W. D. Strecker, “Computer What Have We Learned from the PDP-11,” _The 3rd Annual Symposium on Computer Architecture Conference Proceedings_, pp. l-14, 1976.
+- W. D. Strecker, “VAX-11/780: A Virtual Address Extension to the DEC PDP-11 Family,” _Proceedings of the National Computer Conference_, pp. 967-980, AFIPS Press, 1978.
+- G. Bell, W. D. Strecker, "Retrospective: what have we learned from the PDP-11—what we have learned from VAX and Alpha", _Proceedings of the 25th Annual International Symposium on Computer Architecture_, pp. 6-10, 1998.
+
+It is fitting that 2017 represents the 60th anniversary of the founding of the company that produced the PDP-11.
+It's also 40 years since this paper was written, so I thought it would be entertaining to review Bell's retrospective through the lens of our 20/20 hindsight.
+
+The PDP-11 also has recurring personal connection for me.
+This is me, aged, maybe 4, playing `ADVENTURE` running on a PDP-11 at my father's work over a, i'm guessing, 300 baud accoustic modem.
+
+== Who were Digital Equipment Corporation?
+
+To set the scene for this paper, first we should talk a little about the company that produced the PDP-11, the Digital Equipment Corporation of Maynard, Massachusetts.
+
+Digitial Equipment Corporation, better known as DEC, was founded in 1957 by Ken Olsen, and Harlan Anderson.
+Olsen and Anderson had worked together at MIT's Lincon Laboratory where they noticed that students would queue for hours to use the TX-0, an experimental interactive computer designed by Wes Clarke.
+
+
+// TX-0
+// http://www.computerhistory.org/pdp-1/e16344596cdd060839c6e72ae9c26379/
+// http://www.computerhistory.org/collections/catalog/102631256
+
+This is the TX-0.
+What do you notice about it?
+
+Let's compare it to something like the IBM 704, a contemporary mainframe, which the MIT students largely ignored.
+
+// http://www.zl2al.com/category/ibm-704-computer/
+
+// IBM 704
+// https://en.wikipedia.org/wiki/IBM_704#/media/File:IBM_Electronic_Data_Processing_Machine_-_GPN-2000-001881.jpg
+
+Oslen and Anderson recognised that this desire for an interactive computer experience was so strong that there was a market for "small" computers dedicated to this role.
+
+// https://en.wikipedia.org/wiki/PDP-1#/media/File:Steve_Russell_and_PDP-1.png
+
+DEC's first offering was the PDP-1, effectively a commercial version of the TX-0.
+While not the focus of this talk, the PDP-1 was the host for the first game to be written for a minicomputer, Steve Russell's "Spacewar!".
+
+It's also worth noting that the name PDP is an acronym for "Programmable Data Processor", as at the time, the term "computer" referred to an individual who computes, a low status clerical position.
+
+Following the success of the PDP-1, DEC's offerings blossumed into several families of computers, including the 18bit PDP-4, the 36bit PDP-6, and the 16 bit PDP-11, all of which were designed at least in part by Gordon Bell the author of tonight's paper.
+
+== Introduction
+
+> A computer is not solely determined by its architecture; it reflects the technological, economic, and human aspects of the environment in which it was designed and built.
+> 
+> Most of the non-architectural design factors lie outside the control of the designer: the availability and price of the basic electronic technology, the various government and industry rules and standards, the current and future market conditions.
+> The finished computer is a product of the total design environment.
+
+Right from the opening paragraph, Bell is letting us know that the success of any computer project is not building the _best_ computer but building the _right_ computer.
+
+> In this chapter, we reflect on the PDP-11: its goals, its architecture, its various implementations [because it was designed to be a _family_ of computers], and the people who designed it.
+> We examine the design, beginning with the architectural specifications, and observe how it was affected by technology, by the development organization, the sales, application, and manufacturing organizations, and the nature of the final users. 
+
+By this time, 1976, Bell has been the VP of engineering at DEC for nearly four years.
+It's clear that he's considering the success of the PDP-11 in the wider context of the market which it was both developed to serve, and later which influenced the evolution of the PDP-11 line.
+
+In keeping with the spirit of Bell's words, tonight I'm going to focus on two aspects of the paper; the technology and the people.
+
+== Backgound: thoughts behind the design
+
+Bell opens with this observation
+
+> It is the nature of computer engineering to be goal-oriented, with pressure to produce deliverable products.
+> It is therefore difficult to plan for an extensive lifetime.
+
+Right here, this is your agile mindset.
+This is 25 years before Snowbird and the birth of the agile manifesto, and Bell is talking about the pressure to ship a minimum viable product trampling all over notions of being able to plan elaboratly.
+When this was writtien DEC weren't a startup despirate to make their bones, they were an established company with several successful product lines in the market.
+
+> Nevertheless, the PDP-11 evolved rapidly, and over a much wider range than we expected.
+> This rapid evolution would have placed unusual stress even on a carefully planned system.
+> The PDP-11 was not extremely well planned or controlled; rather it evolved under pressure from implementation and marketing groups.
+
+DEC had a hot product on their hands, and they were struggling to meet the demands of their users.
+
+> The term architecture is used here to describe the attributes of a system as seen by the programmer, i.e., the conceptual structure and functimal behavior, as distinct from the organization of the data flow and controls, the logical design, and the physical implementation.
+> -- G. M. Amdahl G. A. Blaauw and F. P. Brooks Jr., Architecture of the IBM System/360 1964
+
+Like the IBM/360, the PDP-11 was designed not just as a single model computer which could be expanded via harware addon's, but a range of models, for which the goal of software written for a small PDP-11 would be compatible with the larger one.
+
+Because of the open nature of the PDP-11, anything which interpreted the instructions according to the processor specification, it _was_ a PDP-11, and so there had been a rush within DEC, once it was clear that the PDP-11 market was heating up, to build implmentations; fast, expensive ones and a cost reduced slower ones.
+
+// graph of pdp-11 performance 
+
+> Despite its evolutionary planning, the PDP-11 has been quite successful in the marketplace: over 20,000 have been sold in the six years that it has been on the market.
+> It is not clear how rigorous a test (aside from the marketplace) we have given the design, since a large and aggressive marketing organization, armed with software to correct architectural inconsistencies and omissions, can save almost any design.
+
+Here Bell introduces the hypothesis for the paper; was the PDP-11 a great design, or was it simply the beneficiary of a hyperactive marketing department.
+
+> An earlier paper described the design goals and constraints for the PDP-11, beginning with a discussion of the weaknesses frequently found in minicomputers.
+> The designers of the PDP-11 faced each of these known minicomputer weaknesses, and our goals included a solution to each one.
+> In this section we shall review the original design goals and constraints, commenting on the success or failure of the PDP-11 at meeting each of them.
+
+At this point Bell reitterates the nine design goals of the project and envaluates them against the design criteria Bell and his fellow authors identified in their 1969 design document.
+
+=== Address space
+
+> The first weakness of minicomputers was their limited addressing capability.
+> The biggest (and most common) mistake that can be made in a computer design is that of not providing enough address bits for memory addressing and management.
+
+Minicomputers of the era often came with a 12 bit address space, offering just 4096 addresses each holding a 12 bit value called a word.
+It's worth taking an aside to know that the word _minicomputer_, which later came to be understood to be an indication of their physical size, or computing performance, was originally a contraction of the words 'minimal computer'.
+The canonical example was the PDP-8, DEC's previous offering, which offered just eight instructions.
+
+The reason for this tiny address spaces was cost.
+Memory was extremely expensive in the 60's and early 70's as each bit consisted of a tiny iron dougnut woven into a mesh of control and sense wires which would individually control the magnetic polarity of each donut, or core.
+Cores were arranged into a plane, in this case repesenting 4096 bits, then stacked to produce words, so a 4096 word memory contained 16 million cores, at least partially hand assembled.
+You can see why memory was expensive.
+
+While the first PDP-11 models only shipped with 4 or 8 kilo words of memory, the processor address space permitted up to 32 kilo words, or more commoly known as 64 kilobytes of addressable memory.
+Bell and the PDP-11's other designers knew that core memory prices were continuing to fall, and that semiconductor memory, while not cost effective at that time, would continue to drive down the price per bit of storage.
+Thus the amount of memory that customers could afford to buy would increase over time as "... users tend to buy "constant dollar" systems", but alas
+
+> The PDP-11 followed this hallowed tradition of skimping on address bits, but it was saved by the principle that a good design can evolve through at least one major change.
+>
+> For the PDP-11, the limited-address problem was solved for the short run, but not with enough finesse to support a large family of minicomputers.
+> That was indeed a costly oversight, resulting in both redundant development and lost sales.
+> It is extremely embarassing that the PDP-11 had to be redesigned with memory management only two years after writing the paper that outlined the goal of providing increased address space. 
+
+Even with the designers forsight, Bell noted that not two years after its introduction the PDP-11 had to be redesigned to include a memory management unit to allow access to a larger 18 bit address space at the cost of design rework, lost sales, and increased programming complexity.
+A few years later the a futher 4 bits were added.
+
+In fairness to Bell, while he chastised himself for not seeing this coming, this pattern of insuffient address bits continues to this day.
+
+Who remembers the dos 640k limit?
+Who remembers fighting with himem.sys?
+Who remembers the nonsense of XMS and EMS memory before we escaped dos into 32 bit operating systems?
+Who struggled with 32 bit programs that need more than 2gb of heap.
+
+=== Additional registers
+
+> A second weakness of minicomputers was their tendency not to have enough registers.
+> This was corrected for the PDP-11 by providing eight 16-bit registers.
+> Later, six 32-bit registers were added for floating-point arithmetic.
+> This number seems to be adequate: there are enough registers to allocate two or three (beyond those already dedicated to program counter and stack pointer) for program global purposes and still have registers for local statement computation.
+> More registers would increase the multiprogramming context switch time and confuse the user.
+
+The PDP-11 was intended as a successor to the PDP-8 which had only a single register, the accumualtor.
+This was not uncommon, even for mainframes of the day.
+If additional registers were provided, they would be specifically for use in indexing or address operations, they were not general purpose.
+
+There is a strong interplay between the number of registers available in an architecture, the number of address bits, and the size of the instruction.
+All of these factors are rooted in the scarecity of memory, so it's worth taking a detour into instruction set design.
+
+In Von Neumann machines (of which almost all computers of the 60's where) the program and its data share the same, very limited, address space, so inefficient programs didn't just waste computing time, they wasted memory.
+A slow program is somewhat tolerable, providing you can wait for the answer, but a program that is too large to fit in memory is a fatal condition.
+
+So you want your instruction encoding to be as efficient as possible in memory. 
+Let's consider the very common case of moving an value from one location in memory to another.
+How many bits would you need to describe that operation?
+
+One implmentation would be 
+
+ MOV <addr> <addr>
+
+Which would take 16 bits for the source, and a further 16 for the destination, and the some bits to encode the `MOV` operation itself.
+Let's call it 40 bits; which is both not a multiple of 16, but it is a multiple of 8, which would mean a complicated 2.5 word instruction encoding.
+
+What if we were to load that address into a register?
+
+ MOV (R0), (R1)
+
+The parenthesis, in DEC assembly, indicate the value stored at the address stored in the register.
+
+Then you'd only need to describe the register, the PDP had 8 registers, so we'd need 3 bits, so this could easily fit into a 16 bit word, rather than requiring a variable length encoding.
+It actually turns out that the PDP-11 uses 6 bits per register, but that still left 4 bits for the operand when two arguments were present.
+
+// PDP1120-pdf page 33
+
+=== Lack of hardware stack 
+
+> A third weakness of minicomputers was their lack of hardware stack capability.
+> In the PDP-11, this was solved with the autoincrement/auto- decrement addressing mechanism.
+> This solution is unique to the PDP-11 and has proven to be exceptionally useful. (In fact, it has been copied by other designers.)
+
+Nowadays It's hard to imagine hardware that didn't have a notion of a stack, but consider that a stack isn't as important if you don't need recursion.
+
+The design for the PDP-11 was laid down in 1969 and if we look at the programming languages of the time, FORTRAN, COBOL did not support recursive function calls; so neither did the hardware that ran them. 
+The function call sequence would often store the return address at a blank word inside the procedure, making recusion impossible.
+Interpreted languages at the time like Dartmouth's BASIC did support recursion, but the job of maintaining a stack was left to the BASIC intepreter.
+
+The PDP-11 defined a stack pointer as we understand today, a register that controlled the operation of PUSH and POP style operations, but the PDP-11 went one better and permitted any register to operate as a stack pointer by adding an auto increment modifier on the MOV instruction.
+
+For example, this single instruction.
+
+ MOV R4, -(R6) 
+
+Will deincrement the value stored in R6 by two, then store the value in R4 into the address stored in R6.
+This is the how you push a value onto the stack in PDP-11 assembler.
+If anyone has done any ARM programming, this will be very familiar to you.
+
+There is no need for a dedicated PUSH or POP instruction, saving instruction encoding space, and allowing any register to be used as a stack pointer, although R6 was traditional, and assumed by the hardware if you used the provided subroutine call instruction.
+
+=== Context switching and interrupts
+
+> A fourth weakness, limited interrupt capability and slow context switching, was essentially solved with the device of UNIBUS interrupt vectors, which direct device interrupts.
+
+At this point in DEC's lifetime, almost all of it's products, save the PDP-10 which was DEC's mainframe offering, were aimed at interactive, laboratory or process control uses.
+Interrupt responsiveness, the delay between an interrupt signal being raised, and the computer able to process the interrupt, is key in interactive performance, especially the known latency in real time situation.
+
+The PDP-11 addressed this by permitting the device that raised the interrupt to supply the address to service the interrupt. 
+Bell proudly reported that 
+
+> The basic mechanism is very fast, requiring only four memory cycles from the time an interrupt request is issued until the first instruction of the interrupt routine begins execution.
+
+// http://www.theregister.co.uk/2013/06/19/nuke_plants_to_keep_pdp11_until_2050/
+
+=== Character handling
+
+> A fifth weakness of prior minicomputers, inadequate character-handling capability, was met in the PDP-11 by providing direct byte addressing.
+
+Strings and character handling were of increasing importance during the 1960's as scientific and business computing converged.
+The predominent character encodings at the time were 6 binary coded decimals which provided just enough space for upper case letters, the digits 0 to 9, space, and a few punctionation characters sufficient for printing financial reports.
+
+> One design constraint that turned out to be expensive, but probably worth it in the long run, was that the word length had to be a multiple of eight bits.
+> Previous DEC designs were oriented toward 6-bit characters, and DEC has a large investment in 12-, 18-, and 36-bit systems.
+> The notion of word length is somewhat meaningless in machines like the PDP-11 and the IBM System/360, because data types are of varying length, and instructions tend to be multiples of 16 bits.
+
+// https://en.wikipedia.org/wiki/BCD_(character_encoding)#48-character_BCD_code
+Because memory was so expensive, placing one 6 bit character into a 12 or 18 bit word was unacceptable so characters would be packed into words, in the case of the PDP-8, two to word.
+
+This proved efficient for storage, but complex for operations like move, compare, and concatenate, which had to account for a character appearing in the top or bottom of the word, expending valuable words of program memory to cope.
+The problem was addressed in the PDP-11 by allowing the machine to operate on memory as both a 16-bit word, and the increasingly popular 8-bit byte.
+The expenditure of 2 additional bits per character was felt to be worth it for simpler string handling, and the easy adoption of the increasingly popular 7-bit ASCII standard of which DEC were a proponent at the time.
+
+Bell concludes this point with the throw away line
+
+> Although string instructions are not yet provided in the hardware, the common string operations (move, compare, concatenate) can be programmed with very short loops.
+
+And indeed they can, one can write a string copy routine using two instructions, assuming that the source and destination are already in registers
+
+ loop: MOV (Rsrc)+, (Rdst)+
+       BNE loop
+
+The routine takes full advantage of the fact that `MOV` updates the processor flag.
+This is why C strings are terminated with zeros.
+
+=== Read only memories
+
+> A sixth weakness, the inability to use read-only memories, was avoided in the PDP-11.
+> Most code written for the PDP-11 tends to be pure and reentrant without special effort by the programmer, allowing a read-only memory (ROM) to be used directly.
+> ROMs are used extensively for bootstrap loaders, program debuggers, and for normal simple functions.
+> Because large ROMs were not available at the time of the original design, there are no architectural components designed specifically with large ROMs in mind.
+
+In process control application, when the program is fixed, having to load the program each time from magentic or punched tape is expensive, both in terms of the purchase and maintainance of the infrequently used IO devices, and in time.
+It would be far more convenient if the program could always be present in the computer at startup.
+However, because of the extreme memory shortage of early minicomputers, and the lack of notion of a hardware stack, self modifying code was often unavoidable, which limited the use of read only memory in previous minicomputers.
+
+Bell is justifiably proud that the PDP-11 design knocked that one out of the park.
+
+=== Primitive I/O Capabilities
+
+During the late 60's when the PDP-11 was being designed, input/output was very expensive.
+Mainframes of the time use a model called channel i/o, where the main CPU sent a small program to a channel controllerwhich would execute the program and report the result.
+The program would usually instruct a tape drive to load a record, or a punch to punch a card.
+
+Channel IO was important because it allowed the mainframes to offload the oversight of the IO operation to another processor, freeing their valuable cycles for processing, and permitting overlapped IO operations.
+The downside was channel IO required a smaller CPU inside each channel controller which increased the cost of the installtion.
+
+In the minicomputer world, IO was usually performed directly by the CPU, usually with specialised instructions hard coded for a paper tape or console.
+
+The PDP-11 introduced something unique, memory mapped io.
+This isn't memory mapped io that you might be used to with the `mmap(2)` system call, but rather the convention that specific addresses in memory weren't just dumb storage, but their contents were _mapped_ onto cards plugged into the backplane, which DEC called the UNIBUS.
+
+For example, a value written to 0777566 would be written to device attached to the console, usually a hard copy terminal.
+
+If you read the value at address 0777570, you get the value entered in binary on the front panel switches.
+This was often used as an early form of configuration when running small programs; to set memory size, load addresses, etc.
+
+// http://doc.cat-v.org/unix/v6/operating-systems-lecture-notes/pdp11/doc/devs
+
+Similarly talking to the RK05 disk drive was accomplished by writing the sector you wanted to access to 0777412, the address to trasfer that sector into to address 0777410, and the number of _words_ to 0777406.
+Then by setting bit zero at address 0777404 to 1, the drive will transfer the number of words you asked for directly into memory.
+
+My favorite has got to be the KW11-L line clock.
+
+// http://bitsavers.informatik.uni-stuttgart.de/pdf/dec/pdp11/1140/EK-KW11L_TM-002_KW11-L_Line_Time_Clock_Manual_Jul74.pdf
+
+The value at address 777546 increments itself every 20ms.
+Why does it increment ever 20ms?
+Because that's the frequency of the AC waveform here in the US.
+Yup, just like a bedside clock, the PDP-11's told time by counting the number of power line cycles.
+
+=== Cost of programming
+
+> A ninth weakness of minicomputers was the high cost of programming them.
+> Many users program in assembly language, without the comfortable environment of editors, file systems, and debuggers available on bigger systems.
+> The PDP-11 does not seem to have overcome this weakness, although it appears that more complex systems are being built successfully with the PDP-11 than with its predecessors, the PDP-8 and PDP-15
+
+Because of their minimal nature, mini computers were not pleasent environments on which to write programs.
+Often this would involve tedious switch flipping, or perhaps editing and assembling a program on another, larger, computer. 
+This is very much akin to how those of us who work with microcontrollers are still programming today; editing on a large workstation, compiling a target hex file, then transfering that hex to the microcontrollers flash storage.
+
+However, it seems Bell was unaware of the work of Thompson and Ritchie, who were busy constructing their own programming environment on their PDP-11 in New Jersey.
+
+== People: builders of the design
+
+As an amature historian--and I caution you that I use these words extremely loosely--this section is the most interesting to me, because the study of the history of computing, or really any historical subject, is fundamentally a study of people, and the context surrounding the decisions they make.
+
+Bell recognises that while computers are build from technology--they are built by people and so he spends this section describing the group dynamics at DEC during the development of the PDP-11.
+
+> The problems faced by computer designers can usually be attributed to one of two causes: inexperience or second-systemitis.
+> Inexperience is just a problem of resources: Are there designers available?
+> What are their backgrounds?
+> Can a small group work effectively on architectural specifications?
+> Perhaps most important is the principle that no matter who the architect might be, the design must be clearly understood by at least one person.
+> As long as there is one person who clearly understands the total design, a project can usually succeed with many inexperienced designers.
+> 
+> Second-systemitis is the tendency of many designers to specify a syste that solves all of the problems faced by prior systems-and borders on the unbuildable.
+
+Here Bell recalls the words of Fred Brooks in his book The Mythical Man-Month.
+
+Brooks, the lead for the OS/360 operating system for the IBM/360 struggled for years to build a single operating system that would run across the range of IBM/360 models--this was after all the goal of the 360 project.
+Brooks' words must have been fresh in Bell's mind when he wrote this paragraph.
+
+Bell is warning the readers specifically that, secondy system syndrome, is among the most pernicious of problems to beset a design team.
+
+=== The system architecture
+
+> The PDP-11/20 was the first model designed.
+> Its design and implementation took place more or less in parallel, but with far less interaction between architect and builder than for previous DEC designs, where the first architect was the implementor.
+> As a result, some of the architectural specifications caused problems in subsequent designs, especially in the area of microprogramming.
+
+The PDP-11 design team started work reportedly in March of 1968 with the PDP-11/20 being released a year later.
+This is a very short time to bring a computer to market.
+
+// http://hampage.hu/pdp-11/birth.html
+
+What Bell is highlighting is that with a short timeline and limited interaction with the artchitect of the system, the PDP-11/20 implementors built what it said on the spec, even when it didn't make sense or wasn't clear.
+
+Here's an example of a bug in the PDP-11/20
+
+ MOV R0,(R0)+
+
+Say that `R0` contains `1000`.
+The CPU should write the value `1000`, into address `1000` then increment `R0` to `1002`.
+However, on the PDP-11/20, but no later models, so it increments `R0` to `1002` then writes it to address `1000`.
+
+// pdp1120 pdf page 36
+
+// https://www.quora.com/Why-is-the-rule-against-modifying-a-variable-twice-within-a-sequence-point-a-precondition-for-the-C-optimizer
+
+=== Chronology of the design
+
+This section is a perfect window into the operation of DEC in the late 1960's
+
+> The internal organization of DEC design groups has through the years oscillated between market orientation and product orientation.
+> Since the company has been growing at a rate of 30 to 40% a year, there has been a constant need for reorganization.
+> At any given time, one third of the staff has been with the company less than a year.
+
+Raise your hand if this sounds familiar to you.
+
+> At the time of the PDP-11 design, the company was structured along product lines.
+> The design talent in the company was organized into tight groups: the PDP-10 group, the PDP-15 (an 18-bit machine) group, the PDP-8 group, an ad hoc PDP-8/S subgroup, and the LINC-8 group.
+> Each group included marketing and engineering people responsible for designing a product, software and hardware.
+> As a result of this organization, architectural experience was diffused among the groups, and there was little understanding of the notion of a range of products.
+
+Here bell spends some time iterating through each group, listing their strengths and weaknesses as sponsors for the PDP-11.
+
+I won't recount all the choices, with the exception of
+
+> The PDP-10 group was the strongest group in the company.
+> They built the biggest, most powerful time-shared machines.
+> It was essentially a separate division of the company, with little or no interaction with the other groups.
+> Although the PDP-10 group as a whole had the best understanding of system architectural controls, they had no notion of system range, and were only interested in building higher-performance computers.
+
+Having recently worked for a software company where one or two of the oldest products made almost all the company profit I have some sympathy for Bell's position.
+
+The PDP-10 was DEC's version of a mainframe; enormously powerful, but was only available at one price point.
+
+> The first design work for a 16-bit computer was carried out under the eye of the PDP-15 manager, a marketing person with engineering background.
+> This first design was called PDP-X, and included specification for a range of machines.
+> As a range architecture, it was better designed than the later PDP-11, but was not otherwise particularly innovative.
+> Unfortunately, this group managed to convince management that their design was potentially as complex as the PDP-10 (which it was not), and thus ensured its demise, since no one wanted another large computer unrelated to the company's main large computer.
+
+And here Bell teaches us an important lesson; when your competition is in the same reporting chain, they have more effective tools to ensure your project is killed before it reaches the market.
+
+> In retrospect, the people involved in designing PDP-X were apparently working simultaneously on the design of Data General.
+
+This shade might go unnoticed by the casual reader, but it's a reference to a defection to rivel that of Shockely's tratorous eight a decade earlier.
+
+Edson de Castro, the product manager of the PDP-8, and lead on the PDP-X project had left DEC, along with several of his team to form Data General.
+The record is not clear if de Castro left because the PDP-X was canceled or if his departure was the death knell for the faltering project.
+In either case, the result was clear, as Bell writes.
+
+> As the PDP-X project folded, the DCM (Desk Calculator Machine, a code name chosen for security) was started.
+> Design and planning were in disarray, as Data General had been formed and was competing with the PDP-8, using a very small 16-bit computer.
+
+// http://ed-thelen.org/comp-hist/dg-nova.html
+
+Data General were now competing with DEC with their 16 bit Nova against the space that the PDP-8 had defined and de Castro knew like the back of his hand; rack mounted laboratory equipment.
+
+The Desk Calculator Machine, so named to throw the PDP-10 group off their scent, was scrapped at it's first design review.
+
+> The DCM review took only a few minutes; the general feeling was that the machine was dull and would be hard to program.
+
+So once again DEC appeared to be back at square one, with no 16 bit design to offer.
+
+> One of the DCM designers, Harold McFarland, brought along the kernel of an alternative design, which ultimately grew into the PDP-11.
+> Several people worked on the design all weekend, and ended by recommending a switch to the new design.
+> The machine soon entered the design-review cycle, each step being an n + 1 of the previous one.
+> As part of the design cycle, it was necessary to ensure that the design could achieve a wide cost/performance range.
+> The only safe way to design a range is to simultaneously do both the high- and low-end designs.
+> The 11/40 design was started right after the 11/20, although it was the last to come on the market.
+> The low and high ends had higher priority to get into production, as they extended the market.
+
+Again Bell shows us the design of the PDP-11 as an architecture, one capable of scaling up _and_ down.
+The focus on scaling up market is obvious, technology advances allow later models to offer greater performance for what Bell called a "constant dollar".
+The ability for a design to scale down is shows an awareness that offering greater performance at a "constant dollar" leaves the design vulnerable to competitors using the same technology to undercut you with products of a similar contempotary performance for less money.
+Bell wrote these words in 1976, more than 20 years before Clayton Christiansen published his _Innovators dilemma_.
+
+== THE PDP-11: AN EVALUATION
+
+The last section of the paper, having evaluated the PDP-11 against it's predecessors, Bell proceeds to evaluate the -11's against itself
+
+> The end product of the PDP-11 design is the computer itself, and in the evolution of the architecture we can see images of the evolution of ideas. In this section, we outline the architectural evolution, with a special emphasis on the UNIBUS.
+> In general, the UNIBUS has behaved beyond all expectations.
+> Several hundred types of memories and peripherals have been interfaced to it; it has become a standard architectural component of systems in the $3K to $100K price range (1975).
+
+What is the unibus
+
+Since the earliest computers, the design of plugin modules connected by a wired backplane.
+// picture of a backplane
+In the days of vaccume tubes this was a necessity because of the unreliabilty of tubes and the need to replace modules quickly.
+// https://en.wikipedia.org/wiki/File:IBM_700_logic_module.jpg
+Later a desire to build computers out of a standardized modules resulted in the generalised logic blocks interconnected by a sophisticated backplane.
+// https://en.wikipedia.org/wiki/File:SMScard.jpg
+The unibus was an abstaction of the perfect control plane that represented an evolution of previous DEC designs
+// http://www.piercefuller.com/collect/pdp8pix/index.html
+And the availablity of medium scale integrated componenets that moved the complexity from the backplane to the modules that populated it, and permitted homogenious designs like the unibus.
+This in turn created a "standard" way for additional modules to be attached to the computer.
+
+// find examples from the pdp sales brochures about interconections.
+
+This bus design became incredabily popular and was emulated many times
+
+The S-100 bus, so named because it contained 100 signal wires (unibus had 
+
+> The UNIBUS is a price and performance equalizer: it limits the performance of the fastest machines and penalizes the lower-performance machines with a higher cost.
+
+async memory; talk about fastre memory made the computer faster
+
+words transfered in parallel, so speed was rought 16 mbit / second, or 2 megabytes per sec
+
+unibus replaced with qbus on the low end and massbus on the high end, all without being visible to the user programmer. 
+
+> The UNIBUS, as a standard, has provided an architectural component for easily configuring systems.
+> Any company, not just DEC, can easily build components that interface to the bus.
+> Good buses make good engineering neighbors, since people can concentrate on structured design.
+> Indeed, the UNIBUS has created a secondary industry providing alternative sources of supply for memories and peripherals.
+> With the exception of the IBM 360 Multiplexor/Selector bus, the UNIBUS is the most widely used computer interconnection standard.
+
+Prior to the unibus, the I/O devices a minicomputer could support were dictated by the designers.
+After the unibus, the field for experimentation was cracked wide open.
+
+== What have we learned from the PDP-11
+
+What have we learned from the PDP-11?
+Bell's retrospective ended when the paper was written in 1975/76, but from our vantage point, fourty years later, the impact of the PDP-11 has been immense.
+
+First of all, while the PDP-11 was not designed, or even understood to be a RISC processor; that term would not be proerply coined util 1976 by John Cocke with the IBM 801.
+However to anyone with experience with processors like the ARM, a contemporary RISC microprocessor, the similarities between the two instruction sets are striking. 
+Just as programming language design is a process of evolution and cultural poaching, so too is instruction set design.
+
+The PDP-11 also drove a stake firmly through the heart of dedicated IO instructions, cementing memory mapped IO as the predominent control mechanism to this day.
+
+Next is the PDP-11's impact on software and operating systems.
+The PDP-11 is the machine that Ken Thompson and Dennis Ritchie developed UNIX at Bell Labs.
+Before the PDP-11, there was no UNIX.
+Before the PDP-11, thee was no C, this _is_ the computer that C was designed on.
+If you want to know why the classical C `int` was 16 bits wide, it's because of the PDP-11.
+
+UNIX bought us ideas such as pipes, everything is a file, and interactive computing.
+
+
+Memory usage is unbounded in interactive computing and while the PDP was perfect for process controll applications, the demande for interactive computing, with
+the hallmark and driver for the pdp a replacement.
+
+The year this paper was released, 1977, the PDP-11's successor, the VAX-11, which stood for "virtual address extension"-- you can see Bell was not going to address space mistake again--was released.
+
+Not willing to make the same mistake again, dec increased the address space to 32 bits.
+
+UNIX, which had arrived at Berkley in 1974 aboard a PDP-11/45 and would evolve into the west coast flavored Berkley Systems Distribution by Bill Joy, has been ported to the VAX by the start of the 1980's and was thiving as the counter cultural alternative to DEC's on VMS operating system.
+Bsd spawned a new generation of hackers who would go on to form not only the bsds that we know today, but companies like Sun micro systems, and languages like Self, which lead directly to the development of Java.
+
+UNIX was ported to a bewildering array of computer systems during the 80's and the fallout from the UNIX wars gave us the *BSD operating systems who continue strongly to this day.
+
+4BSD, a descentned of the original Berkley distribution became the basis of the operating system for Steve Job's NeXT line of computers.
+And when Apple purchased NeXT in 1997, NextSTEP and it's BSD derrived user space, became the foundations for Darwin, OSX, and the iOS operation system.
+
+As we say earlier with Edson de Castro, DEC was no stranger to breakups. 
+
+Dave Cutler; the architect of the VAX VMS operating system, after a failed attempt to start a new combined operating system and hardware project called PRISM, designed to succeed the VAX, decamped to Microsoft in 1988 bringing with him his team and lead the development of Windows NT.
+(Those with a knowledge of windows' internals _and_ VMS will perhaps spot the similarities)
+Although unsuccessful, the Prism project was resurected, by DEC, to give us the Dec Alpha, another classical RISC chip.
+
+To close the loop on the de Castro story, the data general Nova series provided inspiration to Charles P. Thacker and Butler Lampson, the designers of the Xerox Alto, which itself was the fabled inspiration for the look and feel of the Apple Macintosh.
+The rivalry between Data Genera and DEC continued into the 32 bit era, the story of which is told in Tracy Kidder's 1981 Pulitzer winner, _Soul of a new machine_.
+
+== Conclusion
+
+While it's development was sometimes chaotic, and not without its flaws, the PDP-11 was designed to meet the requirements of the market head on, and in doing so it became the focal point of many threads of history.
+
+Hardware, software, programming languages, operating systems, have all been influenced by the PDP-11.
+I wager there is not a single person in this room who cannot trace the lineage of the language they work with, the computer they use, or the operating system it runs, back to the PDP-11.
+
+Thank you.

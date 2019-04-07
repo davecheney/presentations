@@ -1,0 +1,12 @@
+= Clear is better than clever
+
+== Introduction
+
+Hello and welcome to GopherCon Singapore.
+I'm delighted to be able to speak to you today.
+
+This talks is the latest in what has become a series of talks that turn Rob Pike's proverbs into full legth presentations.
+
+Well socialised Gophers often cite readability as one of Go’s core tenets, I disagree.
+
+In this talk I’ll discuss the differences between readability and clarity, show how to write clear Go code, and argue that Go programmers should strive for clarity, not just readability, in their programs.

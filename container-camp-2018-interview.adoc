@@ -1,0 +1,25 @@
+= Container Camp 2018 Interview
+
+== Tell us a bit about yourself and your background, how did you get involved in containers and join Heptio?
+
+My story starts back in the 1990's as a university drop out who ironically got his first break as a lab assistant at the University of Melbourne.
+Back in the day each faculty ran their own IT group who looked after their staff and students, and over the next few years I worked my way up to network administrator.
+After y2k I decided it was time to move on and worked for Ericsson for a few years, then startups such as Aconex, MailGuard and RedBubble.
+In 2008 I accepted a job at Atlassian and moved up to Sydney to work on their nacient SaaS offering.
+
+I've been involved in orchestration systems.
+Starting in 2010 I designed a cost reduced platform for Atlassian's On Demand suite of products using OpenVZ.
+In 2012 I joined Canonical and spent several years working on Juju.
+
+
+== What projects most excite you in the container ecosystem at the moment?
+
+== Is there someone in the container community who you admire for their work?
+
+As an aside I
+
+== Without giving too much away, what three things will people learn from your Container Camp AU talk? 
+
+My presention is intended to be a practical talk. 
+The goal is show the audience
+And in doing so, hopefully 
