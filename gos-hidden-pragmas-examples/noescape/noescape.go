@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+//go:noescape
 func length(s string) int
 
 func main() {
