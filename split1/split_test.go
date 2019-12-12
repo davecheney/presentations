@@ -1,3 +1,5 @@
+// +build none
+
 // tag::test[]
 package split
 
@@ -29,7 +31,7 @@ func TestSplitWrongSep(t *testing.T) {
 // end::test2[]
 
 // tag::empty[]
-func TestSplitEmptySep(t *testing.T) {
+func testSplitEmptySep(t *testing.T) {
 	got := Split("a/b/c", "")
 	want := []string{"a/b/c"}
 	if !reflect.DeepEqual(want, got) {
@@ -40,7 +42,7 @@ func TestSplitEmptySep(t *testing.T) {
 // end::empty[]
 
 // tag::test3[]
-func TestSplitTrailingSep(t *testing.T) {
+func testSplitTrailingSep(t *testing.T) {
 	got := Split("a/b/c/", "/")
 	want := []string{"a", "b", "c"}
 	if !reflect.DeepEqual(want, got) {

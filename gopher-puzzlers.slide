@@ -1,6 +1,6 @@
 Gopher Puzzlers
 How well do you know your language?
-20 Nov 2017
+12 Dec 2019
 
 Dave Cheney
 dave@cheney.net
@@ -17,6 +17,162 @@ http://dave.cheney.net/
 
 Hopefully this little quiz will surprise you, and perhaps teach you something you didn't know about Go.
 
+* 10th Birthday Aniversary Edition
+
+.image gopher-puzzlers/party.png _ 250
+
+Here are the rules
+
+- Two competitors at a time.
+- One strike and you are out.
+- We'll continue until we're out of competitors, or out of questions.
+
+* Main 🤷‍♀️ Main
+
+Consider this program 
+
+.play -edit gopher-puzzlers/mainmain.go
+
+_Credit_: Damian Gryski
+
+What does this program print?
+
+* Counting
+
+Consider this program
+
+.play -edit gopher-puzzlers/counting.go
+
+What does this program print?
+
+* Sliced to ribbons
+
+Consider this program
+
+.play -edit gopher-puzzlers/sliced.go
+
+What does this program print?
+
+* Truth or dare
+
+Consider this program
+
+.play -edit gopher-puzzlers/truthy.go
+
+What does this program print?
+
+* Truth of dare (cont.)
+
+Consider this program
+
+.play -edit gopher-puzzlers/falsey.go
+
+What does this program print?
+
+* Truth or dare (cont.)
+
+`true` and `false` are *not* keywords, they are _predeclared_identifiers_.
+
+`true` and `false` are declared at the _universe_block_, a block that encompases all Go source. 
+
+* Truth or dare (cont.)
+
+Consider this program
+
+.play -edit gopher-puzzlers/neither.go
+
+What does this program print?
+
+* Pop a cap
+
+Consider this program
+
+.play -edit gopher-puzzlers/cap.go
+
+What does this program print?
+
+* Pop a cap (cont.)
+
+Consider this program
+
+.play -edit gopher-puzzlers/cap2.go
+
+What does this program print?
+
+* Pop a cap (cont.)
+
+`s` is a `[]int` slice.
+
+The length of `s` is 0, the _capacity_ of `s` is 8.
+
+Any slice can be _resliced_ to make it smaller _and_ larger, up to its capacity.
+
+However, the [[https://golang.org/doc/go1.2#three_index][three arg slice]] operation permits the caller to specify the maximum capacity of a slice.
+
+Thus `r` is a `[]int` slice of length 4 and capacity 5.
+
+* Gophers are complex
+
+Consider this program
+
+.play -edit gopher-puzzlers/compexity.go
+
+What does this program print?
+
+* Why, iota
+
+Consider this program
+
+.play -edit gopher-puzzlers/iota.go
+
+What does this program print?
+
+* Touché
+
+Consider this program
+
+.play -edit gopher-puzzlers/touche.go
+
+- Does this program print `true` or `false`?
+
+* Maps
+
+# https://twitter.com/davecheney/status/364215899340804096
+
+Does this program compile?
+
+.play -edit gopher-puzzlers/maps.go
+
+If it does, what does it print?
+
+* Maps (solution)
+
+Yes, it does compile. 
+
+Here is the same program rewritten to be more explicit.
+
+.play -edit gopher-puzzlers/maps2.go
+
+* Animal, mineral, vegitable
+
+Consider this program
+
+.play -edit gopher-puzzlers/genus.go
+
+- Does this program compile?
+- If so, what does it print?
+
+* Evaluation order oddity
+
+Consider this program
+
+.play -edit gopher-puzzlers/oddity.go
+
+What does it print?
+
+- 0
+- 1
+
 * Tick, Tick, Tick
 
 Consider this program
@@ -27,13 +183,16 @@ Does it
 
 - Exit quickly
 - Deadlock
-- Dave. That doesn't even compile.
 
 * Tick, Tick, Tick (solution)
 
 _Stop_turns_off_a_ticker._After_Stop,_no_more_ticks_will_be_sent._Stop_does_not_close_the_channel,_to_prevent_a_read_from_the_channel_succeeding_incorrectly_.
 
 .link https://golang.org/pkg/time/#Ticker.Stop time.Ticker.Stop
+
+.play -edit gopher-puzzlers/tick2.go /START OMIT/,/END OMIT/
+
+- What does this program print?
 
 * Floaty McFloatface
 
@@ -78,36 +237,6 @@ If the rightmost character is a member of the cutset, it is removed, and we go a
 `strings.Trim{,Left,Right}` are great for trimming a set of characters (usually whitespace), from a string, but if you know the prefix or suffix, you probably want `strings.Trim{Prefix,Suffix}`
 
 .play -edit gopher-puzzlers/snip2.go
-
-* By the power vested in me
-
-What does this program print?
-
-.play -edit gopher-puzzlers/power.go
-
-- `a`
-- `b`
-- _nothing_ (doesn't compile)
-
-* By the power vested in me (solution)
-
-`^` is the bitwise exclusive or operator (XOR), not exponentiation.
-
-`a`:=`2`^`15`
-
-   2 = 0010
-  15 = 1111
-       XOR
-  a := 1101
-
-`b`:=`4`^`15`
-
-   4 = 0100
-  15 = 1111
-       XOR
-  b := 1011
-
-∴ `a`>`b`==`true`
 
 * The Terminator
 
@@ -160,115 +289,98 @@ Which of these declarations are valid?
 - Some of them 
 - None of them
 
-* Gofmt you
-
-# https://twitter.com/davecheney/status/803862683380420608?s=09
-
-Is this program valid? Will it compile?
-
-.play -edit gopher-puzzlers/gofmt.go
-
-Is this program correctly formatted? If if feed it to `gofmt` what will happen?
-
-.link https://play.golang.org/p/FuP46_dFM-
-
-* Gofmt you (cont.)
-
-Humans see source files as a list of lines, computers do not. Specifically the compiler treats your source as one long string of text which it punctuates with semicolons according [[https://golang.org/ref/spec#Semicolons][to the rules]].
-
-For example, you're probably ok with this
-
-.play -edit gopher-puzzlers/gofmt2.go
-
-* Gofmt you (cont.)
-
-And you're probably ok with this
-
-.play -edit gopher-puzzlers/gofmt3.go
-
-* The pointy end
-
+# * The pointy end
+#
 # https://twitter.com/davecheney/statuses/896701753365626881?tw_i=896701753365626881&tw_e=details&tw_p=archive
+#
+# Consider this program
+#
+# .play -edit gopher-puzzlers/pointer.go
+#
+# - Does it print `8`8`?
+# - Does it print `8`9`?
+# - Does it print `9`9`?
+# - Does it not even compile?
+
+* Pretty vacant
 
 Consider this program
 
-.play -edit gopher-puzzlers/pointer.go
+.play -edit gopher-puzzlers/keys.go
 
-- Does it print `8`8`?
-- Does it print `8`9`?
-- Does it print `9`9`?
-- Does it not even compile?
+_Credit_: [[https://mobile.twitter.com/bradfitz/status/951534740405829632][Brad Fitzpatrick]]
 
-* Maps
+- Does this program compile?
+- If it compiles, what does it print?
 
-# https://twitter.com/davecheney/status/364215899340804096
+* Pretty vacant (cont.)
 
-Does this program compile?
+[[https://golang.org/ref/spec#Size_and_alignment_guarantees][Spec: Size and alignment guarantees:]]
 
-.play -edit gopher-puzzlers/maps.go
+"A struct or array type has size zero if it contains no fields (or elements, respectively) that have a size greater than zero. Two distinct zero-size variables *may* have the same address in memory."
 
-If it does, what does it print?
+.play -edit gopher-puzzlers/empty.go
 
-* Maps (solution)
+- What does this program print?
 
-Yes, it does compile. 
+* Pretty vacant (cont.)
 
-Here is the same program rewritten to be more explicit.
+.play -edit gopher-puzzlers/empty2.go
 
-.play -edit gopher-puzzlers/maps2.go
+- What does this program print?
 
-* init, init, init
-
-Does this program compile?
-
-.play -edit gopher-puzzlers/init.go
-
-* init, init, init (cont.)
-
-Does this program compile?
-
-.play -edit gopher-puzzlers/initb.go
-
-* init, init, init (cont.)
-
-`func`init()` is special, it is the _only_ function declaration that can appear multiple times _per_package_. How does this work?
-
-During compilation the compiler rewrites the name of each init function with a unique suffix.
-
-We can observe this suffix with `runtime.Callers` and in panic messages.
-
-.play -edit gopher-puzzlers/init3.go
-
-* init, init, init (cont.)
-
-.play -edit gopher-puzzlers/init2.go
-
-Question: What is the order that init functions are called? Always?
-
-* init, init, init (cont.)
-
-Last question. Does this code compile?
-
-.play -edit gopher-puzzlers/init4.go
-
-* One liners
-
-This program is incorrect.
-
-.play -edit gopher-puzzlers/one-liner.go
-
-By _adding_only_ *one* _line_ can you make it print the correct answer?
-
-_Hint_: the code must be correctly Go formatted, smashing multiple statements onto one line is not the answer.
-
-* One liners (a solution)
-
-Consider this solution.
-
-.play -edit gopher-puzzlers/one-liner-ii.go
-
-Take away: `copy` returns the number of elements it copied from the source to the destination.
-
+# * init, init, init
+#
+# Does this program compile?
+# 
+# .play -edit gopher-puzzlers/init.go
+#
+# * init, init, init (cont.)
+#
+# Does this program compile?
+#
+# .play -edit gopher-puzzlers/initb.go
+#
+# * init, init, init (cont.)
+# 
+# `func`init()` is special, it is the _only_ function declaration that can appear multiple times _per_package_. How does this work?
+#
+# During compilation the compiler rewrites the name of each init function with a unique suffix.
+# 
+# We can observe this suffix with `runtime.Callers` and in panic messages.
+#
+# .play -edit gopher-puzzlers/init3.go
+#
+# * init, init, init (cont.)
+#
+# .play -edit gopher-puzzlers/init2.go
+#
+# Question: What is the order that init functions are called? Always?
+# 
+# * init, init, init (cont.)
+#
+# Last question. Does this code compile?
+#
+# .play -edit gopher-puzzlers/init4.go
+#
+# * One liners
+#
+# This program is incorrect.
+#
+# .play -edit gopher-puzzlers/one-liner.go
+#
+# By _adding_only_ *one* _line_ can you make it print the correct answer?
+# 
+# _Hint_: the code must be correctly Go formatted, smashing multiple statements onto one line is not the answer.
+#
+# * One liners (a solution)
+#
+#Consider this solution.
+#
+#.play -edit gopher-puzzlers/one-liner-ii.go
+#
+#Take away: `copy` returns the number of elements it copied from the source to the destination.
+#
 #* The size of things
 #
 #In this program, the size of variables of type `X` and `Y` in memory varies by platform.
@@ -329,55 +441,55 @@ Take away: `copy` returns the number of elements it copied from the source to th
 #
 #.play -edit gopher-puzzlers/space-packing-iv.go
 
-* Zero
+# * Zero
+#
+# Does this program compile?
+#
+#.play -edit gopher-puzzlers/zero.go
+#
+#Credit: [[https://twitter.com/peter_szilagyi/status/786206846696644608][Péter Szilágyi]]
+#
+#* Named and unnamed
+#
+#Does this code compile ?
+#
+#.play -edit gopher-puzzlers/named-and-unnamed.go
+#
+#- Yes: Why?
+#- No: Why not?
 
-Does this program compile?
-
-.play -edit gopher-puzzlers/zero.go
-
-Credit: [[https://twitter.com/peter_szilagyi/status/786206846696644608][Péter Szilágyi]]
-
-* Named and unnamed
-
-Does this code compile ?
-
-.play -edit gopher-puzzlers/named-and-unnamed.go
-
-- Yes: Why?
-- No: Why not?
-
-* Named and unnamed (cont.)
-
-Yes, it does compile.
-
-Why is this even a thing?
-
-Well, if it wasn't, then you wouldn't be able to write things like
-
-.code gopher-puzzlers/named-and-unnamed-ii.go /START OMIT/,/END OMIT/
-
-* Named and unnamed (cont.)
-
-There is a bigger point here, [[https://golang.org/ref/spec#Types][unamed types]] are _very_ common in Go.
-
-You'd may not expect this to not compile
-
-.play -edit gopher-puzzlers/named-and-unnamed-iii.go /START OMIT/,/END OMIT/
-
-But would you expect this to compile?
-
-.play -edit gopher-puzzlers/named-and-unnamed-iv.go /START OMIT/,/END OMIT/
-
-* Named and unnamed (cont.)
-
-Here are some common _unnamed_ types; `struct{}`, `[]string`, `interface{}` `map[string]bool`, `[20]float32`, etc. 
-
-This is important because of the [[https://golang.org/ref/spec#Assignability][Assignability]] rules:
-
-"x's type V and T have identical underlying types and at least one of V or T is _not_a_named_type._ "
-
-.play -edit gopher-puzzlers/named-and-unnamed-v.go /START OMIT/,/END OMIT/
-
+# * Named and unnamed (cont.)
+#
+#Yes, it does compile.
+#
+#Why is this even a thing?
+#
+#Well, if it wasn't, then you wouldn't be able to write things like
+#
+#.code gopher-puzzlers/named-and-unnamed-ii.go /START OMIT/,/END OMIT/
+#
+#* Named and unnamed (cont.)
+#
+#There is a bigger point here, [[https://golang.org/ref/spec#Types][unamed types]] are _very_ common in Go.
+#
+#You'd may not expect this to not compile
+#
+#.play -edit gopher-puzzlers/named-and-unnamed-iii.go /START OMIT/,/END OMIT/
+#
+#But would you expect this to compile?
+#
+#.play -edit gopher-puzzlers/named-and-unnamed-iv.go /START OMIT/,/END OMIT/
+#
+#* Named and unnamed (cont.)
+#
+#Here are some common _unnamed_ types; `struct{}`, `[]string`, `interface{}` `map[string]bool`, `[20]float32`, etc. 
+#
+#This is important because of the [[https://golang.org/ref/spec#Assignability][Assignability]] rules:
+#
+#"x's type V and T have identical underlying types and at least one of V or T is _not_a_named_type._ "
+#
+#.play -edit gopher-puzzlers/named-and-unnamed-v.go /START OMIT/,/END OMIT/
+#
 #* Two hundred
 #
 #What does this program print ?
@@ -395,44 +507,44 @@ This is important because of the [[https://golang.org/ref/spec#Assignability][As
 #However, `y` continues to point at the 2nd element of the original backing array.
 #
 #Take away: taking the address of an element of a slice, or sub slicing a slice or string will keep the _entire_ backing array alive.
-
-* Missing panic
-
-This program prints a panic message to the screen.
-
-.play -edit gopher-puzzlers/missing-panic.go
-
-Without using `recover`, can you suppress _just_ the panic message? 
-
-We still want the program to exit with a non zero exit code.
-
-_Hint_: adding a `return` before the `panic` statement is not the answer.
-
-* Missing panic (solution)
-
-.play -edit gopher-puzzlers/missing-panic2.go
-
-This is my answer.
-
-* Missing panic (cont.)
-
-What's going on here.
-
-- fd 2 is considered by the runtime to be stderr, [[https://github.com/golang/go/blob/master/src/runtime/write_err.go][panic messages are written to it]].
-
-- fd 2 is initalised as [[https://github.com/golang/go/blob/master/src/os/file.go#L56][os.Stderr]] by the os package.
-
-- If we close os.Stderr, file descriptor 2 is now closed so the write of the panic message.
-
-* How to defuse an atomic bomb
-
-.play -edit gopher-puzzlers/boom.go
-
-- What does this program sometimes print?
-- What does this program always print?
-- What does this program never print?
-
-Credit: [[https://twitter.com/peter_szilagyi/status/786210562229178370][Péter Szilágyi]]
+#
+#* Missing panic
+#
+#This program prints a panic message to the screen.
+#
+#.play -edit gopher-puzzlers/missing-panic.go
+#
+#Without using `recover`, can you suppress _just_ the panic message? 
+#
+#We still want the program to exit with a non zero exit code.
+#
+#_Hint_: adding a `return` before the `panic` statement is not the answer.
+#
+#* Missing panic (solution)
+#
+#.play -edit gopher-puzzlers/missing-panic2.go
+#
+#This is my answer.
+#
+#* Missing panic (cont.)
+#
+#What's going on here.
+#
+#- fd 2 is considered by the runtime to be stderr, [[https://github.com/golang/go/blob/master/src/runtime/write_err.go][panic messages are written to it]].
+#
+#- fd 2 is initalised as [[https://github.com/golang/go/blob/master/src/os/file.go#L56][os.Stderr]] by the os package.
+#
+#- If we close os.Stderr, file descriptor 2 is now closed so the write of the panic message.
+#
+#* How to defuse an atomic bomb
+#
+#.play -edit gopher-puzzlers/boom.go
+#
+#- What does this program sometimes print?
+#- What does this program always print?
+#- What does this program never print?
+#
+#Credit: [[https://twitter.com/peter_szilagyi/status/786210562229178370][Péter Szilágyi]]
 
 # * Do you even shift?
 #
@@ -499,40 +611,40 @@ When the input is broken into tokens, a semicolon is automatically inserted into
 
 .link https://golang.org/ref/spec#Semicolons
 
-* Keywords 
-
-Which of these three functions will not compile?
-
-.play -edit gopher-puzzlers/keywords.go /START OMIT/,/END OMIT/
-
-* Keywords (solution)
-
-`default` is a [[https://golang.org/ref/spec#Keywords][keyword]], it may not be used as identifier.
-
-`string` and `len` are [[https://golang.org/ref/spec#Predeclared_identifiers][predeclared identifiers]].
-
-Predeclared identifiers are at the so called [[https://golang.org/ref/spec#Blocks][_universe_block_]], so you can can shadow them inside smaller scopes, including the _package_block_.
-
-ps. _please_ don't do this.
-
-.play -edit gopher-puzzlers/keywords2.go
-
-… and if you do, [[https://twitter.com/francesc/status/690394659609284608][blame Francesc]].
-
-* Declarations
-
-Which of the following are valid declarations?
-
-.code gopher-puzzlers/declarations.go 
-
-* Declarations (solution)
-
-There are two invalid declarations
-
-`import` is a valid declaration, but it must directly follow `package`.
-
-`func` cannot be used in this form because of the ambiguity with the method syntax.
-
+#* Keywords 
+#
+#Which of these three functions will not compile?
+#
+#.play -edit gopher-puzzlers/keywords.go /START OMIT/,/END OMIT/
+#
+#* Keywords (solution)
+#
+#`default` is a [[https://golang.org/ref/spec#Keywords][keyword]], it may not be used as identifier.
+#
+#`string` and `len` are [[https://golang.org/ref/spec#Predeclared_identifiers][predeclared identifiers]].
+#
+#Predeclared identifiers are at the so called [[https://golang.org/ref/spec#Blocks][_universe_block_]], so you can can shadow them inside smaller scopes, including the _package_block_.
+#
+#ps. _please_ don't do this.
+#
+#.play -edit gopher-puzzlers/keywords2.go
+#
+#… and if you do, [[https://twitter.com/francesc/status/690394659609284608][blame Francesc]].
+#
+#* Declarations
+#
+#Which of the following are valid declarations?
+#
+#.code gopher-puzzlers/declarations.go 
+#
+#* Declarations (solution)
+#
+#There are two invalid declarations
+#
+#`import` is a valid declaration, but it must directly follow `package`.
+#
+#`func` cannot be used in this form because of the ambiguity with the method syntax.
+#
 #* Size classes
 #
 #What will this code print?
@@ -554,53 +666,53 @@ There are two invalid declarations
 #Rather than powers of two, sizeclasses are a set of allocation caches that fit the most common allocations without the exponential overhead of a power of two. Doing this there is never more than 12.5% of wasted space in each size class page.
 #
 #.play -edit gopher-puzzlers/sizeclass-ii.go
-
-* One, Two, Three
-
-.play -edit gopher-puzzlers/one-two-three.go /START OMIT/,/END OMIT/
-
-What does this program print? Why? Will it always?
-
-* One, Two, Three (cont.)
-
-"For all the cases in the statement, the channel operands of receive operations and the channel and right-hand-side expressions of send statements are evaluated exactly once, in source order, upon entering the "select" statement."
-
-.link https://golang.org/ref/spec#Select_statements
-
-.play -edit gopher-puzzlers/one-two-three-ii.go /START OMIT/,/END OMIT/
-
-* Package names
-
-Which of these four examples are valid package names?
-
-.code gopher-puzzlers/hmm.go
-
-.code gopher-puzzlers/hmm-ii.go
-
-.code gopher-puzzlers/hmm-iii.go
-
-.code gopher-puzzlers/hmm-iv.go
-
-* Packages names (solution)
-
-Package names must be valid [[https://golang.org/ref/spec#identifier][_identifiers_]].
-
-.code gopher-puzzlers/hmm.go
-
-`ಠ` is a _letter_, underscore is also considered a letter.
-
-.code gopher-puzzlers/hmm-ii.go
-
-`100` is a _number_, which is allowed, but identifiers _must_ start with a _letter_.
-
-.code gopher-puzzlers/hmm-iii.go
-
-`ಠ` is a _letter_, `~` is _not_ a letter.
-
-.code gopher-puzzlers/hmm-iv.go
-
-`すし` is an identifier, it's Japanese for _sushi_.
-
+#
+#* One, Two, Three
+#
+#.play -edit gopher-puzzlers/one-two-three.go /START OMIT/,/END OMIT/
+#
+#What does this program print? Why? Will it always?
+#
+#* One, Two, Three (cont.)
+#
+#"For all the cases in the statement, the channel operands of receive operations and the channel and right-hand-side expressions of send statements are evaluated exactly once, in source order, upon entering the "select" statement."
+#
+#.link https://golang.org/ref/spec#Select_statements
+#
+#.play -edit gopher-puzzlers/one-two-three-ii.go /START OMIT/,/END OMIT/
+#
+#* Package names
+#
+#Which of these four examples are valid package names?
+#
+#.code gopher-puzzlers/hmm.go
+#
+#.code gopher-puzzlers/hmm-ii.go
+#
+#.code gopher-puzzlers/hmm-iii.go
+#
+#.code gopher-puzzlers/hmm-iv.go
+#
+#* Packages names (solution)
+#
+#Package names must be valid [[https://golang.org/ref/spec#identifier][_identifiers_]].
+#
+#.code gopher-puzzlers/hmm.go
+#
+#`ಠ` is a _letter_, underscore is also considered a letter.
+#
+#.code gopher-puzzlers/hmm-ii.go
+#
+#`100` is a _number_, which is allowed, but identifiers _must_ start with a _letter_.
+#
+#.code gopher-puzzlers/hmm-iii.go
+#
+#`ಠ` is a _letter_, `~` is _not_ a letter.
+#
+#.code gopher-puzzlers/hmm-iv.go
+#
+#`すし` is an identifier, it's Japanese for _sushi_.
+#
 #* Bonus
 #
 #Package names are identifiers, so everything that is a valid package name is also be a valid function, variable, constant or type name.

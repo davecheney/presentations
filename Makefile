@@ -7,4 +7,8 @@ all: $(patsubst %.adoc,%.html,$(wildcard *.adoc))
 	asciidoc -b docbook -d article -o $@ $?
 
 %.html: %.adoc
-	asciidoctor -b html5 -d article -o $@ $?
+	asciidoctor -b html5 \
+		--failure-level=WARN \
+		-d article \
+		-o $@ \
+		$<

@@ -10,22 +10,24 @@ v1.0, 2019-06-01
 Hello and welcome to GopherCon Singapore.
 I'm delighted to be able to speak to you today.
 
-This talks is the latest in what has become a series of talks that turn Rob Pike's proverbs into full length presentations.
+This talks is the latest in what has become a series of turning Rob Pike's proverbs into full length presentations.
 
 Well socialised Gophers often cite readability as one of Go’s core tenets, I disagree.
 
-In this talk I’ll discuss the differences between readability and clarity, show how to write clear Go code, and argue that Go programmers should strive for clarity, not just readability, in their programs.
-
-In this talk argue that clarity, not readability, should be one of the core tenets of Go.
+In this talk I’ll discuss the differences between readability and clarity, show you what I mean by clarity and how it applies to Go code, and argue that Go programmers should strive for clarity, not just readability, in their programs.
 
 == Why would I read your code?
 
-Before we pick apart the difference between clarity and readability, perhaps the question to ask is, why would I read your code?
+Before we pick apart the difference between clarity and readability, perhaps the question to ask is
+
+> Why would I read your code?
 
 To be clear, when I say _I_, I don't mean me, I mean you.
-And when I say, _your_, I also mean you.
+And when I say, _your_, I also mean you, but in the third person.
+So really what I'm asking is
 
-And why is this even an important distinction?
+> Why would you read another person's code?
+
 Well, I think Russ, paraphrasing Titus Winters, puts it best.
 
 "Software engineering is what happens to programming when you add time and other programmers."
@@ -34,54 +36,52 @@ Well, I think Russ, paraphrasing Titus Winters, puts it best.
 (A quote which I think was uttered here in Singapore last year)
 
 So the answer to the question, why would I read your code, is, because we have to work together. 
-Maybe we don't work in the same office, maybe we don't even work at the same company, but we do collaborate on the same software, or at least consume it as dependencies.
+Maybe we don't work in the same office, maybe we don't even work at the same company, but we do collaborate on a piece of software, or more likely consume it as a dependency.
 
 This is the essence of Russ's quote--software engineering is the collaboration of sofware engineers over time.
-I have to read your code, and you read mine, so that I can understand it, so that I can maintain it, and in short, so that I can change it.
+I have to read your code, and you read mine, so that I can understand it, so that you can maintain it, and in short, so that any programmer can change it.
 
-To be clear, I don't mean to dismiss the work of a lone programmer, toiling on programs, without anyone to pair with or learn from, i've been that person many times in my career as a programmer.
+To be clear, I don't mean to dismiss the work of a lone programmer toiling on programs without anyone to pair with or learn from.
+I've been that person many times in my career as a programmer, it's not fun.
+
 Russ is making the distinction between software _programming_ and software _engineering_.
-The former is a program you write for yourself, the latter is a product that many people will work on over time.
+The former is a program you write for yourself, the latter is a program--a project, a service, a product--that many people will work on over time.
 Engineers will come and go, teams will grow and shrink, requirements will change, features will be added and bugs fixed.
 This is the nature of software engineering.
 
-// discuss the differences between readability and clarity, show how to write clear Go code, and argue that Go programmers should strive for clarity, not just readability, in their programs.
+== Readability
 
-=== Readability
-
-The most common complaint when faced with a codebase written by someone, or some team, else is the code is unreadable, but readability as a concept is subjective.
-Readability is nit picking about line length and variable names.
-Readability is file names and directory structure layouts.
-Readability is the hand to hand combat of style guides and code review guidelines.
-
-Clarity, on the other hand, is the property of the code on the page.
-Clear code is independent of the low level details of function names and indentation because clear code is concerned with what the code is doing, not simply how it does it.
-
-When we say that a foreign codebase is unreadable, what I think most people mean is, _I don't understand it_.
+"It was sometime after that presentation that I finally realized the obvious: code is not literature. We don’t read code, we decode it."
+-- http://www.gigamonkeys.com/code-reading/[Peter Seibel]
 
 The author Peter Seibel suggests that programs are not read, instead they are decoded.
 In hindsight this should been obvious, after all we call it _source code_, not _source literature_.
-
 The source code of a program is an intermediary form, somewhere between our concept and the computer’s executable notation.
 
-Through three case studies I will explain the difference between clear code and code that is simply readable.
+In my experience, the most common complaint when faced with a codebase written by someone, or some team, is the code is unreadable.
+Does anyone agree with me?
 
-==== Traffic light example. 
+But readability as a concept is subjective.
+Readability is nit picking about line length and variable names.
+Readability is file names and directory structure layouts.
+Readability is holy wars about where the opening and closing braces go.
+Readability is the hand to hand combat of style guides and code review guidelines.
 
-How does your program explain the intent of the code, not its operation.
+Clarity, on the other hand, is the property of the code on the page.
+Clear code is independent of the low level details of function names and indentation because clear code is concerned with what the code is doing, not how it is written down.
 
-=== Structured programming
+When you or I say that a foreign codebase is unreadable, what I think what we really mean is, _I don't understand it_.
 
-"Structured programming submerges structure and emphasises behaviour"--Richard Bircher, https://www.amazon.com/Limits-Software-People-Projects-Perspectives/dp/0201433230[The limits of software]
+Through a few case studies I want to try to explain the difference between clear code and code that is simply readable.
 
-NOTE: CPUs are imperative, they follow a stream of instructions. We can build abstractions that compose these imperatives into more precise operations, see djikstra,
-
-== Case study, declaration
+== Declarations
 
 > Idiomatic Go is the difference between software programming and software engineering. 
 
-Go has many, Rob Pike would say too many, ways to declare variables.
-The limited syntax of Go provides us with half a dozen different ways to declare and optionally initialise a variable.
+More important than the name of the variable is why it's declared and what it is used for.
+
+Go has many--Rob Pike would say too many--ways to declare a variable.
+Given its spartan syntax, Go provides us with at least half a dozen different ways to declare, and optionally initialise, a variable.
 
 [source,go]
 x := 1
@@ -91,42 +91,165 @@ var a int; a = 4
 var b = int(5)
 c := int(6)
 
-Which should we use to improve the clarity of our code?
+In Go each variable we declare has to be used within the same scope, so each variable has a purpose.
+How can we make the purpose of each declaration clear to the reader?
 
-The answer to this question comes down to the intent of the declaration, are we declaring a variable which will be assigned later, or are we declaring a variable with a specific value?
+The answer to this question comes down to the _intent_ of the declaration.
+Are we declaring a variable which will be assigned later, or are we declaring a variable with a specific value?
 
-When declaring, but not initialising, a variable, use `var`.
+Here is a suggestion that I will attempt to defend:
+
+- When declaring, but not initialising, a variable, use `var`.
+- When declaring _and_ initialising, use `:=``.
+
+Lets expand on these suggestsions a little.
+
 When declaring a variable that will be explicitly initialised later in the function, use the `var` keyword.
+[source,go]
+----
+var players int    // 0
+
+var things []Thing // an empty slice of Things
+
+var thing Thing    // empty Thing struct 
+json.Unmarshall(reader, &thing)
+----
+
 The `var` acts as a clue to say that this variable has been deliberately declared as the zero value of the indicated type.
 To the reader, it is clear that that responsibility to assigning this variable lies elsewhere in the function (hopefully not far from its declaration)
 
-When declaring _and_ initialising, use `:=``.
 When declaring and initialising the variable at the same time, that is to say we’re not letting the variable be implicitly initialised to its zero value, use the short variable declaration form.
-This makes it clear to the reader that the variable on the left hand side of the := is being deliberately initialised.
+This makes it clear to the reader that the variable on the left hand side of the `:=` is being deliberately initialised with a specific value.
 
-=== Example
-
-[source,go]
-var a int
-if cond {
-    a = 8
-} else {
-    a = -9
-}
-
-What is going on here?
-
-This is a default case, if cond is true, which is often a negation, ie, if !cond is true, then assign some default value to a, otherwise use the one provided.
-
-Can we do better than this
-
-Case study, selection
-Structured programming provides us with three control structures; sequence, selection, and iteration. We should write Go code in a way that does not obscure the flow of control in a program as this is key to reasoning about the program itself.
-
-Example, guard clauses
-Go programs are traditionally written in a style that favours guard clauses, preconditions. This encourages the success path to proceed down the page, rather than be indented towards the right.
+To explain why, Let's look at the previous example, but this time deliberately initialising each variable:
 
 [source,go]
+----
+var players int = 0
+
+var things []Thing = nil
+
+var thing *Thing = new(Thing)
+json.Unmarshall(reader, thing)
+----
+
+In the first and third examples, because in Go there are no automatic conversions from one type to another; the type on the left hand side of the assignment operator _must_ be identical to the type on the right hand side.
+The compiler can infer the type of the variable being declared from the type on the right hand side, to the example can be written more concisely like this:
+
+[source,go,options=nowrap]
+----
+var players = 0
+
+var things []Thing = nil
+
+var thing = new(Thing)
+json.Unmarshall(reader, thing)
+----
+
+This leaves us with explicitly initialising `players` to `0` which is redundant because `0` _is_ `players`' zero value.
+So its better to make it clear that we're going to use the zero value by instead writing.
+
+[source,go]
+var players int
+
+What about the second statement?
+We cannot elide the type and write
+
+[source,go]
+var things = nil
+
+Because `nil` does not have a type. footnote:[https://speakerdeck.com/campoy/understanding-nil]
+Instead we have a choice, do we want the zero value for a slice?
+
+[source,go]
+var things []Thing 
+
+or do we want to create a slice with zero elements?
+
+[source,go]
+var things = make([]Thing, 0)
+
+If we wanted the latter then this is _not_ the zero value for a slice so we should make it clear to the reader that we're making this choice by using the short declaration form:
+
+[source,go]
+things := make([]Thing, 0)
+
+Which tells the reader that we have chosen to initialise `things` explicitly.
+This brings us to the third declaration:
+
+[source,go]
+var thing = new(Thing)
+
+Which is both explicitly initialising a variable and introduces the uncommon use of the `new` keyword which some Go programmer dislike.
+If we apply our short declaration syntax recommendation then the statement becomes
+
+[source,go]
+thing := new(Thing)
+
+Which makes it clear that `thing` is explicitly initialised to the result of `new(Thing)`--a pointer to a `Thing`--but still leaves us with the unusual use of `new`.
+We could address this by using the _compact literal_ struct initialiser form
+
+[source,go]
+thing := &Thing{}
+
+Which does the same as `new(Thing)`, hence why some Go programmers are upset by the duplication between the & operator and the new keyword.
+However this means we're explicitly initialising `thing` with a pointer to a `Thing{}`, which is the zero value for a `Thing`.
+
+Instead we should recognise that `thing` is being declared as its zero value and use the address of operator to pass the address of `thing` to `json.Unmarshall` 
+
+[source,go]
+var thing Thing
+json.Unmarshall(reader, &thing)
+
+=== Exceptions make the rule
+
+Of course, with any rule, there are exceptions.
+For example, sometimes two variables are closely related so writing
+
+[source,go]
+var min int
+max := 1000
+
+Would be odd.
+The declaration may be more readable like this
+
+[source,go]
+min, max := 0, 1000
+
+=== Make tricky declarations obvious.
+
+When something is complicated, it should _look_ complicated.
+
+[source,go]
+var length uint32 = 0x80
+
+Here length may be being used with a library which requires a specific numeric type and is more explicit that `length` is being explicitly chosen to be `uint32` than the short declaration form:
+
+[source,go]
+length := uint32(0x80)
+
+In the first example I'm deliberately breaking my rule of using the `var` declaration form with an explicit initialiser.
+This decision to vary from my usual form is a clue to the reader that something unusual is happening.
+
+If something unusual is happening, leave evidence for the reader.
+Adopt a consistent declaration style so that when something is unusual, it looks unusual by deviating from the regular style/
+This is a clue to the reader that they should pay extra attention because the thing that is declared oddly, is likely to be used oddly. 
+
+== Keep to the left
+
+Go programs are traditionally written in a style that favours guard clauses, preconditions.
+This encourages the success path to proceed down the page, rather than be indented inside a conditional block.
+Mat Ryer calls this _line of sight_ coding, because, the active part of your function is not at risk of sliding out of view to the right of your screen.
+
+By keeping conditional blocks short, and for the exceptional condition, we avoid nested blocks and potential complex value shadowing.
+
+If you apply guard clauses and preconditions to your code, if you avoid the use of `else`, then your code should naturally be left aligned on the page.
+
+The successful flow of control continues down the page.
+At every point in the sequence of instructions, if you've arrived at that point, you know that a growing set of preconditions holds true.
+
+[source,go]
+.Guard clauses
 func ReadConfig(path string) (*Config, error) {
         f, err := os.Open(path)
         if err != nil {
@@ -141,23 +264,121 @@ We can generalise this pattern a little, in pseudocode we have
 
 [source,go]
 if <condition> {
-        // cleanup
+        // false: cleanup
         return
 }
-// success
+// true: continue
 
 If the precondition failed, then return to the caller, else continue towards the end of the function.
-This general condition holds true for all preconditions, error checks, map lookups, length checks, the exact form of the precondition’s condition changes, but the pattern is clear, the cleanup code is inside the block, terminating in a return, the success condition lies outside the block, and is only reachable if the precondition is true.
+This general condition holds true for all preconditions, error checks, map lookups, length checks, etc.
+The exact form of the precondition’s condition changes, but the pattern is clear; the cleanup code is inside the block, terminating with a return.
+The success condition lies outside the block, and is only reachable if the precondition is true.
 
 Even if you are unsure what the preceding and succeeding code does, how the precondition is formed, and how the cleanup code works, it is clear to the reader that this is a guard clause.
 
-Further examples that will be covered are long chains of if else, and switch statements with default conditions.
+"Structured programming submerges structure and emphasises behaviour"--Richard Bircher, https://www.amazon.com/Limits-Software-People-Projects-Perspectives/dp/0201433230[The limits of software]
+
+I found this quote recently and I think it is apt.
+My arguments for clarity are in truth arguments to emphasise the _behaviour_ of the code, rather than be side tracked by minueate of the structure itself.
+
+
+What is going on here?
+We have a function that takes two ints and returns an int, if the first int is positive then we return it, otherwise we return the second.
+So this function is some kind of default helper, used like this
+[source,go]
+----
+include::clarity.go[]
+----
+
+This is a default case, if cond is true, which is often a negation, ie, if !cond is true, then assign some default value to a, otherwise use the one provided.
+
+Can we do better than this
+
+=== Case study, selection
+Structured programming provides us with three control structures; sequence, selection, and iteration. We should write Go code in a way that does not obscure the flow of control in a program as this is key to reasoning about the program itself.
 
 == Accept interfaces, return structs
 
-The final case study covers the use of interfaces to describe to the behaviour of the values being passed into a function independent from the parameter’s types, or their implementation.
+The final case study covers the use of interfaces to describe to the _behaviour_ of the values being passed into a function independent from the parameter’s types, or their implementation.
 
-Clarity 
+Say I’ve been given a task to write a method a Document structure to disk.
+
+[source,go]
+----
+type Document struct {
+        // lots of state
+}
+
+// Save writes the contents of d to the file f.
+func (d *Document) Save(f *os.File) error
+----
+
+I could define this function, let’s call it `Save`, which takes an `*os.File` as the destination to write the `Document`.
+But this has a few problems.
+
+The signature of `Save` precludes the option to write the data to a network location.
+Assuming that network storage is likely to become requirement later, the signature of this function would have to change, impacting all its callers.
+
+Because Save operates directly with files on disk, it is unpleasant to test.
+To verify its operation, the test would have to read the contents of the file after being written.
+Additionally the test would have to ensure that f was written to a temporary location and always removed afterwards.
+
+`*os.File` also defines a lot of methods which are not relevant to `Save`, like reading directories and checking to see if a path is a symlink.
+It would be useful if the signature of our `Save` function could describe only the parts of `*os.File` that were relevant.
+
+What can we do about these problems?
+Can we use an interface to _describe_ the behaviour of `Save`
+
+[source,go]
+// Save writes the contents of d to the supplied ReadWriterCloser.
+func (d *Document) Save(rwc io.ReadWriteCloser) error
+
+Using `io.ReadWriteCloser` we can apply the _Interface Segregation Principle_ to redefine `Save` to take an interface that describes the behaviour of the file shaped thing passed to it.
+With this change, any type that implements the `io.ReadWriteCloser` interface can be substituted for the previous `*os.File`.
+This makes `Save` both broader in its application, and clarifies to the caller of `Save` which methods of the `*os.File` type are relevant to its operation.
+
+As the author of `Save` I no longer have the option to call those unrelated methods on `*os.File` as it is hidden behind the `io.ReadWriteCloser` interface.
+But we can take the interface segregation principle a bit further.
+
+Firstly, it is unlikely that if `Save` follows the _Single Responsibility Principle_ it will read the file it just wrote to verify its contents; that should be responsibility of another piece of code.
+So we can narrow the specification for the interface we pass to `Save` to just writing and closing.
+
+[source,go]
+// Save writes the contents of d to the supplied WriteCloser.
+func (d *Document) Save(wc io.WriteCloser) error
+
+By providing `Save` with a mechanism to close its stream, which we inherited in a desire to make it look like a file shaped thing, this raises the question of under what circumstances will `wc` be closed.
+Possibly `Save` will call `Close` unconditionally, or perhaps `Close` will be called in the case of success.
+This presents a problem for the caller of `Save` as it may want to write additional data to the stream after the document is written.
+
+[source,go]
+----
+type NopCloser struct {
+        io.Writer
+}
+
+// Close has no effect on the underlying writer.
+func (c *NopCloser) Close() error { return nil }
+----
+
+A crude solution would be to define a new type which embeds an `io.Writer` and overrides the `Close` method, preventing `Save` from closing the underlying stream.
+But this would probably be a violation of the _Liskov Substitution Principle_, as `NopCloser` doesn’t actually close anything.
+
+[source,go]
+// Save writes the contents of d to the supplied Writer.
+func (d *Document) Save(w io.Writer) error
+
+A better solution would be to redefine `Save` to take only an `io.Writer`, stripping it completely of the responsibility to do anything but write data to a stream.
+
+By applying the interface segregation principle to our `Save` function, the results has simultaneously been a function which is clear in terms of the behaviour it requires--it only needs a thing that is writable--and the most general in its function, we can now use `Save` to save our data to anything which implements `io.Writer`.
+
+Lastly, althought I opined in the introduction that naming things was small beer, now that we have refactored `Save`, it's clear a better name for the method is probably `WriteTo`
+
+[source,go]
+// WriteTo writes the contents of d to w.
+func (d *Document) WriteTo(w io.Writer) error
+
+== Prefer switch to if/else/if
 
 [source,go]
 var x int 
@@ -175,46 +396,22 @@ if condition {
         x = 1
 }
 
-package main
-
-import "fmt"
-
-func f1(y int) int {
-        x := 1
-        if y > 0 {
-                x = 2
-        }
-        return x
-}
-
-func f2(y int) int {
-        var x int
-        if y > 0 {
-                x = 2
-        } else {
-                x = 1
-        }
-        return x
-}
-
-func main() {
-        fmt.Println(f1(10), f2(20))
-}
 
 produces identical assembly
 
-Loops
 
-Prefer continue to break, rather have as the induction variable, make an infinite loop either infinite, or clearly bounded at the loop site 
-
-== Prefer switch to if/else/if
 
 The examples we've seen so far are conditions; if something, do something.
+[source,go]
+if <something> {
+        // do something
+}
+
 It follows logically if !something, then do something else.
 This is structured programming's _selection_.
 
-We can express selection in a number of ways
-
+In Go, we can express selection in a number of ways.
+For example
 [source,go]
 func comp(a, b int) int {
         if a < b {
@@ -232,11 +429,22 @@ If a is greater than b, the return 1 path is taken.
 Else, a and b are by induction equal, so the final return 0 path is taken.
 
 The problem with comp as written is someone maintaining this function has to _read all of it_.
+
+[source,go]
+func comp(a, b int) int {
+        if <condition> {
+                <body>
+        }
+        if <condition> {
+                <body>
+        }
+        return 0
+}
+
 To understand when 0 is returned, we have to read the conditions _and_ the body of each clause.
+This is reasonable when your dealing with functions which fit on a slide, but in the real world complicated functions--the ones we're paid for our expertiese to maintain, are rarely slide sized, and their conditions and bodies are rarely simple.
 
-This is a sign that these aren't really guard clauses, this is instead an example of selection.
-We want to select, based on the inputs one of -1, 0, or +1.
-
+Let's address the problem of making it clear under which condition 0 is returned.
 [source,go]
 func comp(a, b int) int {
         if a < b {
@@ -248,15 +456,23 @@ func comp(a, b int) int {
         }
 }
 
-NOTE: http://llvm.org/docs/CodingStandards.html#don-t-use-else-after-a-return
+Now, although this code is not what anyone would argue is readable--long chains of if else are broadly discouraged--it is now clearer to the reader that zero is only returned if none of the conditions are met.
 
-In this example it is clear to the reader that this is a selection; only one path can be taken regaurdless of the operation of the condition blocks.
+The Go spec declares that each function that returns a value must end in a _terminating statement_.
 For example, in the a < b condition block, because this code compiles, we know that there must be a return value, it cannot fall through to a return value at the bottom of the function because there isn't one, and thus, each of the condition blocks must contain its own return.
 
+This means that the body of _all_ conditions must return a value.
+Don't believe me?[https://twitter.com/davecheney/status/1117216793309765632]
+
+So, now we've derived that this code isn't actually a series of conditions, instead this is an example of _selection_.
+In this example it is clear to the reader that this is a selection; only one path can be taken regaurdless of the operation of the condition blocks.
+
+We want to select, based on the inputs one of -1, 0, or +1.
 However this code is hard to read as each of the conditions is written differently, the first is a simple a < b, the second is the complex and unusual else if a > b, and the last conditional is unconditional.
 
-However we can do much better than this using a switch
+// NOTE: http://llvm.org/docs/CodingStandards.html#don-t-use-else-after-a-return
 
+However we can do much better using a switch
 [source,go]
 func comp(a, b int) int {
         switch {
@@ -271,11 +487,11 @@ func comp(a, b int) int {
 
 Now it is clear to the reader that this is a selection.
 Each of the selection conditions are documented in their own case statement, rather than varying else or else if clauses.
-Lastly by moving the default condition inside the switch, the reader only has to consider the cases that match their condition, as none of the cases can fall out of the 
+Lastly by moving the default condition inside the switch, the reader only has to consider the cases that match their condition, as none of the cases can fall out of the switch block because if the `default` clause.
 
 NOTE: the `fallthrough` keyword complicates this analysis, hence the general disapproval of `fallthrough` in switch statements.
 
-== Termate a function with a switch
+=== Terminate a function with a switch
 
 don't fall through a switch and return, return on a default case.
 
@@ -284,15 +500,6 @@ TIP: Switch statement scoping with default can avoid the dangers of redeclaratio
 TIP: Make preconditions different from beaches. Use it for precondition, switch for branch.
 
 TIP: use a default so that the _selection_ of elements is clear even without reading the switch cases
-
-== Left aligned code
-
-If you apply guard clauses and preconditions to your code, if you avoid the use of `else`, then your code should naturally be left aligned on the page.
-
-The successful flow of control continues down the page.
-At every point in the sequence of instructions, if you've arrived at that point, you know that a growing set of preconditions holds true.
-
-Mat Ryer calls this _line of sight_ coding, because, the active part of your function is not at risk of sliding out of view to the right of your screen.
 
 == Extract function
 
@@ -306,76 +513,55 @@ I opened this talk with a discussion of readability vs clarity, and I also hinte
 It seems fitting to close on on a discussion of those other principles.
 
 Last year Bryan Cantrill gave a wonderful presentation on language operating system principals, wherein he highlighted that different programming languages or operating systems focus on different principals.
-It is not that they _ignore_ the principles that differ between their competitors, just that they focus on ...
+It is not that they _ignore_ the principles that differ between their competitors, just that when the chips are down, they choose a core set.
 
-
-
-
-
-
-I'm possibly one of the earliest users of Go in this room, but to argue that my seniority gives my views more weight is _false_.
-Instead, the advice I'm going to present today is informed by what I believe to be the guiding principles underlying Go itself.
-They are:
-
-. Simplicity
-. Readability
-. Productivity
-
-[NOTE]
-====
-You'll note that I didn't say _performance_, or _concurrency_.
-There are languages which are a bit faster than Go, but they're certainly not as simple as Go.
-There are languages which make concurrency their highest goal, but they are not as readable, nor as productive.
-
-Performance and concurrency are important attributes, but not as important as _simplicity_, _readability_, and _productivity_.
-====
+So what are the core set of prinicples for Go?
 
 === Clarity
 
 "Programs must be written for people to read, and only incidentally for machines to execute."
 -- Hal Abelson and Gerald Sussman, Structure and Interpretation of Computer Programs
 
-Clarity is important because all software, not just Go programs, is written by humans to be read by other humans.
-The fact that software is also consumed by machines is secondary.
-
 Code is read many more times than it is written.
 A single piece of code will, over its lifetime, be read hundreds, maybe thousands of times.
 
-If you're writing a program for yourself, maybe it only has to run once, or you're the only person who'll ever see it, then do what ever works for you.
-But if this is a piece of software that more than one person will contribute to, or that will be used by people over a long enough time that requirements, features, or the environment it runs in changes, then your goal must be for your program to be _maintainable_.
+Clarity is important because all software, not just Go programs, is written by humans to be read by other humans.
+The fact that software is also consumed by machines is secondary.
 
 "The most important skill for a programmer is the ability to effectively communicate ideas."
 -- Gastón Jorquera footnote:[https://gaston.life/books/effective-programming/]
 
-Clarity and simplicity are interlocking forces that give us the language we all love.
+If you're writing a program for yourself, maybe it only has to run once, or you're the only person who'll ever see it, then do what ever works for you.
+But if this is a piece of software that more than one person will contribute to, or that will be used by people over a long enough time that requirements, features, or the environment it runs in may change, then your goal must be for your program to be _maintainable_.
 
 The first step towards writing maintainable code is making sure intent of the code is clear.
 
 === Simplicity
-"Simplicity is prerequisite for reliability."
--- Edsger W. Dijkstra
-
-Why should we strive for simplicity?
-Why is important that Go programs be simple?
 
 "The ability to simplify means to eliminate the unnecessary so that the necessary may speak."
 -- Hans Hofmann
 
-NOTE: Simple things can be composed together to build something complex. Which is different to something which is complicated. 
+Why should we strive for simplicity?
+Why is important that Go programs be simple?
+
+
+"There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult."
+-- C. A. R. Hoare
+
 
 We've all been in a situation where you say "I can't understand this code", yes?
 We've all worked on programs where you're scared to make a change because you're worried it'll break another part of the program; a part you don't understand and don't know how to fix.
 This is complexity.
 
-"There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult."
--- C. A. R. Hoare
+"Simplicity is prerequisite for reliability."
+-- Edsger W. Dijkstra
+
+// NOTE: Simple things can be composed together to build something complex. Which is different to something which is complicated. 
 
 Complexity turns reliable software in unreliable software.
 Complexity is what kills software projects.
-Therefore simplicity is the highest goal of Go.
+Clarity and simplicity are interlocking forces that give us the language we all love.
 Whatever programs we write, we should be able to agree that they are simple.
-
-
 
 === Productivity
 
@@ -395,27 +581,57 @@ More fundamental to the question of developer productivity, Go programmers reali
 Go goes so far as to enforce, via tooling and custom, that all code be formatted in a specific style.
 This removes the friction of learning a project specific dialect and helps spot mistakes because they just _look_ incorrect.
 
+Hoenstly we could easily call this maintainablity. 
+It’s the explicit understanding that Go was designed as a language for teams of software engineers 
+
 Go programmers don't spend days debugging inscrutable compile errors.
 They don't waste days with complicated build scripts or deploying code to production.
 And most importantly they don't spend their time trying to understand what their coworker wrote.
 
-Productivity is what the Go team mean when they say the language must _scale_.
+To say that Go is a language designed to be productive is an understandint it is built for software design in the large, at industrial scale.
+
+// Productivity is what the Go team mean when they say the language must _scale_.
 
 == A take away
 
-"Complexity is anything that makes software hard to understand or to modify." -- John Ousterhout
+"Complexity is anything that makes software hard to understand or to modify."
+-- John Ousterhout
 
 Something I know about each of you in this room is you will eventually leave your current employer.
 Maybe you'll be moving on to a new role, or perhaps a promotion, perhaps you'll move countries, or follow your partner overseas.
-Whatever the reason, so as in buisness, we must consider the sucession of the maintainership of the programs we write.
+Whatever the reason, we must consider the sucession of the maintainership of the programs we write.
 
-If we strive to write programs that are clear, programs that are simple, and to focus on the productivity of those working on our programs then that will set us in good
+If we strive to write programs that are clear, programs that are simple, and to focus on the productivity of those working on our programs then that will set all Go programmers in good stead.
 
 Because if we don't, then as we move from job to job we'll leave behind programs which cannot be maintained.
 Programs which cannot be changed.
+Programs which are too hard to onboard new developers, and programs which feel like a digression to the programmers working in them.
 
 Clarity is key to being able to understand what the program is doing.
 If you can't understand what a program is doing, how can you hope to maintain it?
 If software cannot be maintained, then it will be rewritten; and that could be the last time your company will invest in Go.
 
 Thank you
+
+<hr/>
+
+=== Traffic light example. 
+
+How does your program explain the intent of the code, not its operation.
+
+=== Loops
+
+Prefer continue to break, rather have as the induction variable, make an infinite loop either infinite, or clearly bounded at the loop site 
+
+
+[source,go]
+.Example
+func f(a, b int) int {
+       var x int
+       if a > 0 {
+              x = a
+       } else {
+              x = b
+       }
+       return x
+}
