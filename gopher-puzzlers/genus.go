@@ -5,7 +5,7 @@ import "fmt"
 const (
 	Animal = iota
 	Mineral
-	Vegitable
+	Vegetable
 )
 
 func genus(t uint) {
@@ -14,8 +14,8 @@ func genus(t uint) {
 		fmt.Println("Animal")
 	case Mineral:
 		fmt.Println("Mineral")
-	case Vegitable:
-		fmt.Println("Vegitable")
+	case Vegetable:
+		fmt.Println("Vegetable")
 	}
 }
 

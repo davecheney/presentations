@@ -153,7 +153,7 @@ Here is the same program rewritten to be more explicit.
 
 .play -edit gopher-puzzlers/maps2.go
 
-* Animal, mineral, vegitable
+* Animal, mineral, vegetable
 
 Consider this program
 
